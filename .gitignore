@@ -35,9 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database
+# database (keep root-level db files out, but include prisma/dev.db for Vercel bundling)
 dev.db*
-prisma/dev.db*
+# prisma/dev.db is intentionally tracked for Vercel SQLite bundling
 
 # agent metadata
 .agents
