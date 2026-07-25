@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  password            String
+  name                String
+  role                String               @default("REGISTERED") // GUEST, REGISTERED, ADMIN
+  rating              Int                  @default(1500)
+  avatar              String?
+  createdAt           DateTime             @default(now())
+  submissions         Submission[]
+  contestParticipants ContestParticipant[]
+  userRatings         UserRating[]
+  userProgress        UserProgress?
+}
+
+model Problem {
+  id              String           @id @default(uuid())
+  slug            String           @unique
+  title           String
+  statement       String
+  inputFormat     String
+  outputFormat    String
+  constraints     String
+  difficulty      String           // EASY, MEDIUM, HARD
+  topicTags       String           // JSON string array e.g. "[\"Arrays\", \"Hash Table\"]"
+  companyTags     String           // JSON string array e.g. "[\"Google\", \"Amazon\"]"
+  editorial       String
+  timeLimit       Float            @default(1.0)
+  memoryLimit     Int              @default(256)
+  createdAt       DateTime         @default(now())
+  codeTemplates   CodeTemplate[]
+  testCases       TestCase[]
+  submissions     Submission[]
+  contestProblems ContestProblem[]
+  companyProblems CompanyProblem[]
+}
+
+model CodeTemplate {
+  id        String   @id @default(uuid())
+  problemId String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  language  String   // python, cpp, javascript, java, go
+  code      String
+}
+
+model TestCase {
+  id             String   @id @default(uuid())
+  problemId      String
+  problem        Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  input          String
+  expectedOutput String
+  isSample       Boolean  @default(false)
+  explanation    String?
+}
+
+model Submission {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId      String
+  problem        Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  code           String
+  language       String
+  status         String   // Accepted, Wrong Answer, Time Limit Exceeded, Memory Limit Exceeded, Runtime Error, Compilation Error
+  executionTime  Float?
+  memory         Float?
+  failedTestCase String?
+  createdAt      DateTime @default(now())
+}
+
+model Contest {
+  id                  String               @id @default(uuid())
+  title               String
+  description         String
+  startTime           DateTime
+  endTime             DateTime
+  isRated             Boolean              @default(true)
+  status              String               @default("UPCOMING") // UPCOMING, ACTIVE, ENDED
+  createdAt           DateTime             @default(now())
+  contestProblems     ContestProblem[]
+  contestParticipants ContestParticipant[]
+  userRatings         UserRating[]
+}
+
+model ContestProblem {
+  id        String   @id @default(uuid())
+  contestId String
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problemId String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  points    Int      @default(100)
+  order     Int      @default(1)
+}
+
+model ContestParticipant {
+  id         String    @id @default(uuid())
+  contestId  String
+  contest    Contest   @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score      Int       @default(0)
+  finishTime DateTime?
+  oldRating  Int       @default(1500)
+  newRating  Int       @default(1500)
+}
+
+model UserRating {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contestId String
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  rating    Int
+  delta     Int
+  timestamp DateTime @default(now())
+}
+
+model UserProgress {
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  solvedEasy     Int       @default(0)
+  solvedMedium   Int       @default(0)
+  solvedHard     Int       @default(0)
+  streak         Int       @default(0)
+  lastActiveDate DateTime?
+}
+
+model Company {
+  id              String           @id @default(uuid())
+  name            String           @unique
+  logo            String?
+  description     String?
+  problemCount    Int              @default(0)
+  companyProblems CompanyProblem[]
+}
+
+model CompanyProblem {
+  id        String   @id @default(uuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  problemId String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  frequency Int      @default(1)
+}

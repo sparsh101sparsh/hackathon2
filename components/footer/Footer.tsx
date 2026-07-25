@@ -1,0 +1,150 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Code2, Github, Twitter, Linkedin, Heart, Zap, Shield } from 'lucide-react';
+
+export const Footer: React.FC = () => {
+  const pathname = usePathname();
+
+  // Hide footer inside full screen workspace editor routes
+  if (pathname.startsWith('/problems/') && pathname !== '/problems') {
+    return null;
+  }
+
+  return (
+    <footer className="w-full bg-slate-950 border-t border-slate-800/80 text-slate-400 text-xs py-12 px-6 font-sans relative z-10">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+        {/* Brand Column */}
+        <div className="md:col-span-2 space-y-4">
+          <Link href="/" className="flex items-center gap-2 text-white font-black text-lg tracking-tight">
+            <div className="p-1.5 rounded-lg bg-gradient-to-tr from-cyan-500 to-emerald-500 text-slate-950 shadow-md shadow-cyan-500/20">
+              <Code2 className="w-5 h-5 fill-slate-950" />
+            </div>
+            <span>CodeForge <span className="text-cyan-400">AI</span></span>
+          </Link>
+
+          <p className="text-slate-400 leading-relaxed max-w-sm">
+            AI-powered competitive programming platform. Master DSA, run code in isolated Piston containers, and ace technical interviews.
+          </p>
+
+          {/* System Status Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>All Systems Operational • Piston Execution 100%</span>
+          </div>
+        </div>
+
+        {/* Platform Links */}
+        <div className="space-y-3">
+          <h4 className="text-white font-bold text-sm tracking-tight">Platform</h4>
+          <ul className="space-y-2">
+            <li>
+              <Link href="/problems" className="hover:text-cyan-400 transition">
+                Problems Workspace
+              </Link>
+            </li>
+            <li>
+              <Link href="/contests" className="hover:text-cyan-400 transition">
+                Rated Contests
+              </Link>
+            </li>
+            <li>
+              <Link href="/company" className="hover:text-cyan-400 transition">
+                Company Prep
+              </Link>
+            </li>
+            <li>
+              <Link href="/mock-interview" className="hover:text-cyan-400 transition">
+                AI Mock Interview
+              </Link>
+            </li>
+            <li>
+              <Link href="/leaderboard" className="hover:text-cyan-400 transition">
+                Global Leaderboard
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Features Links */}
+        <div className="space-y-3">
+          <h4 className="text-white font-bold text-sm tracking-tight">Features</h4>
+          <ul className="space-y-2">
+            <li>
+              <Link href="/dashboard" className="hover:text-cyan-400 transition">
+                Analytics Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link href="/problems" className="hover:text-cyan-400 transition">
+                Piston Code Execution
+              </Link>
+            </li>
+            <li>
+              <Link href="/problems" className="hover:text-cyan-400 transition">
+                3-Level Progressive Hints
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin" className="hover:text-cyan-400 transition">
+                Admin Panel
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Legal & Social */}
+        <div className="space-y-3">
+          <h4 className="text-white font-bold text-sm tracking-tight">Community</h4>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noreferrer"
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition"
+            >
+              <Github className="w-4 h-4" />
+            </a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noreferrer"
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-400 hover:border-slate-700 transition"
+            >
+              <Twitter className="w-4 h-4" />
+            </a>
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noreferrer"
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-slate-700 transition"
+            >
+              <Linkedin className="w-4 h-4" />
+            </a>
+          </div>
+          <p className="text-[11px] text-slate-500 pt-2">
+            CodeForge AI is built for candidate engineers and tech interview preparation.
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="max-w-7xl mx-auto pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div>
+          © {new Date().getFullYear()} CodeForge AI Inc. All rights reserved.
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="hover:text-slate-400 cursor-pointer">Privacy Policy</span>
+          <span>•</span>
+          <span className="hover:text-slate-400 cursor-pointer">Terms of Service</span>
+          <span>•</span>
+          <span className="hover:text-slate-400 cursor-pointer">Security Attestation</span>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

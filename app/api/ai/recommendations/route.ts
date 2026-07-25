@@ -1,0 +1,122 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
+
+export const dynamic = 'force-dynamic';
+
+export interface DailyRecommendation {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: string;
+  topicTags: string[];
+  companyTags: string[];
+  aiReason: string;
+  targetSkill: string;
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    // Fetch user progress or fallback user
+    let userProgress = null;
+    if (userId) {
+      userProgress = await prisma.userProgress.findUnique({
+        where: { userId },
+      });
+    }
+
+    if (!userProgress) {
+      userProgress = await prisma.userProgress.findFirst();
+    }
+
+    const solvedEasy = userProgress?.solvedEasy || 5;
+    const solvedMedium = userProgress?.solvedMedium || 2;
+    const solvedHard = userProgress?.solvedHard || 0;
+
+    // Fetch candidate problems from DB
+    const allProblems = await prisma.problem.findMany({
+      take: 30,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        difficulty: true,
+        topicTags: true,
+        companyTags: true,
+      },
+    });
+
+    if (!allProblems || allProblems.length === 0) {
+      return NextResponse.json({ recommendations: [] });
+    }
+
+    // Select 3 diverse problems (mix of difficulties or topics)
+    const selectedProblems = allProblems.slice(0, 3).map((p) => ({
+      ...p,
+      topicTags: typeof p.topicTags === 'string' ? JSON.parse(p.topicTags) : p.topicTags,
+      companyTags: typeof p.companyTags === 'string' ? JSON.parse(p.companyTags) : p.companyTags,
+    }));
+
+    const systemPrompt = `You are an AI DSA Coach analyzing user solving stats:
+Solved Easy: ${solvedEasy}, Solved Medium: ${solvedMedium}, Solved Hard: ${solvedHard}.
+
+Generate personalized recommendations for 3 selected problems.
+Output MUST be a raw JSON array of objects matching schema:
+[
+  {
+    "problemId": "string ID of the problem",
+    "aiReason": "1-2 sentence AI explanation of why this problem is recommended today for the user",
+    "targetSkill": "Key skill or pattern being targeted e.g. Dynamic Programming Optimization"
+  }
+]`;
+
+    const userPrompt = `Candidate Problems:
+${JSON.stringify(
+  selectedProblems.map((p) => ({ id: p.id, title: p.title, difficulty: p.difficulty, topicTags: p.topicTags }))
+)}`;
+
+    const fallbackAnalysis = selectedProblems.map((p, idx) => ({
+      problemId: p.id,
+      aiReason:
+        idx === 0
+          ? `Based on your ${solvedMedium} solved Medium problems, this will help solidify your foundational hash mapping and array techniques.`
+          : idx === 1
+          ? `Targeted recommendation to strengthen your problem-solving speed under typical Meta and Google interview time constraints.`
+          : `Recommended by AI to expand your mastery into multi-pointer and sliding window algorithmic patterns.`,
+      targetSkill: p.topicTags[0] || 'Data Structures',
+    }));
+
+    const aiAnalysis = await callFreeModelJSON<Array<{ problemId: string; aiReason: string; targetSkill: string }>>({
+      model: MODELS.FAST,
+      systemPrompt,
+      userPrompt,
+      temperature: 0.5,
+      fallbackJson: fallbackAnalysis,
+    });
+
+    const recommendations: DailyRecommendation[] = selectedProblems.map((p, idx) => {
+      const match = Array.isArray(aiAnalysis) ? aiAnalysis.find((a) => a.problemId === p.id) : null;
+      return {
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        difficulty: p.difficulty,
+        topicTags: p.topicTags,
+        companyTags: p.companyTags,
+        aiReason: match?.aiReason || fallbackAnalysis[idx].aiReason,
+        targetSkill: match?.targetSkill || fallbackAnalysis[idx].targetSkill,
+      };
+    });
+
+    return NextResponse.json({ recommendations });
+  } catch (error: any) {
+    console.error('Error in /api/ai/recommendations:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to generate daily recommendations' },
+      { status: 500 }
+    );
+  }
+}
