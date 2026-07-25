@@ -170,8 +170,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to explore C
 
 ## 🔗 Deployment & Links
 
-- **GitHub Repository**: [https://github.com/iamsparsh00321/hackathon2](https://github.com/iamsparsh00321/hackathon2)
-- **Vercel Live Production URL**: [https://hackathon2.vercel.app](https://hackathon2.vercel.app)
+- **GitHub Repository**: [https://github.com/sparsh101sparsh/hackathon2](https://github.com/sparsh101sparsh/hackathon2)
+- **Vercel Live Production URL**: [https://hackathon2-olive-eight.vercel.app](https://hackathon2-olive-eight.vercel.app)
 
 ---
 
