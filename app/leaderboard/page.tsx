@@ -112,70 +112,78 @@ export default function LeaderboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {filteredUsers.map((u, idx) => (
-                  <motion.tr
-                    key={u.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: idx * 0.02 }}
-                    className="hover:bg-slate-800/40 transition-colors group"
-                  >
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex justify-center">{getRankBadge(u.rank)}</div>
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-slate-400">
+                      No leaderboard entries found. Submit code solutions to earn your rank on the global leaderboard!
                     </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((u, idx) => (
+                    <motion.tr
+                      key={u.id}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.02 }}
+                      className="hover:bg-slate-800/40 transition-colors group"
+                    >
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex justify-center">{getRankBadge(u.rank)}</div>
+                      </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={u.avatar}
-                          alt={u.name}
-                          className="w-9 h-9 rounded-full border border-slate-700 bg-slate-800 shrink-0"
-                        />
-                        <div>
-                          <div className="font-bold text-white group-hover:text-cyan-400 transition-colors">
-                            {u.name}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={u.avatar}
+                            alt={u.name}
+                            className="w-9 h-9 rounded-full border border-slate-700 bg-slate-800 shrink-0"
+                          />
+                          <div>
+                            <div className="font-bold text-white group-hover:text-cyan-400 transition-colors">
+                              {u.name}
+                            </div>
+                            <div className="text-[11px] text-slate-400">{u.email}</div>
                           </div>
-                          <div className="text-[11px] text-slate-400">{u.email}</div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`font-extrabold text-sm ${u.ratingTier.colorClass}`}
-                        >
-                          {u.rating}
-                        </span>
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${u.ratingTier.badgeBg} ${u.ratingTier.badgeText}`}
-                        >
-                          {u.ratingTier.badge}
-                        </span>
-                      </div>
-                    </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-extrabold text-sm ${u.ratingTier.colorClass}`}
+                          >
+                            {u.rating}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${u.ratingTier.badgeBg} ${u.ratingTier.badgeText}`}
+                          >
+                            {u.ratingTier.badge}
+                          </span>
+                        </div>
+                      </td>
 
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="font-bold text-white text-sm">{u.solved.total}</div>
-                      <div className="text-[10px] text-slate-400 flex items-center justify-center gap-1.5 mt-0.5">
-                        <span className="text-emerald-400 font-semibold">{u.solved.easy}E</span>
-                        <span>•</span>
-                        <span className="text-amber-400 font-semibold">{u.solved.medium}M</span>
-                        <span>•</span>
-                        <span className="text-rose-400 font-semibold">{u.solved.hard}H</span>
-                      </div>
-                    </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="font-bold text-white text-sm">{u.solved.total}</div>
+                        <div className="text-[10px] text-slate-400 flex items-center justify-center gap-1.5 mt-0.5">
+                          <span className="text-emerald-400 font-semibold">{u.solved.easy}E</span>
+                          <span>•</span>
+                          <span className="text-amber-400 font-semibold">{u.solved.medium}M</span>
+                          <span>•</span>
+                          <span className="text-rose-400 font-semibold">{u.solved.hard}H</span>
+                        </div>
+                      </td>
 
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="font-bold text-cyan-400 text-sm">{u.accuracy}%</span>
-                    </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="font-bold text-cyan-400 text-sm">{u.accuracy}%</span>
+                      </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="font-medium text-slate-300">{u.country}</div>
-                      <div className="text-[10px] text-slate-500">Joined {u.joinedAt}</div>
-                    </td>
-                  </motion.tr>
-                ))}
+                      <td className="py-3.5 px-4">
+                        <div className="font-medium text-slate-300">{u.country}</div>
+                        <div className="text-[10px] text-slate-500">Joined {u.joinedAt}</div>
+                      </td>
+                    </motion.tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

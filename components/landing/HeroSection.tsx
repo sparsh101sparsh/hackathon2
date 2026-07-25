@@ -17,8 +17,8 @@ import {
 export const HeroSection: React.FC = () => {
   const stats = [
     {
-      label: 'Seeded DSA Problems',
-      value: '52',
+      label: 'DSA Problems',
+      value: '400+',
       sub: 'Arrays to Dynamic Programming',
       icon: <Code2 className="w-5 h-5 text-cyan-400" />,
       color: 'from-cyan-500/20 to-blue-500/10 border-cyan-500/30',

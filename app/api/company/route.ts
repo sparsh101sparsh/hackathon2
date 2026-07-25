@@ -12,7 +12,7 @@ export interface CompanySummary {
   problemCount: number;
 }
 
-const SEEDED_COMPANIES = [
+const TARGET_COMPANIES = [
   {
     id: 'google',
     name: 'Google',
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
 
     const dbMap = new Map(dbCompanies.map((c) => [c.name.toLowerCase(), c]));
 
-    const companies: CompanySummary[] = SEEDED_COMPANIES.map((seed) => {
+    const companies: CompanySummary[] = TARGET_COMPANIES.map((seed) => {
       const dbComp = dbMap.get(seed.name.toLowerCase());
       const count = dbComp?._count.companyProblems || dbComp?.problemCount || seed.problemCount;
       return {

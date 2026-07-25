@@ -38,10 +38,10 @@ export async function seedDatabase() {
   await prisma.userProgress.create({
     data: {
       userId: 'guest',
-      solvedEasy: 15,
-      solvedMedium: 10,
-      solvedHard: 2,
-      streak: 5,
+      solvedEasy: 0,
+      solvedMedium: 0,
+      solvedHard: 0,
+      streak: 0,
       lastActiveDate: new Date(),
     },
   });

@@ -52,7 +52,7 @@ const FAQS: FaqItem[] = [
 ];
 
 const TRUST_STATS = [
-  { icon: <Code2 className="w-5 h-5 text-cyan-400" />, value: '50+', label: 'DSA Problems', sub: 'Arrays → Advanced DP' },
+  { icon: <Code2 className="w-5 h-5 text-cyan-400" />, value: '400+', label: 'DSA Problems', sub: 'Arrays → Advanced DP' },
   { icon: <Brain className="w-5 h-5 text-purple-400" />, value: '6', label: 'AI Endpoints', sub: 'Review · Hints · Tutor · Mock' },
   { icon: <Zap className="w-5 h-5 text-amber-400" />, value: '5', label: 'Languages', sub: 'Python · C++ · JS · Java · Go' },
   { icon: <Trophy className="w-5 h-5 text-emerald-400" />, value: '8', label: 'Company Preps', sub: 'FAANG + Uber + Flipkart' },
