@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getAuthUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = getAuthUser(req);
-    const userId = authUser?.id;
-
     const now = new Date();
 
     let dbContests = await prisma.contest.findMany({
@@ -19,12 +15,11 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // If database has no contests, seed default ones dynamically so endpoint always returns rich data
     if (dbContests.length === 0) {
-      const activeStart = new Date(now.getTime() - 45 * 60 * 1000); // started 45m ago
-      const activeEnd = new Date(now.getTime() + 75 * 60 * 1000); // ends in 1h15m
+      const activeStart = new Date(now.getTime() - 45 * 60 * 1000);
+      const activeEnd = new Date(now.getTime() + 75 * 60 * 1000);
 
-      const upcomingStart = new Date(now.getTime() + 24 * 60 * 60 * 1000); // starts tomorrow
+      const upcomingStart = new Date(now.getTime() + 24 * 60 * 60 * 1000);
       const upcomingEnd = new Date(upcomingStart.getTime() + 2 * 60 * 60 * 1000);
 
       const pastStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -69,7 +64,6 @@ export async function GET(req: NextRequest) {
     }
 
     const contests = dbContests.map((c) => {
-      // Determine status dynamically based on current system time
       let calculatedStatus = c.status;
       if (now >= new Date(c.startTime) && now <= new Date(c.endTime)) {
         calculatedStatus = 'ACTIVE';
@@ -79,9 +73,7 @@ export async function GET(req: NextRequest) {
         calculatedStatus = 'ENDED';
       }
 
-      const isRegistered = userId
-        ? c.contestParticipants.some((p) => p.userId === userId)
-        : false;
+      const isRegistered = c.contestParticipants.some((p) => p.userId === 'guest');
 
       return {
         id: c.id,

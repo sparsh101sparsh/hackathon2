@@ -7,21 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                  String               @id @default(uuid())
-  email               String               @unique
-  password            String
-  name                String
-  role                String               @default("REGISTERED") // GUEST, REGISTERED, ADMIN
-  rating              Int                  @default(1500)
-  avatar              String?
-  createdAt           DateTime             @default(now())
-  submissions         Submission[]
-  contestParticipants ContestParticipant[]
-  userRatings         UserRating[]
-  userProgress        UserProgress?
-}
-
 model Problem {
   id              String           @id @default(uuid())
   slug            String           @unique
@@ -64,8 +49,7 @@ model TestCase {
 
 model Submission {
   id             String   @id @default(uuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?  @default("guest")
   problemId      String
   problem        Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
   code           String
@@ -105,8 +89,8 @@ model ContestParticipant {
   id         String    @id @default(uuid())
   contestId  String
   contest    Contest   @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?   @default("guest")
+  name       String    @default("Guest Coder")
   score      Int       @default(0)
   finishTime DateTime?
   oldRating  Int       @default(1500)
@@ -115,8 +99,7 @@ model ContestParticipant {
 
 model UserRating {
   id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?  @default("guest")
   contestId String
   contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
   rating    Int
@@ -126,8 +109,7 @@ model UserRating {
 
 model UserProgress {
   id             String    @id @default(uuid())
-  userId         String    @unique
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?   @unique @default("guest")
   solvedEasy     Int       @default(0)
   solvedMedium   Int       @default(0)
   solvedHard     Int       @default(0)

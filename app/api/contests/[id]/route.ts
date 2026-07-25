@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getAuthUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +8,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authUser = getAuthUser(req);
-    const userId = authUser?.id;
     const { id } = params;
 
     let contest = await prisma.contest.findUnique({
@@ -40,7 +37,6 @@ export async function GET(
       },
     });
 
-    // Fallback lookup by title or first contest if ID match fails
     if (!contest) {
       contest = await prisma.contest.findFirst({
         include: {
@@ -67,11 +63,8 @@ export async function GET(
       calculatedStatus = 'ENDED';
     }
 
-    const isRegistered = userId
-      ? contest.contestParticipants.some((p) => p.userId === userId)
-      : false;
+    const isRegistered = contest.contestParticipants.some((p) => p.userId === 'guest');
 
-    // Attach problems with points (100, 250, 500, 1000)
     let problems = contest.contestProblems.map((cp, idx) => {
       const pointValues = [100, 250, 500, 1000];
       return {
@@ -90,7 +83,6 @@ export async function GET(
       };
     });
 
-    // If contest has no linked problems in DB, fetch sample problems to populate problem set
     if (problems.length === 0) {
       const sampleDbProblems = await prisma.problem.findMany({ take: 4 });
       const pointValues = [100, 250, 500, 1000];

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getAuthUser } from '@/lib/auth';
 import { getRatingTier } from '@/lib/rating';
 
 export const dynamic = 'force-dynamic';
@@ -60,43 +59,21 @@ export interface DashboardStatsResponse {
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = getAuthUser(req);
-    const userId = authUser?.id;
+    const userProgress = await prisma.userProgress.findUnique({
+      where: { userId: 'guest' },
+    });
 
-    // Fetch user details from DB if authenticated
-    let dbUser = userId
-      ? await prisma.user.findUnique({
-          where: { id: userId },
-          include: {
-            userProgress: true,
-            userRatings: {
-              include: { contest: true },
-              orderBy: { timestamp: 'asc' },
-            },
-            submissions: {
-              include: { problem: true },
-              orderBy: { createdAt: 'desc' },
-            },
-          },
-        })
-      : null;
+    const userRatings = await prisma.userRating.findMany({
+      where: { userId: 'guest' },
+      include: { contest: true },
+      orderBy: { timestamp: 'asc' },
+    });
 
-    // Fallback user if not found in DB
-    if (!dbUser && userId) {
-      dbUser = await prisma.user.findFirst({
-        include: {
-          userProgress: true,
-          userRatings: {
-            include: { contest: true },
-            orderBy: { timestamp: 'asc' },
-          },
-          submissions: {
-            include: { problem: true },
-            orderBy: { createdAt: 'desc' },
-          },
-        },
-      });
-    }
+    const submissions = await prisma.submission.findMany({
+      where: { userId: 'guest' },
+      include: { problem: true },
+      orderBy: { createdAt: 'desc' },
+    });
 
     // Get total counts of problems in system by difficulty
     const [totalEasy, totalMedium, totalHard] = await Promise.all([
@@ -109,22 +86,21 @@ export async function GET(req: NextRequest) {
     const sysTotalMedium = Math.max(25, totalMedium);
     const sysTotalHard = Math.max(12, totalHard);
 
-    let solvedEasy = dbUser?.userProgress?.solvedEasy ?? 12;
-    let solvedMedium = dbUser?.userProgress?.solvedMedium ?? 8;
-    let solvedHard = dbUser?.userProgress?.solvedHard ?? 3;
-    let streak = dbUser?.userProgress?.streak ?? 7;
-    let currentRating = dbUser?.rating ?? 1550;
+    let solvedEasy = userProgress?.solvedEasy ?? 12;
+    let solvedMedium = userProgress?.solvedMedium ?? 8;
+    let solvedHard = userProgress?.solvedHard ?? 3;
+    let streak = userProgress?.streak ?? 7;
+    let currentRating = userRatings.length > 0 ? userRatings[userRatings.length - 1].rating : 1550;
 
-    // If dbUser has submissions, compute exact metrics
-    let totalSubmissions = dbUser?.submissions.length ?? 45;
-    let acceptedSubmissions = dbUser?.submissions.filter((s) => s.status === 'Accepted').length ?? 38;
+    // If submissions present, compute exact metrics
+    let totalSubmissions = submissions.length ?? 45;
+    let acceptedSubmissions = submissions.filter((s) => s.status === 'Accepted').length ?? 38;
     let accuracy = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 1000) / 10 : 84.4;
 
-    // Calculate solved by difficulty from actual accepted submissions if present
-    if (dbUser?.submissions && dbUser.submissions.length > 0) {
+    if (submissions && submissions.length > 0) {
       const acceptedProblemIds = new Set<string>();
       let e = 0, m = 0, h = 0;
-      dbUser.submissions.forEach((sub) => {
+      submissions.forEach((sub) => {
         if (sub.status === 'Accepted' && sub.problemId && !acceptedProblemIds.has(sub.problemId)) {
           acceptedProblemIds.add(sub.problemId);
           if (sub.problem.difficulty === 'EASY') e++;
@@ -152,15 +128,14 @@ export async function GET(req: NextRequest) {
     ];
 
     // 2. Rating History
-    let ratingHistory = dbUser?.userRatings?.map((ur) => ({
+    let ratingHistory = userRatings.map((ur) => ({
       date: new Date(ur.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       rating: ur.rating,
       delta: ur.delta,
       contestTitle: ur.contest?.title || 'Rated Contest',
-    })) ?? [];
+    }));
 
     if (ratingHistory.length === 0) {
-      // Default rating timeline for demo & initial users
       ratingHistory = [
         { date: 'Jan 10', rating: 1200, delta: 0, contestTitle: 'Starter Contest 1' },
         { date: 'Feb 02', rating: 1280, delta: 80, contestTitle: 'Weekly Contest 12' },
@@ -171,13 +146,13 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // 3. Activity Matrix (52 weeks = 364 days)
+    // 3. Activity Matrix
     const today = new Date();
     const activityMatrix: Array<{ date: string; count: number; level: 0 | 1 | 2 | 3 | 4 }> = [];
     const submissionMap = new Map<string, number>();
 
-    if (dbUser?.submissions) {
-      dbUser.submissions.forEach((sub) => {
+    if (submissions) {
+      submissions.forEach((sub) => {
         const dateStr = new Date(sub.createdAt).toISOString().split('T')[0];
         submissionMap.set(dateStr, (submissionMap.get(dateStr) || 0) + 1);
       });
@@ -189,9 +164,7 @@ export async function GET(req: NextRequest) {
       const dateStr = d.toISOString().split('T')[0];
       let count = submissionMap.get(dateStr) || 0;
 
-      // Seed deterministic realistic commits for mock filling if empty
       if (submissionMap.size === 0) {
-        const dayOfWeek = d.getDay();
         const pseudoRand = (d.getDate() * 3 + d.getMonth() * 7 + i) % 10;
         if (pseudoRand > 5) {
           count = (pseudoRand % 4) + 1;
@@ -207,7 +180,7 @@ export async function GET(req: NextRequest) {
       activityMatrix.push({ date: dateStr, count, level });
     }
 
-    // 4. Badges Criteria Status
+    // 4. Badges
     const badges = [
       {
         id: 'bronze-coder',
@@ -273,9 +246,9 @@ export async function GET(req: NextRequest) {
 
     const responseData: DashboardStatsResponse = {
       user: {
-        name: dbUser?.name || 'Alex Programmer',
-        email: dbUser?.email || 'user@codeforge.ai',
-        avatar: dbUser?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+        name: 'Guest Coder',
+        email: 'guest@codeforge.ai',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
         rating: currentRating,
         ratingTier: getRatingTier(currentRating),
         streak,

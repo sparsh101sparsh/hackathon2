@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/components/providers/AuthProvider';
 import { useToast } from '@/components/ui/Toast';
 import {
   Users,
@@ -57,7 +56,6 @@ interface AdminUser {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { user, role, isLoading: isAuthLoading, openAuthModal } = useAuth();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'problems' | 'users'>('overview');
@@ -131,12 +129,10 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (role === 'ADMIN') {
-      fetchStats();
-      fetchProblems();
-      fetchUsers();
-    }
-  }, [role, fetchStats, fetchProblems, fetchUsers]);
+    fetchStats();
+    fetchProblems();
+    fetchUsers();
+  }, [fetchStats, fetchProblems, fetchUsers]);
 
   // Handle problem delete
   const handleDeleteProblem = async (id: string) => {
@@ -185,59 +181,6 @@ export default function AdminDashboardPage() {
       setRoleUpdatingId(null);
     }
   };
-
-  // 1. Loading state
-  if (isAuthLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
-          <span className="text-sm text-slate-400 font-medium">Verifying admin credentials...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. Access Denied state for non-admin
-  if (!user || role !== 'ADMIN') {
-    return (
-      <div className="min-h-[80vh] bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 font-sans">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center space-y-5 shadow-2xl backdrop-blur-xl"
-        >
-          <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto">
-            <Lock className="w-8 h-8" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-xl font-extrabold text-white">Access Denied</h2>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              You must be logged in with an <span className="text-purple-400 font-bold">ADMIN</span> role to access the CodeForge AI Admin Control Panel.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-2 pt-2">
-            {!user ? (
-              <button
-                onClick={() => openAuthModal('login')}
-                className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition"
-              >
-                Sign In as Admin
-              </button>
-            ) : (
-              <Link
-                href="/problems"
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold text-xs rounded-xl border border-slate-700 transition"
-              >
-                Return to Problems
-              </Link>
-            )}
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   // Filter problems
   const filteredProblems = problems.filter((p) => {

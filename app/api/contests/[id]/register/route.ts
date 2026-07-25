@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getAuthUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,19 +8,8 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authUser = getAuthUser(req);
     const { id: contestId } = params;
-
-    // Fetch or fallback user ID
-    let userId = authUser?.id;
-    if (!userId) {
-      const firstUser = await prisma.user.findFirst();
-      userId = firstUser?.id;
-    }
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
+    const userId = 'guest';
 
     let contest = await prisma.contest.findUnique({ where: { id: contestId } });
     if (!contest) {
@@ -48,13 +36,13 @@ export async function POST(
       });
     }
 
-    const dbUser = await prisma.user.findUnique({ where: { id: userId } });
-    const userRating = dbUser?.rating || 1500;
+    const userRating = 1500;
 
     const participant = await prisma.contestParticipant.create({
       data: {
         contestId: contest.id,
         userId: userId,
+        name: 'Guest Coder',
         oldRating: userRating,
         newRating: userRating,
         score: 0,

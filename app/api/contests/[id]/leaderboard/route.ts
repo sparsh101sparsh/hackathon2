@@ -25,9 +25,6 @@ export async function GET(
 
     let dbParticipants = await prisma.contestParticipant.findMany({
       where: { contestId },
-      include: {
-        user: true,
-      },
       orderBy: [
         { score: 'desc' },
         { finishTime: 'asc' },
@@ -85,8 +82,8 @@ export async function GET(
       },
       {
         rank: 4,
-        userId: 'p-4',
-        name: 'Alex Programmer (You)',
+        userId: 'guest',
+        name: 'Guest Coder (You)',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
         rating: 1550,
         ratingTier: getRatingTier(1550),
@@ -122,11 +119,11 @@ export async function GET(
     if (dbParticipants.length > 0) {
       leaderboard = dbParticipants.map((p, idx) => ({
         rank: idx + 1,
-        userId: p.userId,
-        name: p.user.name,
-        avatar: p.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(p.user.name)}`,
-        rating: p.user.rating,
-        ratingTier: getRatingTier(p.user.rating),
+        userId: p.userId || 'guest',
+        name: p.name || 'Guest Coder',
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(p.name || 'Guest')}`,
+        rating: p.newRating || 1500,
+        ratingTier: getRatingTier(p.newRating || 1500),
         totalScore: p.score,
         penaltyTime: p.finishTime ? Math.floor((new Date(p.finishTime).getTime() - new Date().getTime()) / 60000) : 45,
         problemScores: {

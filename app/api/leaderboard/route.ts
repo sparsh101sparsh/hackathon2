@@ -25,17 +25,14 @@ export interface LeaderboardUser {
 
 export async function GET(req: NextRequest) {
   try {
-    const users = await prisma.user.findMany({
-      take: 50,
-      orderBy: [
-        { rating: 'desc' },
-        { createdAt: 'asc' },
-      ],
-      include: {
-        userProgress: true,
-        submissions: true,
-      },
+    const userProgress = await prisma.userProgress.findUnique({
+      where: { userId: 'guest' },
     });
+
+    const solvedEasy = userProgress?.solvedEasy ?? 12;
+    const solvedMedium = userProgress?.solvedMedium ?? 8;
+    const solvedHard = userProgress?.solvedHard ?? 3;
+    const totalSolved = solvedEasy + solvedMedium + solvedHard;
 
     const fallbackUsers: LeaderboardUser[] = [
       {
@@ -93,7 +90,7 @@ export async function GET(req: NextRequest) {
       {
         rank: 5,
         id: 'user-top-5',
-        name: 'Admin User',
+        name: 'Admin Coder',
         email: 'admin@codeforge.ai',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
         rating: 2100,
@@ -105,64 +102,20 @@ export async function GET(req: NextRequest) {
       },
       {
         rank: 6,
-        id: 'user-top-6',
-        name: 'Alex Programmer',
-        email: 'user@codeforge.ai',
+        id: 'guest',
+        name: 'Guest Coder (You)',
+        email: 'guest@codeforge.ai',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
         rating: 1550,
         ratingTier: getRatingTier(1550),
-        solved: { easy: 12, medium: 8, hard: 3, total: 23 },
+        solved: { easy: solvedEasy, medium: solvedMedium, hard: solvedHard, total: totalSolved },
         accuracy: 84.4,
         country: 'United States 🇺🇸',
         joinedAt: '2026-02-14',
       },
     ];
 
-    let leaderboard: LeaderboardUser[] = [];
-
-    if (users && users.length > 0) {
-      leaderboard = users.map((u, idx) => {
-        const solvedEasy = u.userProgress?.solvedEasy ?? 0;
-        const solvedMedium = u.userProgress?.solvedMedium ?? 0;
-        const solvedHard = u.userProgress?.solvedHard ?? 0;
-        const totalSolved = solvedEasy + solvedMedium + solvedHard;
-
-        const totalSubs = u.submissions.length;
-        const accSubs = u.submissions.filter((s) => s.status === 'Accepted').length;
-        const accuracy = totalSubs > 0 ? Math.round((accSubs / totalSubs) * 1000) / 10 : 85.0;
-
-        return {
-          rank: idx + 1,
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          avatar: u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.name)}`,
-          rating: u.rating,
-          ratingTier: getRatingTier(u.rating),
-          solved: {
-            easy: solvedEasy,
-            medium: solvedMedium,
-            hard: solvedHard,
-            total: totalSolved,
-          },
-          accuracy,
-          country: u.name.includes('Admin') ? 'India 🇮🇳' : u.name.includes('Alex') ? 'USA 🇺🇸' : 'Global 🌐',
-          joinedAt: new Date(u.createdAt).toISOString().split('T')[0],
-        };
-      });
-    }
-
-    // Merge fallback top coders if database users count is less than 5 to make leaderboard rich & exciting
-    if (leaderboard.length < 5) {
-      // Avoid duplicate IDs
-      const existingIds = new Set(leaderboard.map((u) => u.id));
-      const remaining = fallbackUsers.filter((f) => !existingIds.has(f.id));
-      leaderboard = [...leaderboard, ...remaining];
-      leaderboard.sort((a, b) => b.rating - a.rating);
-      leaderboard = leaderboard.map((u, idx) => ({ ...u, rank: idx + 1 }));
-    }
-
-    return NextResponse.json({ leaderboard });
+    return NextResponse.json({ leaderboard: fallbackUsers });
   } catch (error: any) {
     console.error('Error in /api/leaderboard:', error);
     return NextResponse.json(

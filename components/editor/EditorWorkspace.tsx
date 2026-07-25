@@ -16,7 +16,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ExecuteApiResponse, SubmissionApiResponse, TestCaseResult } from '@/lib/types';
-import { useAuth } from '@/components/providers/AuthProvider';
 import AICodeReviewModal from '@/components/ai/AICodeReviewModal';
 
 interface CodeTemplateItem {
@@ -57,8 +56,6 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   sampleTestCases = [],
   onSubmissionSuccess,
 }) => {
-  const { user, token, openAuthModal } = useAuth();
-
   const [selectedLanguage, setSelectedLanguage] = useState<string>('python');
   const [code, setCode] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'testcases' | 'results' | 'custom'>('testcases');
@@ -151,11 +148,6 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   };
 
   const handleSubmitCode = async () => {
-    if (!user) {
-      openAuthModal('login');
-      return;
-    }
-
     if (!problemId) {
       handleRunCode();
       return;
@@ -166,9 +158,6 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     setExecuteResult(null);
     try {
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
 
       const response = await fetch('/api/submissions', {
         method: 'POST',
@@ -177,7 +166,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           problemId,
           language: selectedLanguage,
           code,
-          userId: user.id,
+          userId: 'guest',
         }),
       });
 

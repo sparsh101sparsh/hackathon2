@@ -38,10 +38,10 @@ async function runTests() {
   assert(update.newRating >= 800 && update.newRating <= 3500, 'Rating remains in 800 - 3500 range');
   console.log(`     Old: ${update.oldRating} -> New: ${update.newRating} (+${update.delta}) [${update.newTier.badge}]`);
 
-  // TEST 2: Database Models & Seed Data
+  // TEST 2: Database Entities & Seed Verification
   console.log('\n--- Test 2: Database Entities & Seed Verification ---');
-  const userCount = await prisma.user.count();
-  assert(userCount >= 1, `Users exist in database (found: ${userCount})`);
+  const userProgressCount = await prisma.userProgress.count();
+  assert(userProgressCount >= 1, `User progress records exist in database (found: ${userProgressCount})`);
 
   const companyCount = await prisma.company.count();
   assert(companyCount >= 8, `Seeded companies count >= 8 (found: ${companyCount})`);
@@ -77,24 +77,24 @@ async function runTests() {
 
   assert(Boolean(contest && contest.id), 'Contest entity retrievable from database');
 
-  const testUser = await prisma.user.findFirst();
-  if (testUser && contest) {
+  if (contest) {
     // Test registration
     const existing = await prisma.contestParticipant.findFirst({
-      where: { contestId: contest.id, userId: testUser.id },
+      where: { contestId: contest.id, userId: 'guest' },
     });
 
     if (!existing) {
       const registered = await prisma.contestParticipant.create({
         data: {
           contestId: contest.id,
-          userId: testUser.id,
-          oldRating: testUser.rating,
-          newRating: testUser.rating,
+          userId: 'guest',
+          name: 'Guest Coder',
+          oldRating: 1500,
+          newRating: 1500,
           score: 0,
         },
       });
-      assert(Boolean(registered && registered.id), 'Successfully registered user for contest');
+      assert(Boolean(registered && registered.id), 'Successfully registered guest for contest');
     } else {
       assert(true, 'User already registered for contest entity');
     }
@@ -102,12 +102,6 @@ async function runTests() {
 
   // TEST 4: Leaderboard & Company Detail Data Logic
   console.log('\n--- Test 4: Leaderboard & Company Detail Logic ---');
-  const topUsers = await prisma.user.findMany({
-    take: 10,
-    orderBy: { rating: 'desc' },
-  });
-  assert(topUsers.length > 0, 'Top users query for leaderboard returns records');
-
   const googleCompany = await prisma.company.findFirst({
     where: { name: 'Google' },
     include: { companyProblems: { include: { problem: true } } },

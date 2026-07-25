@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,14 +8,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const admin = requireAdmin(request);
-    if (!admin) {
-      return NextResponse.json(
-        { error: 'Forbidden: Admin access required' },
-        { status: 403 }
-      );
-    }
-
     const { id } = params;
 
     const problem = await prisma.problem.findUnique({
@@ -50,14 +41,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const admin = requireAdmin(request);
-    if (!admin) {
-      return NextResponse.json(
-        { error: 'Forbidden: Admin access required' },
-        { status: 403 }
-      );
-    }
-
     const { id } = params;
     const body = await request.json();
 
@@ -120,7 +103,6 @@ export async function PUT(
 
     // Handle test cases update if provided
     if (sampleTestCases !== undefined || hiddenTestCases !== undefined) {
-      // Delete existing test cases and recreate
       await prisma.testCase.deleteMany({ where: { problemId: id } });
 
       const allTestCases = [
@@ -191,14 +173,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const admin = requireAdmin(request);
-    if (!admin) {
-      return NextResponse.json(
-        { error: 'Forbidden: Admin access required' },
-        { status: 403 }
-      );
-    }
-
     const { id } = params;
 
     const existingProblem = await prisma.problem.findUnique({ where: { id } });

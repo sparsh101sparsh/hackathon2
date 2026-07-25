@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/providers/AuthProvider';
 import {
   ChevronLeft,
   Plus,
@@ -52,7 +51,6 @@ const DEFAULT_TEMPLATES: TemplateInput[] = [
 
 export default function NewProblemPage() {
   const router = useRouter();
-  const { role, isLoading: isAuthLoading } = useAuth();
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -156,28 +154,6 @@ export default function NewProblemPage() {
       setIsSubmitting(false);
     }
   };
-
-  if (isAuthLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center font-sans">
-        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
-      </div>
-    );
-  }
-
-  if (role !== 'ADMIN') {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 font-sans">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center space-y-4 shadow-2xl">
-          <AlertCircle className="w-12 h-12 text-rose-400 mx-auto" />
-          <h2 className="text-xl font-bold text-white">Admin Authorization Required</h2>
-          <Link href="/admin" className="inline-block px-4 py-2 bg-slate-800 text-cyan-400 text-xs font-bold rounded-lg">
-            Back to Admin Panel
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 lg:p-10 max-w-5xl mx-auto space-y-8">

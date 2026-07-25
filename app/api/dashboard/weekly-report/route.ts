@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
-import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -15,31 +14,22 @@ export interface WeeklyReportResponse {
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = getAuthUser(req);
-    const userId = authUser?.id;
-
-    let userName = 'Coder';
+    let userName = 'Guest Coder';
     let solvedEasy = 12;
     let solvedMedium = 8;
     let solvedHard = 3;
     let currentRating = 1550;
     let streak = 7;
 
-    if (userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { userProgress: true },
-      });
-      if (user) {
-        userName = user.name;
-        currentRating = user.rating;
-        if (user.userProgress) {
-          solvedEasy = user.userProgress.solvedEasy;
-          solvedMedium = user.userProgress.solvedMedium;
-          solvedHard = user.userProgress.solvedHard;
-          streak = user.userProgress.streak;
-        }
-      }
+    const userProgress = await prisma.userProgress.findUnique({
+      where: { userId: 'guest' },
+    });
+
+    if (userProgress) {
+      solvedEasy = userProgress.solvedEasy;
+      solvedMedium = userProgress.solvedMedium;
+      solvedHard = userProgress.solvedHard;
+      streak = userProgress.streak;
     }
 
     const systemPrompt = `You are CodeForge AI Performance Coach analyzing weekly coding progress.
@@ -62,7 +52,7 @@ Active Streak: ${streak} days`;
       summary: `${userName} demonstrated strong consistency with a ${streak}-day active streak, advancing significantly in Dynamic Programming and Graph algorithms.`,
       strengths: [
         'High submission accuracy (84.4%) on Medium difficulty Array & Two Pointer problems',
-        'Consistent daily practice maintaining a strong 7-day streak',
+        'Consistent daily practice maintaining a strong streak',
         'Fast implementation speed on Stack and String parsing questions',
       ],
       focusAreas: [

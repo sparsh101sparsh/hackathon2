@@ -5,7 +5,6 @@ import { ExecutionVerdict, TestCaseResult } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-
 function normalizeOutput(str: string): string {
   return str.replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
 }
@@ -22,27 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Resolve User ID or fallback to sample registered user
-    let activeUserId = userId;
-    if (!activeUserId) {
-      const defaultUser = await prisma.user.findFirst({
-        where: { role: 'REGISTERED' },
-      });
-      if (defaultUser) {
-        activeUserId = defaultUser.id;
-      } else {
-        // Create fallback guest user if no user exists
-        const guestUser = await prisma.user.create({
-          data: {
-            email: `guest_${Date.now()}@codeforge.ai`,
-            password: 'guest',
-            name: 'Guest Programmer',
-            role: 'GUEST',
-          },
-        });
-        activeUserId = guestUser.id;
-      }
-    }
+    const activeUserId = userId || 'guest';
 
     // Fetch problem and all test cases
     const problem = await prisma.problem.findUnique({
@@ -209,7 +188,7 @@ export async function POST(request: NextRequest) {
     // Update user progress if Accepted
     if (overallVerdict === 'Accepted') {
       try {
-        const difficulty = problem.difficulty; // EASY, MEDIUM, HARD
+        const difficulty = problem.difficulty;
         const existingProgress = await prisma.userProgress.findUnique({
           where: { userId: activeUserId },
         });
@@ -223,6 +202,17 @@ export async function POST(request: NextRequest) {
           await prisma.userProgress.update({
             where: { userId: activeUserId },
             data: updateData,
+          });
+        } else {
+          await prisma.userProgress.create({
+            data: {
+              userId: activeUserId,
+              solvedEasy: difficulty === 'EASY' ? 1 : 0,
+              solvedMedium: difficulty === 'MEDIUM' ? 1 : 0,
+              solvedHard: difficulty === 'HARD' ? 1 : 0,
+              streak: 1,
+              lastActiveDate: new Date(),
+            },
           });
         }
       } catch (progressError) {

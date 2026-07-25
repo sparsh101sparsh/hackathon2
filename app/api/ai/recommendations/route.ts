@@ -18,15 +18,12 @@ export interface DailyRecommendation {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const userId = searchParams.get('userId') || 'guest';
 
-    // Fetch user progress or fallback user
-    let userProgress = null;
-    if (userId) {
-      userProgress = await prisma.userProgress.findUnique({
-        where: { userId },
-      });
-    }
+    // Fetch user progress or fallback
+    let userProgress = await prisma.userProgress.findUnique({
+      where: { userId },
+    });
 
     if (!userProgress) {
       userProgress = await prisma.userProgress.findFirst();

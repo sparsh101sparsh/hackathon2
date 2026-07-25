@@ -59,18 +59,20 @@ if (input.length >= 2) {
 
     // 3. Test API Execute logic (Sample Test Cases)
     console.log('\n--- 3. Testing /api/execute logic for Add Two Numbers ---');
-    const pythonAddTwoCode = `import sys
+    const pythonAddTwoCode = `import sys, re
 
 def solve():
-    raw = sys.stdin.read()
-    lines = raw.strip().split('\\n')
-    if not lines or len(lines) < 2:
-        l1 = list(map(int, raw.split())) if raw.strip() else []
-        l2 = []
+    raw = sys.stdin.read().strip()
+    if 'l1' in raw:
+        m1 = re.search(r'l1\\s*=\\s*\\[(.*?)\\]', raw)
+        m2 = re.search(r'l2\\s*=\\s*\\[(.*?)\\]', raw)
+        l1 = [int(x.strip()) for x in m1.group(1).split(',')] if m1 and m1.group(1).strip() else []
+        l2 = [int(x.strip()) for x in m2.group(1).split(',')] if m2 and m2.group(1).strip() else []
     else:
-        l1 = list(map(int, lines[0].split())) if lines[0].strip() else []
-        l2 = list(map(int, lines[1].split())) if lines[1].strip() else []
-    
+        lines = raw.split('\\n')
+        l1 = list(map(int, lines[0].split())) if len(lines) > 0 and lines[0].strip() else []
+        l2 = list(map(int, lines[1].split())) if len(lines) > 1 and lines[1].strip() else []
+
     carry = 0
     res = []
     i, j = 0, 0
@@ -79,11 +81,12 @@ def solve():
         v2 = l2[j] if j < len(l2) else 0
         total = v1 + v2 + carry
         carry = total // 10
-        res.append(str(total % 10))
+        res.append(total % 10)
         i += 1
         j += 1
-    
-    print(' '.join(res))
+
+    ans_str = "[" + ",".join(map(str, res)) + "]"
+    print(ans_str)
 
 solve()
 `;
@@ -125,21 +128,18 @@ solve()
       console.log('✅ Full submission test case execution: PASSED (All test cases passed)');
 
       // Record a test submission in DB
-      const user = await prisma.user.findFirst();
-      if (user) {
-        const sub = await prisma.submission.create({
-          data: {
-            userId: user.id,
-            problemId: problem.id,
-            code: pythonAddTwoCode,
-            language: 'python',
-            status: 'Accepted',
-            executionTime: 0.048,
-            memory: 15.1,
-          },
-        });
-        console.log(`✅ Saved submission record to DB with ID: ${sub.id}`);
-      }
+      const sub = await prisma.submission.create({
+        data: {
+          userId: 'guest',
+          problemId: problem.id,
+          code: pythonAddTwoCode,
+          language: 'python',
+          status: 'Accepted',
+          executionTime: 0.048,
+          memory: 15.1,
+        },
+      });
+      console.log(`✅ Saved submission record to DB with ID: ${sub.id}`);
     } else {
       console.error('❌ Full submission test case execution: FAILED');
       hasFailures = true;

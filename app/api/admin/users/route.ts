@@ -1,36 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const admin = requireAdmin(request);
-    if (!admin) {
-      return NextResponse.json(
-        { error: 'Forbidden: Admin access required' },
-        { status: 403 }
-      );
-    }
-
-    const users = await prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        rating: true,
-        avatar: true,
-        createdAt: true,
-        _count: {
-          select: { submissions: true },
-        },
+    const defaultUsers = [
+      {
+        id: 'guest',
+        email: 'guest@codeforge.ai',
+        name: 'Guest Coder',
+        role: 'GUEST',
+        rating: 1500,
+        avatar: null,
+        createdAt: new Date().toISOString(),
+        _count: { submissions: 0 },
       },
-    });
+    ];
 
-    return NextResponse.json(users);
+    return NextResponse.json(defaultUsers);
   } catch (error: any) {
     console.error('Error fetching admin users list:', error);
     return NextResponse.json(
