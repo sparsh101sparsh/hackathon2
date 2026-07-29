@@ -1,0 +1,602 @@
+{
+  "b5497263-c75f-4f98-ad95-e329a5006142": {
+    "problemId": "b5497263-c75f-4f98-ad95-e329a5006142",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/maximal-square",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/maximal-square",
+    "hasVisualizer": true
+  },
+  "8016d0ce-2e17-4c8e-b89d-2ba0cd5b0e7a": {
+    "problemId": "8016d0ce-2e17-4c8e-b89d-2ba0cd5b0e7a",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/lru-cache",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/lru-cache",
+    "hasVisualizer": true
+  },
+  "f673a130-3b7f-4cee-87e3-f2351aa71f63": {
+    "problemId": "f673a130-3b7f-4cee-87e3-f2351aa71f63",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "backtracking",
+    "chaicodePath": "/backtracking/generate-parentheses",
+    "chaicodeUrl": "https://dsa.chaicode.com/backtracking/generate-parentheses",
+    "hasVisualizer": true
+  },
+  "4141b44b-163f-4565-8fa9-e995c2547c7f": {
+    "problemId": "4141b44b-163f-4565-8fa9-e995c2547c7f",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dfs",
+    "chaicodePath": "/dfs/flood-fill",
+    "chaicodeUrl": "https://dsa.chaicode.com/dfs/flood-fill",
+    "hasVisualizer": true
+  },
+  "eda76485-cb81-499c-8206-f83a46bfc3f4": {
+    "problemId": "eda76485-cb81-499c-8206-f83a46bfc3f4",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "greedy",
+    "chaicodePath": "/greedy/gas-station",
+    "chaicodeUrl": "https://dsa.chaicode.com/greedy/gas-station",
+    "hasVisualizer": true
+  },
+  "b5dc5273-9b1f-4e42-9fa1-b79d1b565ea4": {
+    "problemId": "b5dc5273-9b1f-4e42-9fa1-b79d1b565ea4",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "bit-manipulation",
+    "chaicodePath": "/bit-manipulation/single-number",
+    "chaicodeUrl": "https://dsa.chaicode.com/bit-manipulation/single-number",
+    "hasVisualizer": true
+  },
+  "eb0563e5-fdd3-4a65-9fbc-01d33a289eef": {
+    "problemId": "eb0563e5-fdd3-4a65-9fbc-01d33a289eef",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "bit-manipulation",
+    "chaicodePath": "/bit-manipulation/reverse-bits",
+    "chaicodeUrl": "https://dsa.chaicode.com/bit-manipulation/reverse-bits",
+    "hasVisualizer": true
+  },
+  "c8102ed4-c27c-4fde-8e90-d7faf7dc1116": {
+    "problemId": "c8102ed4-c27c-4fde-8e90-d7faf7dc1116",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dfs",
+    "chaicodePath": "/dfs/path-sum-ii",
+    "chaicodeUrl": "https://dsa.chaicode.com/dfs/path-sum-ii",
+    "hasVisualizer": true
+  },
+  "2519fcd3-51bc-4ea9-9606-b5deb88d2123": {
+    "problemId": "2519fcd3-51bc-4ea9-9606-b5deb88d2123",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "two-pointers",
+    "chaicodePath": "/two-pointers/move-zeroes",
+    "chaicodeUrl": "https://dsa.chaicode.com/two-pointers/move-zeroes",
+    "hasVisualizer": true
+  },
+  "de826c73-440f-418f-ab1c-f480c018a2b5": {
+    "problemId": "de826c73-440f-418f-ab1c-f480c018a2b5",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "bit-manipulation",
+    "chaicodePath": "/bit-manipulation/missing-number",
+    "chaicodeUrl": "https://dsa.chaicode.com/bit-manipulation/missing-number",
+    "hasVisualizer": true
+  },
+  "88bc46b2-346f-4245-9305-2bcf181c3d85": {
+    "problemId": "88bc46b2-346f-4245-9305-2bcf181c3d85",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "backtracking",
+    "chaicodePath": "/backtracking/palindrome-partitioning",
+    "chaicodeUrl": "https://dsa.chaicode.com/backtracking/palindrome-partitioning",
+    "hasVisualizer": true
+  },
+  "6c58e4f0-40a9-4bc8-94b2-ba1d995464d5": {
+    "problemId": "6c58e4f0-40a9-4bc8-94b2-ba1d995464d5",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "bit-manipulation",
+    "chaicodePath": "/bit-manipulation/sum-of-two-integers",
+    "chaicodeUrl": "https://dsa.chaicode.com/bit-manipulation/sum-of-two-integers",
+    "hasVisualizer": true
+  },
+  "87008f46-a737-4f32-aa5d-6a16fc2b24ee": {
+    "problemId": "87008f46-a737-4f32-aa5d-6a16fc2b24ee",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dfs",
+    "chaicodePath": "/dfs/same-tree",
+    "chaicodeUrl": "https://dsa.chaicode.com/dfs/same-tree",
+    "hasVisualizer": true
+  },
+  "97c7c6c9-19af-46fe-8d60-c04a157ec1a9": {
+    "problemId": "97c7c6c9-19af-46fe-8d60-c04a157ec1a9",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "backtracking",
+    "chaicodePath": "/backtracking/n-queens",
+    "chaicodeUrl": "https://dsa.chaicode.com/backtracking/n-queens",
+    "hasVisualizer": true
+  },
+  "7b1d58bf-ca76-4380-a65e-f7e1a0747c9c": {
+    "problemId": "7b1d58bf-ca76-4380-a65e-f7e1a0747c9c",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "arrays-hashing",
+    "chaicodePath": "/arrays-hashing/contains-duplicate",
+    "chaicodeUrl": "https://dsa.chaicode.com/arrays-hashing/contains-duplicate",
+    "hasVisualizer": true
+  },
+  "578ec7fd-fb28-49a5-9869-3120435513ad": {
+    "problemId": "578ec7fd-fb28-49a5-9869-3120435513ad",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "arrays-hashing",
+    "chaicodePath": "/arrays-hashing/group-anagrams",
+    "chaicodeUrl": "https://dsa.chaicode.com/arrays-hashing/group-anagrams",
+    "hasVisualizer": true
+  },
+  "ee40210c-e5df-406a-af66-5f778c08be7a": {
+    "problemId": "ee40210c-e5df-406a-af66-5f778c08be7a",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "binary-search",
+    "chaicodePath": "/binary-search/split-array-largest-sum",
+    "chaicodeUrl": "https://dsa.chaicode.com/binary-search/split-array-largest-sum",
+    "hasVisualizer": true
+  },
+  "5ad34441-369c-4265-a3a1-76609fe44d06": {
+    "problemId": "5ad34441-369c-4265-a3a1-76609fe44d06",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "greedy",
+    "chaicodePath": "/greedy/jump-game",
+    "chaicodeUrl": "https://dsa.chaicode.com/greedy/jump-game",
+    "hasVisualizer": true
+  },
+  "46f13f73-c514-4f9a-93af-06e28344d06c": {
+    "problemId": "46f13f73-c514-4f9a-93af-06e28344d06c",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "graphs",
+    "chaicodePath": "/graphs/course-schedule",
+    "chaicodeUrl": "https://dsa.chaicode.com/graphs/course-schedule",
+    "hasVisualizer": true
+  },
+  "dcea7443-7a6f-484e-883f-3ae2deb5d1bc": {
+    "problemId": "dcea7443-7a6f-484e-883f-3ae2deb5d1bc",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "intervals",
+    "chaicodePath": "/intervals/non-overlapping-intervals",
+    "chaicodeUrl": "https://dsa.chaicode.com/intervals/non-overlapping-intervals",
+    "hasVisualizer": true
+  },
+  "f4c58958-66d5-4f39-b5b1-9e91871f0ec4": {
+    "problemId": "f4c58958-66d5-4f39-b5b1-9e91871f0ec4",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "arrays-hashing",
+    "chaicodePath": "/arrays-hashing/valid-anagram",
+    "chaicodeUrl": "https://dsa.chaicode.com/arrays-hashing/valid-anagram",
+    "hasVisualizer": true
+  },
+  "c683726a-650f-4b23-b747-aba691363c5a": {
+    "problemId": "c683726a-650f-4b23-b747-aba691363c5a",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/swap-nodes-in-pairs",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/swap-nodes-in-pairs",
+    "hasVisualizer": true
+  },
+  "12d42078-63d5-4b14-af96-9541ae7ac642": {
+    "problemId": "12d42078-63d5-4b14-af96-9541ae7ac642",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "two-pointers",
+    "chaicodePath": "/two-pointers/valid-palindrome",
+    "chaicodeUrl": "https://dsa.chaicode.com/two-pointers/valid-palindrome",
+    "hasVisualizer": true
+  },
+  "775e6a22-7ad2-4cba-b323-4b27368d3d9b": {
+    "problemId": "775e6a22-7ad2-4cba-b323-4b27368d3d9b",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/climbing-stairs",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/climbing-stairs",
+    "hasVisualizer": true
+  },
+  "147daf86-3d93-47c5-abcd-42ec1aa28ae9": {
+    "problemId": "147daf86-3d93-47c5-abcd-42ec1aa28ae9",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/edit-distance",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/edit-distance",
+    "hasVisualizer": true
+  },
+  "bb9a2a94-d3db-434a-9405-98be554d93ef": {
+    "problemId": "bb9a2a94-d3db-434a-9405-98be554d93ef",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "graphs",
+    "chaicodePath": "/graphs/course-schedule-ii",
+    "chaicodeUrl": "https://dsa.chaicode.com/graphs/course-schedule-ii",
+    "hasVisualizer": true
+  },
+  "1ceafdb3-77c4-41cb-9f99-61aa67312d6f": {
+    "problemId": "1ceafdb3-77c4-41cb-9f99-61aa67312d6f",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "graphs",
+    "chaicodePath": "/graphs/word-ladder",
+    "chaicodeUrl": "https://dsa.chaicode.com/graphs/word-ladder",
+    "hasVisualizer": true
+  },
+  "140b9e5e-dec4-4d83-91be-a958cf384989": {
+    "problemId": "140b9e5e-dec4-4d83-91be-a958cf384989",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dfs",
+    "chaicodePath": "/dfs/number-of-islands",
+    "chaicodeUrl": "https://dsa.chaicode.com/dfs/number-of-islands",
+    "hasVisualizer": true
+  },
+  "41008d11-a1fb-42fb-89f9-97cb410ef210": {
+    "problemId": "41008d11-a1fb-42fb-89f9-97cb410ef210",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/coin-change",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/coin-change",
+    "hasVisualizer": true
+  },
+  "1468dab4-9a55-488e-858d-02e8f8f5114f": {
+    "problemId": "1468dab4-9a55-488e-858d-02e8f8f5114f",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "stack",
+    "chaicodePath": "/stack/longest-valid-parentheses",
+    "chaicodeUrl": "https://dsa.chaicode.com/stack/longest-valid-parentheses",
+    "hasVisualizer": true
+  },
+  "0948302d-4cb4-455f-bed6-a684c2845a29": {
+    "problemId": "0948302d-4cb4-455f-bed6-a684c2845a29",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/decode-ways",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/decode-ways",
+    "hasVisualizer": true
+  },
+  "a2095829-b045-461b-97c9-b534963a003f": {
+    "problemId": "a2095829-b045-461b-97c9-b534963a003f",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/reorder-list",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/reorder-list",
+    "hasVisualizer": true
+  },
+  "1d3d9fc9-0a9a-4fa7-b9d5-b908017b54f0": {
+    "problemId": "1d3d9fc9-0a9a-4fa7-b9d5-b908017b54f0",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "heap",
+    "chaicodePath": "/heap/find-k-closest-elements",
+    "chaicodeUrl": "https://dsa.chaicode.com/heap/find-k-closest-elements",
+    "hasVisualizer": true
+  },
+  "18c4c12c-39b0-4079-afb1-8148da146592": {
+    "problemId": "18c4c12c-39b0-4079-afb1-8148da146592",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "heap",
+    "chaicodePath": "/heap/merge-k-sorted-lists",
+    "chaicodeUrl": "https://dsa.chaicode.com/heap/merge-k-sorted-lists",
+    "hasVisualizer": true
+  },
+  "9ef02807-53e2-4c33-9fe2-38a003c54414": {
+    "problemId": "9ef02807-53e2-4c33-9fe2-38a003c54414",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "stack",
+    "chaicodePath": "/stack/daily-temperatures",
+    "chaicodeUrl": "https://dsa.chaicode.com/stack/daily-temperatures",
+    "hasVisualizer": true
+  },
+  "b6c1058d-a92a-4a15-9112-800059a73486": {
+    "problemId": "b6c1058d-a92a-4a15-9112-800059a73486",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "two-pointers",
+    "chaicodePath": "/two-pointers/valid-triangle-number",
+    "chaicodeUrl": "https://dsa.chaicode.com/two-pointers/valid-triangle-number",
+    "hasVisualizer": true
+  },
+  "2ff56c2f-e70e-45f7-b415-43259e222a82": {
+    "problemId": "2ff56c2f-e70e-45f7-b415-43259e222a82",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "prefix-sum",
+    "chaicodePath": "/prefix-sum/subarray-sum-equals-k",
+    "chaicodeUrl": "https://dsa.chaicode.com/prefix-sum/subarray-sum-equals-k",
+    "hasVisualizer": true
+  },
+  "11a0ee81-b20f-4bc7-819f-446183177ecc": {
+    "problemId": "11a0ee81-b20f-4bc7-819f-446183177ecc",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dfs",
+    "chaicodePath": "/dfs/surrounded-regions",
+    "chaicodeUrl": "https://dsa.chaicode.com/dfs/surrounded-regions",
+    "hasVisualizer": true
+  },
+  "3494b4ae-cc64-42c0-93e5-5d357818dde9": {
+    "problemId": "3494b4ae-cc64-42c0-93e5-5d357818dde9",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "backtracking",
+    "chaicodePath": "/backtracking/combination-sum",
+    "chaicodeUrl": "https://dsa.chaicode.com/backtracking/combination-sum",
+    "hasVisualizer": true
+  },
+  "5e6b3132-fd96-4cd4-b98b-9ec5e5518950": {
+    "problemId": "5e6b3132-fd96-4cd4-b98b-9ec5e5518950",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "greedy",
+    "chaicodePath": "/greedy/jump-game-ii",
+    "chaicodeUrl": "https://dsa.chaicode.com/greedy/jump-game-ii",
+    "hasVisualizer": true
+  },
+  "c5e8bb5e-bdcf-491e-befe-45a92e94e1ec": {
+    "problemId": "c5e8bb5e-bdcf-491e-befe-45a92e94e1ec",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "stack",
+    "chaicodePath": "/stack/min-stack",
+    "chaicodeUrl": "https://dsa.chaicode.com/stack/min-stack",
+    "hasVisualizer": true
+  },
+  "52ab9cae-7508-4b3f-bcdd-f90e7aa1d8bb": {
+    "problemId": "52ab9cae-7508-4b3f-bcdd-f90e7aa1d8bb",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "backtracking",
+    "chaicodePath": "/backtracking/subsets",
+    "chaicodeUrl": "https://dsa.chaicode.com/backtracking/subsets",
+    "hasVisualizer": true
+  },
+  "8b93b3cd-8185-4e98-b56c-401e3700f393": {
+    "problemId": "8b93b3cd-8185-4e98-b56c-401e3700f393",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "two-pointers",
+    "chaicodePath": "/two-pointers/container-with-most-water",
+    "chaicodeUrl": "https://dsa.chaicode.com/two-pointers/container-with-most-water",
+    "hasVisualizer": true
+  },
+  "6fd5ede6-1744-4796-bfff-418d13fdd6a7": {
+    "problemId": "6fd5ede6-1744-4796-bfff-418d13fdd6a7",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "bit-manipulation",
+    "chaicodePath": "/bit-manipulation/number-of-1-bits",
+    "chaicodeUrl": "https://dsa.chaicode.com/bit-manipulation/number-of-1-bits",
+    "hasVisualizer": true
+  },
+  "da8774d8-dc67-486d-86bd-242ddfb53db5": {
+    "problemId": "da8774d8-dc67-486d-86bd-242ddfb53db5",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "matrices",
+    "chaicodePath": "/matrices/rotate-image",
+    "chaicodeUrl": "https://dsa.chaicode.com/matrices/rotate-image",
+    "hasVisualizer": true
+  },
+  "c54f6061-350d-49fd-bd00-44127e85f2f3": {
+    "problemId": "c54f6061-350d-49fd-bd00-44127e85f2f3",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/add-two-numbers",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/add-two-numbers",
+    "hasVisualizer": true
+  },
+  "2e1b410c-440c-4bd2-ae81-7c57f315801c": {
+    "problemId": "2e1b410c-440c-4bd2-ae81-7c57f315801c",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "intervals",
+    "chaicodePath": "/intervals/merge-intervals",
+    "chaicodeUrl": "https://dsa.chaicode.com/intervals/merge-intervals",
+    "hasVisualizer": true
+  },
+  "942a1ea7-d293-4f78-9369-fa0f77ce1adc": {
+    "problemId": "942a1ea7-d293-4f78-9369-fa0f77ce1adc",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/merge-two-sorted-lists",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/merge-two-sorted-lists",
+    "hasVisualizer": true
+  },
+  "527a9046-14a8-4e28-a5c6-e1d949887007": {
+    "problemId": "527a9046-14a8-4e28-a5c6-e1d949887007",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "two-pointers",
+    "chaicodePath": "/two-pointers/trapping-rain-water",
+    "chaicodeUrl": "https://dsa.chaicode.com/two-pointers/trapping-rain-water",
+    "hasVisualizer": true
+  },
+  "69a33131-fce1-4731-a2ee-98a64f7d9197": {
+    "problemId": "69a33131-fce1-4731-a2ee-98a64f7d9197",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/linked-list-cycle",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/linked-list-cycle",
+    "hasVisualizer": true
+  },
+  "bc56aa22-ddda-4f66-a7eb-db20ad08b532": {
+    "problemId": "bc56aa22-ddda-4f66-a7eb-db20ad08b532",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "graphs",
+    "chaicodePath": "/graphs/redundant-connection",
+    "chaicodeUrl": "https://dsa.chaicode.com/graphs/redundant-connection",
+    "hasVisualizer": true
+  },
+  "1007d8e7-86e3-41ad-b116-c7e27e4f1e23": {
+    "problemId": "1007d8e7-86e3-41ad-b116-c7e27e4f1e23",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "arrays-hashing",
+    "chaicodePath": "/arrays-hashing/two-sum",
+    "chaicodeUrl": "https://dsa.chaicode.com/arrays-hashing/two-sum",
+    "hasVisualizer": true
+  },
+  "0073d3c3-2f7c-4267-a55a-66e1c10d6edc": {
+    "problemId": "0073d3c3-2f7c-4267-a55a-66e1c10d6edc",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "sliding-window",
+    "chaicodePath": "/sliding-window/permutation-in-string",
+    "chaicodeUrl": "https://dsa.chaicode.com/sliding-window/permutation-in-string",
+    "hasVisualizer": true
+  },
+  "f3967a53-4440-4ccb-a4ca-b69c0084726d": {
+    "problemId": "f3967a53-4440-4ccb-a4ca-b69c0084726d",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "backtracking",
+    "chaicodePath": "/backtracking/word-search",
+    "chaicodeUrl": "https://dsa.chaicode.com/backtracking/word-search",
+    "hasVisualizer": true
+  },
+  "6498e979-dcca-46d6-98f3-056be065ace0": {
+    "problemId": "6498e979-dcca-46d6-98f3-056be065ace0",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "matrices",
+    "chaicodePath": "/matrices/set-matrix-zeroes",
+    "chaicodeUrl": "https://dsa.chaicode.com/matrices/set-matrix-zeroes",
+    "hasVisualizer": true
+  },
+  "49c4a1ad-3651-4422-8263-94c6565639a9": {
+    "problemId": "49c4a1ad-3651-4422-8263-94c6565639a9",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "stack",
+    "chaicodePath": "/stack/valid-parentheses",
+    "chaicodeUrl": "https://dsa.chaicode.com/stack/valid-parentheses",
+    "hasVisualizer": true
+  },
+  "307bf627-3fc0-4d5c-9dc1-2f1792373756": {
+    "problemId": "307bf627-3fc0-4d5c-9dc1-2f1792373756",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "sliding-window",
+    "chaicodePath": "/sliding-window/sliding-window-maximum",
+    "chaicodeUrl": "https://dsa.chaicode.com/sliding-window/sliding-window-maximum",
+    "hasVisualizer": true
+  },
+  "6763ab47-9dda-420b-afac-24fac2ca48cb": {
+    "problemId": "6763ab47-9dda-420b-afac-24fac2ca48cb",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dfs",
+    "chaicodePath": "/dfs/longest-univalue-path",
+    "chaicodeUrl": "https://dsa.chaicode.com/dfs/longest-univalue-path",
+    "hasVisualizer": true
+  },
+  "ca2e5134-ffef-4709-b1a5-75138e7c76e1": {
+    "problemId": "ca2e5134-ffef-4709-b1a5-75138e7c76e1",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/counting-bits",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/counting-bits",
+    "hasVisualizer": true
+  },
+  "660a51d3-b511-47c4-8154-c0c3d547b381": {
+    "problemId": "660a51d3-b511-47c4-8154-c0c3d547b381",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "matrices",
+    "chaicodePath": "/matrices/spiral-matrix",
+    "chaicodeUrl": "https://dsa.chaicode.com/matrices/spiral-matrix",
+    "hasVisualizer": true
+  },
+  "2d202996-6653-4036-bee3-c948efbd3082": {
+    "problemId": "2d202996-6653-4036-bee3-c948efbd3082",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dfs",
+    "chaicodePath": "/dfs/path-sum",
+    "chaicodeUrl": "https://dsa.chaicode.com/dfs/path-sum",
+    "hasVisualizer": true
+  },
+  "09e32ee1-0e4f-4284-a5d5-9e7a700ded93": {
+    "problemId": "09e32ee1-0e4f-4284-a5d5-9e7a700ded93",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "bfs",
+    "chaicodePath": "/bfs/01-matrix",
+    "chaicodeUrl": "https://dsa.chaicode.com/bfs/01-matrix",
+    "hasVisualizer": true
+  },
+  "ff3cbb66-224c-4e84-b4e4-7996778ea070": {
+    "problemId": "ff3cbb66-224c-4e84-b4e4-7996778ea070",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/house-robber",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/house-robber",
+    "hasVisualizer": true
+  },
+  "7ac1cea0-efcf-415f-99c2-5e651ae0d550": {
+    "problemId": "7ac1cea0-efcf-415f-99c2-5e651ae0d550",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "intervals",
+    "chaicodePath": "/intervals/insert-interval",
+    "chaicodeUrl": "https://dsa.chaicode.com/intervals/insert-interval",
+    "hasVisualizer": true
+  },
+  "9a9afec8-6b38-4ba2-9bc8-c9eab5d44cbf": {
+    "problemId": "9a9afec8-6b38-4ba2-9bc8-c9eab5d44cbf",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "graphs",
+    "chaicodePath": "/graphs/network-delay-time",
+    "chaicodeUrl": "https://dsa.chaicode.com/graphs/network-delay-time",
+    "hasVisualizer": true
+  },
+  "f63f94dd-1953-4b98-b90d-6dfa8c6f74b7": {
+    "problemId": "f63f94dd-1953-4b98-b90d-6dfa8c6f74b7",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "two-pointers",
+    "chaicodePath": "/two-pointers/sort-colors",
+    "chaicodeUrl": "https://dsa.chaicode.com/two-pointers/sort-colors",
+    "hasVisualizer": true
+  },
+  "3ca527c5-da52-42cc-9826-a3d1ba064951": {
+    "problemId": "3ca527c5-da52-42cc-9826-a3d1ba064951",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "heap",
+    "chaicodePath": "/heap/task-scheduler",
+    "chaicodeUrl": "https://dsa.chaicode.com/heap/task-scheduler",
+    "hasVisualizer": true
+  },
+  "4b12915d-dece-435b-bf35-03d26802ae45": {
+    "problemId": "4b12915d-dece-435b-bf35-03d26802ae45",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/unique-paths",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/unique-paths",
+    "hasVisualizer": true
+  },
+  "48dfe287-0af2-4179-83c3-2393fd93d61b": {
+    "problemId": "48dfe287-0af2-4179-83c3-2393fd93d61b",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/reverse-linked-list",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/reverse-linked-list",
+    "hasVisualizer": true
+  },
+  "430b79e2-1228-4efe-a30e-a7b99e3e5881": {
+    "problemId": "430b79e2-1228-4efe-a30e-a7b99e3e5881",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "backtracking",
+    "chaicodePath": "/backtracking/permutations",
+    "chaicodeUrl": "https://dsa.chaicode.com/backtracking/permutations",
+    "hasVisualizer": true
+  },
+  "81c3fa18-f0a8-48b3-93d1-6883f6127e15": {
+    "problemId": "81c3fa18-f0a8-48b3-93d1-6883f6127e15",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "binary-search",
+    "chaicodePath": "/binary-search/binary-search",
+    "chaicodeUrl": "https://dsa.chaicode.com/binary-search/binary-search",
+    "hasVisualizer": true
+  },
+  "e491f32b-6baf-4ba0-8ea2-fe736d1bb252": {
+    "problemId": "e491f32b-6baf-4ba0-8ea2-fe736d1bb252",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/longest-increasing-subsequence",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/longest-increasing-subsequence",
+    "hasVisualizer": true
+  },
+  "b1de2055-72d7-4ac4-b11c-372b2095059a": {
+    "problemId": "b1de2055-72d7-4ac4-b11c-372b2095059a",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "stack",
+    "chaicodePath": "/stack/decode-string",
+    "chaicodeUrl": "https://dsa.chaicode.com/stack/decode-string",
+    "hasVisualizer": true
+  },
+  "655a0aad-0307-4445-9b69-1ec9f4ebd6fb": {
+    "problemId": "655a0aad-0307-4445-9b69-1ec9f4ebd6fb",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "linked-list",
+    "chaicodePath": "/linked-list/palindrome-linked-list",
+    "chaicodeUrl": "https://dsa.chaicode.com/linked-list/palindrome-linked-list",
+    "hasVisualizer": true
+  },
+  "dca33a7d-ede6-4819-921d-6a1aa8623aaf": {
+    "problemId": "dca33a7d-ede6-4819-921d-6a1aa8623aaf",
+    "title": "Chai Visual \u2014 Learn CS by watching it move",
+    "pattern": "dp",
+    "chaicodePath": "/dp/word-break",
+    "chaicodeUrl": "https://dsa.chaicode.com/dp/word-break",
+    "hasVisualizer": true
+  }
+}

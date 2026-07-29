@@ -19,6 +19,7 @@ import {
 import EditorWorkspace from '@/components/editor/EditorWorkspace';
 import ProgressiveHints from '@/components/ai/ProgressiveHints';
 import AIChatTutorDrawer from '@/components/ai/AIChatTutorDrawer';
+import { ProblemVisualizer } from '@/components/problems/ProblemVisualizer';
 import { Problem, Submission } from '@/lib/types';
 
 export default function ProblemDetailPage() {
@@ -29,7 +30,7 @@ export default function ProblemDetailPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeLeftTab, setActiveLeftTab] = useState<
-    'description' | 'hints' | 'submissions' | 'editorial'
+    'description' | 'hints' | 'submissions' | 'editorial' | 'visualizer'
   >('description');
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -230,6 +231,18 @@ export default function ProblemDetailPage() {
               <FileText className="w-3.5 h-3.5" />
               <span>Editorial</span>
             </button>
+
+            <button
+              onClick={() => setActiveLeftTab('visualizer')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition ${
+                activeLeftTab === 'visualizer'
+                  ? 'bg-purple-900/60 text-purple-300 border border-purple-700/60 shadow-lg shadow-purple-950/40'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <span>Visualizer</span>
+            </button>
           </div>
 
           {/* Left Panel Content */}
@@ -425,6 +438,17 @@ export default function ProblemDetailPage() {
                 <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl text-slate-200 text-sm leading-relaxed whitespace-pre-line font-sans">
                   {problem.editorial || 'No editorial available for this problem.'}
                 </div>
+              </div>
+            )}
+
+            {/* TAB 5: VISUALIZER */}
+            {activeLeftTab === 'visualizer' && (
+              <div className="space-y-4">
+                <ProblemVisualizer
+                  problemId={problem.id}
+                  problemTitle={problem.title}
+                  topicTags={problem.topicTags}
+                />
               </div>
             )}
           </div>
