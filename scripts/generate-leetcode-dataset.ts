@@ -146,7 +146,7 @@ async function main() {
   // Ensure problemPairs are sorted by frontend_question_id ascending
   problemPairs.sort((a, b) => a.stat.frontend_question_id - b.stat.frontend_question_id);
 
-  const targetCount = 420;
+  const targetCount = 620;
   const dataset: ProblemSeedData[] = [];
   const chunkSize = 40;
   let freePairIndex = 0;
@@ -234,7 +234,7 @@ async function main() {
     throw new Error(`INTEGRITY FAILURE: Dataset still contains ${fallbacks.length} synthetic placeholder problems!`);
   }
 
-  if (dataset.length < 400) {
+  if (dataset.length < 600) {
     throw new Error(`INTEGRITY FAILURE: Target dataset count not reached. Only ${dataset.length} problems collected.`);
   }
 

@@ -113,7 +113,7 @@ export async function loadProblems(): Promise<ProblemSeedItem[]> {
         const freePairs = data.stat_status_pairs
           .filter((p: any) => !p.paid_only && !p.stat.question__hide)
           .sort((a: any, b: any) => a.stat.frontend_question_id - b.stat.frontend_question_id)
-          .slice(0, 400);
+          .slice(0, 600);
 
         console.log(`✅ Fetched ${freePairs.length} free problem entries from LeetCode API.`);
 
@@ -165,9 +165,9 @@ export async function loadProblems(): Promise<ProblemSeedItem[]> {
     console.log(`ℹ️ LeetCode API notice: ${err.message}. Using offline dataset file.`);
   }
 
-  if (problems.length < 400) {
+  if (problems.length < 600) {
     const datasetItems = Array.from(offlineMap.values()).sort((a, b) => a.frontendId - b.frontendId);
-    problems = datasetItems.slice(0, 400);
+    problems = datasetItems.slice(0, 600);
     console.log(`📦 Loaded ${problems.length} genuine LeetCode problems from offline dataset.`);
   }
 
@@ -185,13 +185,13 @@ export async function loadProblems(): Promise<ProblemSeedItem[]> {
 }
 
 export async function seedRealProblems() {
-  console.log('🌱 Starting CodeForge AI Real Problems Seeder (400+ Problems)...');
+  console.log('🌱 Starting CodeForge AI Real Problems Seeder (600+ Problems)...');
   const startTime = Date.now();
 
   const problemsToSeed = await loadProblems();
 
-  if (problemsToSeed.length < 400) {
-    throw new Error(`Expected at least 400 problems, got ${problemsToSeed.length}`);
+  if (problemsToSeed.length < 600) {
+    throw new Error(`Expected at least 600 problems, got ${problemsToSeed.length}`);
   }
 
   // 1. Clean existing records in dependency order
