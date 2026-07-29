@@ -1,0 +1,456 @@
+{
+  "totalExtractedChaiCodePages": 830,
+  "matchedPlatformProblems": 75,
+  "matchedList": [
+    {
+      "problemId": "b5497263-c75f-4f98-ad95-e329a5006142",
+      "problemTitle": "Maximal Square",
+      "chaicodePath": "/dp/maximal-square",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "8016d0ce-2e17-4c8e-b89d-2ba0cd5b0e7a",
+      "problemTitle": "LRU Cache",
+      "chaicodePath": "/linked-list/lru-cache",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "f673a130-3b7f-4cee-87e3-f2351aa71f63",
+      "problemTitle": "Generate Parentheses",
+      "chaicodePath": "/backtracking/generate-parentheses",
+      "pattern": "backtracking"
+    },
+    {
+      "problemId": "4141b44b-163f-4565-8fa9-e995c2547c7f",
+      "problemTitle": "Flood Fill",
+      "chaicodePath": "/dfs/flood-fill",
+      "pattern": "dfs"
+    },
+    {
+      "problemId": "eda76485-cb81-499c-8206-f83a46bfc3f4",
+      "problemTitle": "Gas Station",
+      "chaicodePath": "/greedy/gas-station",
+      "pattern": "greedy"
+    },
+    {
+      "problemId": "b5dc5273-9b1f-4e42-9fa1-b79d1b565ea4",
+      "problemTitle": "Single Number",
+      "chaicodePath": "/bit-manipulation/single-number",
+      "pattern": "bit-manipulation"
+    },
+    {
+      "problemId": "eb0563e5-fdd3-4a65-9fbc-01d33a289eef",
+      "problemTitle": "Reverse Bits",
+      "chaicodePath": "/bit-manipulation/reverse-bits",
+      "pattern": "bit-manipulation"
+    },
+    {
+      "problemId": "c8102ed4-c27c-4fde-8e90-d7faf7dc1116",
+      "problemTitle": "Path Sum II",
+      "chaicodePath": "/dfs/path-sum-ii",
+      "pattern": "dfs"
+    },
+    {
+      "problemId": "2519fcd3-51bc-4ea9-9606-b5deb88d2123",
+      "problemTitle": "Move Zeroes",
+      "chaicodePath": "/two-pointers/move-zeroes",
+      "pattern": "two-pointers"
+    },
+    {
+      "problemId": "de826c73-440f-418f-ab1c-f480c018a2b5",
+      "problemTitle": "Missing Number",
+      "chaicodePath": "/bit-manipulation/missing-number",
+      "pattern": "bit-manipulation"
+    },
+    {
+      "problemId": "88bc46b2-346f-4245-9305-2bcf181c3d85",
+      "problemTitle": "Palindrome Partitioning",
+      "chaicodePath": "/backtracking/palindrome-partitioning",
+      "pattern": "backtracking"
+    },
+    {
+      "problemId": "6c58e4f0-40a9-4bc8-94b2-ba1d995464d5",
+      "problemTitle": "Sum of Two Integers",
+      "chaicodePath": "/bit-manipulation/sum-of-two-integers",
+      "pattern": "bit-manipulation"
+    },
+    {
+      "problemId": "87008f46-a737-4f32-aa5d-6a16fc2b24ee",
+      "problemTitle": "Same Tree",
+      "chaicodePath": "/dfs/same-tree",
+      "pattern": "dfs"
+    },
+    {
+      "problemId": "97c7c6c9-19af-46fe-8d60-c04a157ec1a9",
+      "problemTitle": "N-Queens",
+      "chaicodePath": "/backtracking/n-queens",
+      "pattern": "backtracking"
+    },
+    {
+      "problemId": "7b1d58bf-ca76-4380-a65e-f7e1a0747c9c",
+      "problemTitle": "Contains Duplicate",
+      "chaicodePath": "/arrays-hashing/contains-duplicate",
+      "pattern": "arrays-hashing"
+    },
+    {
+      "problemId": "578ec7fd-fb28-49a5-9869-3120435513ad",
+      "problemTitle": "Group Anagrams",
+      "chaicodePath": "/arrays-hashing/group-anagrams",
+      "pattern": "arrays-hashing"
+    },
+    {
+      "problemId": "ee40210c-e5df-406a-af66-5f778c08be7a",
+      "problemTitle": "Split Array Largest Sum",
+      "chaicodePath": "/binary-search/split-array-largest-sum",
+      "pattern": "binary-search"
+    },
+    {
+      "problemId": "5ad34441-369c-4265-a3a1-76609fe44d06",
+      "problemTitle": "Jump Game",
+      "chaicodePath": "/greedy/jump-game",
+      "pattern": "greedy"
+    },
+    {
+      "problemId": "46f13f73-c514-4f9a-93af-06e28344d06c",
+      "problemTitle": "Course Schedule",
+      "chaicodePath": "/graphs/course-schedule",
+      "pattern": "graphs"
+    },
+    {
+      "problemId": "dcea7443-7a6f-484e-883f-3ae2deb5d1bc",
+      "problemTitle": "Non-overlapping Intervals",
+      "chaicodePath": "/intervals/non-overlapping-intervals",
+      "pattern": "intervals"
+    },
+    {
+      "problemId": "f4c58958-66d5-4f39-b5b1-9e91871f0ec4",
+      "problemTitle": "Valid Anagram",
+      "chaicodePath": "/arrays-hashing/valid-anagram",
+      "pattern": "arrays-hashing"
+    },
+    {
+      "problemId": "c683726a-650f-4b23-b747-aba691363c5a",
+      "problemTitle": "Swap Nodes in Pairs",
+      "chaicodePath": "/linked-list/swap-nodes-in-pairs",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "12d42078-63d5-4b14-af96-9541ae7ac642",
+      "problemTitle": "Valid Palindrome",
+      "chaicodePath": "/two-pointers/valid-palindrome",
+      "pattern": "two-pointers"
+    },
+    {
+      "problemId": "775e6a22-7ad2-4cba-b323-4b27368d3d9b",
+      "problemTitle": "Climbing Stairs",
+      "chaicodePath": "/dp/climbing-stairs",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "147daf86-3d93-47c5-abcd-42ec1aa28ae9",
+      "problemTitle": "Edit Distance",
+      "chaicodePath": "/dp/edit-distance",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "bb9a2a94-d3db-434a-9405-98be554d93ef",
+      "problemTitle": "Course Schedule II",
+      "chaicodePath": "/graphs/course-schedule-ii",
+      "pattern": "graphs"
+    },
+    {
+      "problemId": "1ceafdb3-77c4-41cb-9f99-61aa67312d6f",
+      "problemTitle": "Word Ladder",
+      "chaicodePath": "/graphs/word-ladder",
+      "pattern": "graphs"
+    },
+    {
+      "problemId": "140b9e5e-dec4-4d83-91be-a958cf384989",
+      "problemTitle": "Number of Islands",
+      "chaicodePath": "/dfs/number-of-islands",
+      "pattern": "dfs"
+    },
+    {
+      "problemId": "41008d11-a1fb-42fb-89f9-97cb410ef210",
+      "problemTitle": "Coin Change",
+      "chaicodePath": "/dp/coin-change",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "1468dab4-9a55-488e-858d-02e8f8f5114f",
+      "problemTitle": "Longest Valid Parentheses",
+      "chaicodePath": "/stack/longest-valid-parentheses",
+      "pattern": "stack"
+    },
+    {
+      "problemId": "0948302d-4cb4-455f-bed6-a684c2845a29",
+      "problemTitle": "Decode Ways",
+      "chaicodePath": "/dp/decode-ways",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "a2095829-b045-461b-97c9-b534963a003f",
+      "problemTitle": "Reorder List",
+      "chaicodePath": "/linked-list/reorder-list",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "1d3d9fc9-0a9a-4fa7-b9d5-b908017b54f0",
+      "problemTitle": "Find K Closest Elements",
+      "chaicodePath": "/heap/find-k-closest-elements",
+      "pattern": "heap"
+    },
+    {
+      "problemId": "18c4c12c-39b0-4079-afb1-8148da146592",
+      "problemTitle": "Merge k Sorted Lists",
+      "chaicodePath": "/heap/merge-k-sorted-lists",
+      "pattern": "heap"
+    },
+    {
+      "problemId": "9ef02807-53e2-4c33-9fe2-38a003c54414",
+      "problemTitle": "Daily Temperatures",
+      "chaicodePath": "/stack/daily-temperatures",
+      "pattern": "stack"
+    },
+    {
+      "problemId": "b6c1058d-a92a-4a15-9112-800059a73486",
+      "problemTitle": "Valid Triangle Number",
+      "chaicodePath": "/two-pointers/valid-triangle-number",
+      "pattern": "two-pointers"
+    },
+    {
+      "problemId": "2ff56c2f-e70e-45f7-b415-43259e222a82",
+      "problemTitle": "Subarray Sum Equals K",
+      "chaicodePath": "/prefix-sum/subarray-sum-equals-k",
+      "pattern": "prefix-sum"
+    },
+    {
+      "problemId": "11a0ee81-b20f-4bc7-819f-446183177ecc",
+      "problemTitle": "Surrounded Regions",
+      "chaicodePath": "/dfs/surrounded-regions",
+      "pattern": "dfs"
+    },
+    {
+      "problemId": "3494b4ae-cc64-42c0-93e5-5d357818dde9",
+      "problemTitle": "Combination Sum",
+      "chaicodePath": "/backtracking/combination-sum",
+      "pattern": "backtracking"
+    },
+    {
+      "problemId": "5e6b3132-fd96-4cd4-b98b-9ec5e5518950",
+      "problemTitle": "Jump Game II",
+      "chaicodePath": "/greedy/jump-game-ii",
+      "pattern": "greedy"
+    },
+    {
+      "problemId": "c5e8bb5e-bdcf-491e-befe-45a92e94e1ec",
+      "problemTitle": "Min Stack",
+      "chaicodePath": "/stack/min-stack",
+      "pattern": "stack"
+    },
+    {
+      "problemId": "52ab9cae-7508-4b3f-bcdd-f90e7aa1d8bb",
+      "problemTitle": "Subsets",
+      "chaicodePath": "/backtracking/subsets",
+      "pattern": "backtracking"
+    },
+    {
+      "problemId": "8b93b3cd-8185-4e98-b56c-401e3700f393",
+      "problemTitle": "Container With Most Water",
+      "chaicodePath": "/two-pointers/container-with-most-water",
+      "pattern": "two-pointers"
+    },
+    {
+      "problemId": "6fd5ede6-1744-4796-bfff-418d13fdd6a7",
+      "problemTitle": "Number of 1 Bits",
+      "chaicodePath": "/bit-manipulation/number-of-1-bits",
+      "pattern": "bit-manipulation"
+    },
+    {
+      "problemId": "da8774d8-dc67-486d-86bd-242ddfb53db5",
+      "problemTitle": "Rotate Image",
+      "chaicodePath": "/matrices/rotate-image",
+      "pattern": "matrices"
+    },
+    {
+      "problemId": "c54f6061-350d-49fd-bd00-44127e85f2f3",
+      "problemTitle": "Add Two Numbers",
+      "chaicodePath": "/linked-list/add-two-numbers",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "2e1b410c-440c-4bd2-ae81-7c57f315801c",
+      "problemTitle": "Merge Intervals",
+      "chaicodePath": "/intervals/merge-intervals",
+      "pattern": "intervals"
+    },
+    {
+      "problemId": "942a1ea7-d293-4f78-9369-fa0f77ce1adc",
+      "problemTitle": "Merge Two Sorted Lists",
+      "chaicodePath": "/linked-list/merge-two-sorted-lists",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "527a9046-14a8-4e28-a5c6-e1d949887007",
+      "problemTitle": "Trapping Rain Water",
+      "chaicodePath": "/two-pointers/trapping-rain-water",
+      "pattern": "two-pointers"
+    },
+    {
+      "problemId": "69a33131-fce1-4731-a2ee-98a64f7d9197",
+      "problemTitle": "Linked List Cycle",
+      "chaicodePath": "/linked-list/linked-list-cycle",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "bc56aa22-ddda-4f66-a7eb-db20ad08b532",
+      "problemTitle": "Redundant Connection",
+      "chaicodePath": "/graphs/redundant-connection",
+      "pattern": "graphs"
+    },
+    {
+      "problemId": "1007d8e7-86e3-41ad-b116-c7e27e4f1e23",
+      "problemTitle": "Two Sum",
+      "chaicodePath": "/arrays-hashing/two-sum",
+      "pattern": "arrays-hashing"
+    },
+    {
+      "problemId": "0073d3c3-2f7c-4267-a55a-66e1c10d6edc",
+      "problemTitle": "Permutation in String",
+      "chaicodePath": "/sliding-window/permutation-in-string",
+      "pattern": "sliding-window"
+    },
+    {
+      "problemId": "f3967a53-4440-4ccb-a4ca-b69c0084726d",
+      "problemTitle": "Word Search",
+      "chaicodePath": "/backtracking/word-search",
+      "pattern": "backtracking"
+    },
+    {
+      "problemId": "6498e979-dcca-46d6-98f3-056be065ace0",
+      "problemTitle": "Set Matrix Zeroes",
+      "chaicodePath": "/matrices/set-matrix-zeroes",
+      "pattern": "matrices"
+    },
+    {
+      "problemId": "49c4a1ad-3651-4422-8263-94c6565639a9",
+      "problemTitle": "Valid Parentheses",
+      "chaicodePath": "/stack/valid-parentheses",
+      "pattern": "stack"
+    },
+    {
+      "problemId": "307bf627-3fc0-4d5c-9dc1-2f1792373756",
+      "problemTitle": "Sliding Window Maximum",
+      "chaicodePath": "/sliding-window/sliding-window-maximum",
+      "pattern": "sliding-window"
+    },
+    {
+      "problemId": "6763ab47-9dda-420b-afac-24fac2ca48cb",
+      "problemTitle": "Longest Univalue Path",
+      "chaicodePath": "/dfs/longest-univalue-path",
+      "pattern": "dfs"
+    },
+    {
+      "problemId": "ca2e5134-ffef-4709-b1a5-75138e7c76e1",
+      "problemTitle": "Counting Bits",
+      "chaicodePath": "/dp/counting-bits",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "660a51d3-b511-47c4-8154-c0c3d547b381",
+      "problemTitle": "Spiral Matrix",
+      "chaicodePath": "/matrices/spiral-matrix",
+      "pattern": "matrices"
+    },
+    {
+      "problemId": "2d202996-6653-4036-bee3-c948efbd3082",
+      "problemTitle": "Path Sum",
+      "chaicodePath": "/dfs/path-sum",
+      "pattern": "dfs"
+    },
+    {
+      "problemId": "09e32ee1-0e4f-4284-a5d5-9e7a700ded93",
+      "problemTitle": "01 Matrix",
+      "chaicodePath": "/bfs/01-matrix",
+      "pattern": "bfs"
+    },
+    {
+      "problemId": "ff3cbb66-224c-4e84-b4e4-7996778ea070",
+      "problemTitle": "House Robber",
+      "chaicodePath": "/dp/house-robber",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "7ac1cea0-efcf-415f-99c2-5e651ae0d550",
+      "problemTitle": "Insert Interval",
+      "chaicodePath": "/intervals/insert-interval",
+      "pattern": "intervals"
+    },
+    {
+      "problemId": "9a9afec8-6b38-4ba2-9bc8-c9eab5d44cbf",
+      "problemTitle": "Network Delay Time",
+      "chaicodePath": "/graphs/network-delay-time",
+      "pattern": "graphs"
+    },
+    {
+      "problemId": "f63f94dd-1953-4b98-b90d-6dfa8c6f74b7",
+      "problemTitle": "Sort Colors",
+      "chaicodePath": "/two-pointers/sort-colors",
+      "pattern": "two-pointers"
+    },
+    {
+      "problemId": "3ca527c5-da52-42cc-9826-a3d1ba064951",
+      "problemTitle": "Task Scheduler",
+      "chaicodePath": "/heap/task-scheduler",
+      "pattern": "heap"
+    },
+    {
+      "problemId": "4b12915d-dece-435b-bf35-03d26802ae45",
+      "problemTitle": "Unique Paths",
+      "chaicodePath": "/dp/unique-paths",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "48dfe287-0af2-4179-83c3-2393fd93d61b",
+      "problemTitle": "Reverse Linked List",
+      "chaicodePath": "/linked-list/reverse-linked-list",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "430b79e2-1228-4efe-a30e-a7b99e3e5881",
+      "problemTitle": "Permutations",
+      "chaicodePath": "/backtracking/permutations",
+      "pattern": "backtracking"
+    },
+    {
+      "problemId": "81c3fa18-f0a8-48b3-93d1-6883f6127e15",
+      "problemTitle": "Binary Search",
+      "chaicodePath": "/binary-search/binary-search",
+      "pattern": "binary-search"
+    },
+    {
+      "problemId": "e491f32b-6baf-4ba0-8ea2-fe736d1bb252",
+      "problemTitle": "Longest Increasing Subsequence",
+      "chaicodePath": "/dp/longest-increasing-subsequence",
+      "pattern": "dp"
+    },
+    {
+      "problemId": "b1de2055-72d7-4ac4-b11c-372b2095059a",
+      "problemTitle": "Decode String",
+      "chaicodePath": "/stack/decode-string",
+      "pattern": "stack"
+    },
+    {
+      "problemId": "655a0aad-0307-4445-9b69-1ec9f4ebd6fb",
+      "problemTitle": "Palindrome Linked List",
+      "chaicodePath": "/linked-list/palindrome-linked-list",
+      "pattern": "linked-list"
+    },
+    {
+      "problemId": "dca33a7d-ede6-4819-921d-6a1aa8623aaf",
+      "problemTitle": "Word Break",
+      "chaicodePath": "/dp/word-break",
+      "pattern": "dp"
+    }
+  ]
+}
