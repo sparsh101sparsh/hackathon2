@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 import {
   Code2,
   LayoutDashboard,
@@ -15,10 +16,15 @@ import {
   X,
   Code,
   Github,
+  LogIn,
+  UserPlus,
+  LogOut,
+  User,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Hide main navbar inside problem detail view if it uses full screen workspace layout
@@ -71,17 +77,55 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Controls: GitHub Repo Link */}
+      {/* Right Controls: Auth Buttons / User Profile */}
       <div className="hidden md:flex items-center gap-3">
         <a
           href="https://github.com/sparsh101sparsh/hackathon2"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-200 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition flex items-center gap-2 shadow-sm"
+          className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm mr-2"
         >
           <Github className="w-4 h-4 text-cyan-400" />
-          <span>GitHub Repo</span>
+          <span>GitHub</span>
         </a>
+
+        {user ? (
+          <div className="flex items-center gap-3 bg-slate-900/90 border border-slate-800 rounded-xl p-1 pr-3 shadow-inner">
+            <img
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+              alt={user.name}
+              className="w-7 h-7 rounded-lg border border-slate-700 bg-slate-950 shrink-0"
+            />
+            <div className="text-left leading-none">
+              <div className="text-xs font-bold text-slate-100">{user.name}</div>
+              <div className="text-[10px] text-slate-400">{user.email}</div>
+            </div>
+            <button
+              onClick={() => logout()}
+              title="Sign Out"
+              className="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-200 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm"
+            >
+              <LogIn className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Sign In</span>
+            </Link>
+            <Link
+              href="/register"
+              className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 shadow-md shadow-cyan-950/30 transition flex items-center gap-1.5"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-slate-950" />
+              <span>Sign Up</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Mobile Drawer Hamburger Button */}
@@ -124,7 +168,51 @@ export const Navbar: React.FC = () => {
               })}
             </div>
 
-            <div className="pt-4 border-t border-slate-800">
+            <div className="pt-4 border-t border-slate-800 space-y-3">
+              {user ? (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950"
+                    />
+                    <div>
+                      <div className="text-xs font-bold text-white">{user.name}</div>
+                      <div className="text-[11px] text-slate-400">{user.email}</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="p-2 rounded-lg text-rose-400 hover:bg-slate-800 transition"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-2.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
+                  >
+                    <LogIn className="w-4 h-4 text-cyan-400" />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center gap-2 transition font-bold"
+                  >
+                    <UserPlus className="w-4 h-4 text-slate-950" />
+                    <span>Sign Up</span>
+                  </Link>
+                </div>
+              )}
+
               <a
                 href="https://github.com/sparsh101sparsh/hackathon2"
                 target="_blank"

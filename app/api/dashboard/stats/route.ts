@@ -57,20 +57,33 @@ export interface DashboardStatsResponse {
   }>;
 }
 
+import { verifyToken } from '@/lib/auth';
+
 export async function GET(req: NextRequest) {
   try {
+    const cookieToken = req.cookies.get('codeforge_session')?.value;
+    const authHeader = req.headers.get('Authorization');
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const payload = verifyToken(cookieToken || headerToken || '');
+
+    const targetUserId = payload?.userId || 'guest';
+    const dbUser = payload?.userId ? await prisma.user.findUnique({ where: { id: payload.userId } }) : null;
+
+    const userName = dbUser?.name || 'Guest Coder';
+    const userEmail = dbUser?.email || 'guest@codeforge.ai';
+
     const userProgress = await prisma.userProgress.findUnique({
-      where: { userId: 'guest' },
+      where: { userId: targetUserId },
     });
 
     const userRatings = await prisma.userRating.findMany({
-      where: { userId: 'guest' },
+      where: { userId: targetUserId },
       include: { contest: true },
       orderBy: { timestamp: 'asc' },
     });
 
     const submissions = await prisma.submission.findMany({
-      where: { userId: 'guest' },
+      where: { userId: targetUserId },
       include: { problem: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -245,9 +258,9 @@ export async function GET(req: NextRequest) {
 
     const responseData: DashboardStatsResponse = {
       user: {
-        name: 'Guest Coder',
-        email: 'guest@codeforge.ai',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest',
+        name: userName,
+        email: userEmail,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`,
         rating: currentRating,
         ratingTier: getRatingTier(currentRating),
         streak,

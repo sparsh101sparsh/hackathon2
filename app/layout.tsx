@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
+import { AuthProvider } from '@/context/AuthContext';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
 
@@ -42,13 +43,15 @@ export default function RootLayout({
         className="bg-[#020817] text-slate-100 min-h-screen antialiased flex flex-col"
         style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}
       >
-        <ToastProvider>
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );
