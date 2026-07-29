@@ -7,7 +7,7 @@ CodeForge AI is a production-ready, AI-powered competitive coding and DSA practi
 - **Framework**: Next.js 14+ (App Router) + TypeScript + Tailwind CSS
 - **Database & ORM**: SQLite (via Prisma ORM) for development/build compatibility, PostgreSQL compatible schema
 - **Code Execution**: Piston API (https://emkc.org/api/v2/piston/execute)
-- **AI Engine**: FreeModel API (OpenAI compatible, base URL: `https://api.freemodel.dev/v1`, Key: `fe_oa_dc17ddf6369f2dfdf01271ff59ac9a67ed9f9be511b7580a`)
+- **AI Engine**: FreeModel API (OpenAI compatible, base URL: `https://api.freemodel.dev/v1`, Key: `fe_oa_058124071b87b1a4c0677776c264ed56b0463b70257c750f`)
   - Fast ops (hints, quick tutor chat): `gpt-5.4-mini`
   - Complex ops (code review, mock interview eval, system design eval): `gpt-5.6-sol`
 - **Auth**: Custom JWT / NextAuth with Email & Password (Guest, Registered User, Admin roles)
@@ -78,5 +78,5 @@ CodeForge AI is a production-ready, AI-powered competitive coding and DSA practi
 
 ### FreeModel AI API Integration
 - Base URL: `https://api.freemodel.dev/v1`
-- Authorization Header: `Bearer fe_oa_dc17ddf6369f2dfdf01271ff59ac9a67ed9f9be511b7580a`
+- Authorization Header: `Bearer fe_oa_058124071b87b1a4c0677776c264ed56b0463b70257c750f`
 - Models: `gpt-5.4-mini` (fast/hints/chat), `gpt-5.6-sol` (complex reviews/mock interviews/system design eval).

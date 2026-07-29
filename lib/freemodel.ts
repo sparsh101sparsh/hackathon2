@@ -1,6 +1,6 @@
 export const FREEMODEL_BASE_URL = 'https://api.freemodel.dev/v1';
 export const FREEMODEL_API_KEY =
-  process.env.FREEMODEL_API_KEY || 'fe_oa_dc17ddf6369f2dfdf01271ff59ac9a67ed9f9be511b7580a';
+  process.env.FREEMODEL_API_KEY || 'fe_oa_058124071b87b1a4c0677776c264ed56b0463b70257c750f';
 
 export const MODELS = {
   FAST: 'gpt-5.4-mini',
