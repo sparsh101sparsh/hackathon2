@@ -144,3 +144,30 @@ model CompanyProblem {
   problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
   frequency Int      @default(1)
 }
+
+model CustomRoom {
+  id           String            @id @default(uuid())
+  code         String            @unique
+  name         String
+  hostName     String
+  maxPlayers   Int               @default(10)
+  difficulty   String            @default("MIXED") // EASY, MEDIUM, HARD, MIXED
+  problemCount Int               @default(3)
+  status       String            @default("WAITING") // WAITING, IN_PROGRESS, FINISHED
+  problemIds   String            // JSON string array of problem IDs
+  createdAt    DateTime          @default(now())
+  participants RoomParticipant[]
+}
+
+model RoomParticipant {
+  id        String     @id @default(uuid())
+  roomId    String
+  room      CustomRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId    String
+  userName  String
+  score     Int        @default(0)
+  solved    Int        @default(0)
+  joinedAt  DateTime   @default(now())
+
+  @@unique([roomId, userId])
+}
