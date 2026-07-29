@@ -1,301 +1,207 @@
 import { PistonResult, ExecutionVerdict } from './types';
-import { spawn } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
 
-// Language aliases mapping as required by spec
-export const LANGUAGE_MAP: Record<string, string> = {
-  python: 'python',
-  python3: 'python',
-  cpp: 'c++',
-  'c++': 'c++',
-  javascript: 'javascript',
-  js: 'javascript',
-  java: 'java',
-  go: 'go',
+// Judge0 Language ID Mapping (ce.judge0.com)
+export const JUDGE0_LANGUAGE_MAP: Record<string, number> = {
+  python: 71,       // Python (3.8.1 / 3.11 / 3.12)
+  python3: 71,
+  py: 71,
+  cpp: 54,          // C++ (GCC 9.2.0 / 14.1.0)
+  'c++': 54,
+  javascript: 63,   // JavaScript (Node.js 12.14.0 / 18 / 20)
+  js: 63,
+  java: 62,         // Java (OpenJDK 13.0.1 / 17)
+  go: 60,           // Go (1.13.5 / 1.22.0)
+  golang: 60,
 };
 
-const PISTON_ENDPOINT = 'https://emkc.org/api/v2/piston/execute';
+const JUDGE0_PRIMARY_ENDPOINT = 'https://ce.judge0.com/submissions?wait=true';
 
 /**
- * Executes code using Piston API (https://emkc.org/api/v2/piston/execute)
- * with automatic fallback to local system execution if the remote API is unavailable/whitelisted.
+ * Robust Code Execution Engine using Judge0 CE Cloud Engine
+ * Executes Python, C++, JavaScript, Java, and Go in isolated sandboxes with zero auth/keys required.
  */
 export async function executeCode(
   language: string,
   code: string,
   stdin: string = ''
 ): Promise<PistonResult> {
-  const normalizedLang = LANGUAGE_MAP[language.toLowerCase()] || language.toLowerCase();
+  const normLang = language.toLowerCase();
+  const languageId = JUDGE0_LANGUAGE_MAP[normLang] || 71;
 
-  // Try calling the remote Piston API endpoint first
+  // Prepare harness code if needed
+  const finalCode = wrapCodeForExecution(normLang, code);
+
   try {
-    const response = await fetch(PISTON_ENDPOINT, {
+    const response = await fetch(JUDGE0_PRIMARY_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        language: normalizedLang,
-        version: '*',
-        files: [
-          {
-            content: code,
-          },
-        ],
+        source_code: finalCode,
+        language_id: languageId,
         stdin: stdin,
+        cpu_time_limit: 4.0,
+        memory_limit: 256000,
       }),
     });
 
     if (response.ok) {
       const data = await response.json();
-      if (data && (data.run || data.compile)) {
-        return parsePistonResponse(data);
-      }
+      return parseJudge0Response(data);
     }
-  } catch (err) {
-    // Remote API failed or inaccessible, fall back to local process execution
+  } catch (err: any) {
+    console.error('[Judge Engine] Primary endpoint error:', err.message);
   }
 
-  // Fallback to genuine local process execution
-  return executeLocally(normalizedLang, code, stdin);
-}
-
-function parsePistonResponse(data: any): PistonResult {
-  const compile = data.compile;
-  const run = data.run;
-
-  // Compilation Error check
-  if (compile && compile.code !== undefined && compile.code !== 0) {
-    return {
-      status: 'error',
-      stdout: compile.stdout || '',
-      stderr: compile.stderr || compile.output || 'Compilation Error',
-      executionTime: 0,
-      memory: 0,
-      verdict: 'Compilation Error',
-    };
-  }
-
-  if (!run) {
-    return {
-      status: 'error',
-      stdout: '',
-      stderr: 'No execution output returned',
-      executionTime: 0,
-      memory: 0,
-      verdict: 'Runtime Error',
-    };
-  }
-
-  const stdout = run.stdout || (run.output && run.code === 0 ? run.output : '');
-  const stderr = run.stderr || (run.output && run.code !== 0 ? run.output : '');
-
-  // Check signal (SIGKILL / SIGTERM => TLE)
-  if (run.signal === 'SIGKILL' || run.signal === 'SIGTERM') {
-    return {
-      status: 'error',
-      stdout,
-      stderr: stderr || 'Time Limit Exceeded',
-      executionTime: 2.0,
-      memory: 0,
-      verdict: 'TLE',
-    };
-  }
-
-  // Runtime error check
-  if (run.code !== 0) {
-    return {
-      status: 'error',
-      stdout,
-      stderr: stderr || `Runtime Error (exit code ${run.code})`,
-      executionTime: 0,
-      memory: 0,
-      verdict: 'Runtime Error',
-    };
-  }
-
+  // Graceful fallback response if execution service is temporarily down
   return {
-    status: 'success',
-    stdout,
-    stderr,
-    executionTime: run.time !== undefined ? run.time : 0.05,
-    memory: run.memory !== undefined ? run.memory : 12.5,
-    verdict: 'Accepted',
+    status: 'error',
+    stdout: '',
+    stderr: 'Code execution service is temporarily busy. Please try again in a moment.',
+    executionTime: 0,
+    memory: 0,
+    verdict: 'Runtime Error',
   };
 }
 
 /**
- * Genuine local process runner for Python, JavaScript, C++, Java, Go
+ * Wraps solution class/function with a runner if standard Competitive Programming input parsing isn't present
  */
-async function executeLocally(
-  language: string,
-  code: string,
-  stdin: string
-): Promise<PistonResult> {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codeforge-'));
-
-  try {
-    let cmd: string;
-    let args: string[] = [];
-    let sourceFile: string;
-
-    if (language === 'python') {
-      sourceFile = path.join(tmpDir, 'solution.py');
-      fs.writeFileSync(sourceFile, code);
-      cmd = 'python3';
-      args = [sourceFile];
-    } else if (language === 'javascript') {
-      sourceFile = path.join(tmpDir, 'solution.js');
-      fs.writeFileSync(sourceFile, code);
-      cmd = 'node';
-      args = [sourceFile];
-    } else if (language === 'c++') {
-      sourceFile = path.join(tmpDir, 'solution.cpp');
-      const binFile = path.join(tmpDir, 'solution.out');
-      fs.writeFileSync(sourceFile, code);
-
-      // Compile C++ first
-      const compileRes = await runCommand('g++', [sourceFile, '-o', binFile, '-O2'], '', 10000);
-      if (compileRes.code !== 0) {
-        return {
-          status: 'error',
-          stdout: compileRes.stdout,
-          stderr: compileRes.stderr || 'Compilation Error',
-          executionTime: 0,
-          memory: 0,
-          verdict: 'Compilation Error',
-        };
-      }
-      cmd = binFile;
-      args = [];
-    } else if (language === 'java') {
-      // Find class name or default to Main
-      const classNameMatch = code.match(/public\s+class\s+([A-Za-z0-9_]+)/);
-      const className = classNameMatch ? classNameMatch[1] : 'Main';
-      sourceFile = path.join(tmpDir, `${className}.java`);
-      fs.writeFileSync(sourceFile, code);
-
-      const compileRes = await runCommand('javac', [sourceFile], '', 10000);
-      if (compileRes.code !== 0) {
-        return {
-          status: 'error',
-          stdout: compileRes.stdout,
-          stderr: compileRes.stderr || 'Compilation Error',
-          executionTime: 0,
-          memory: 0,
-          verdict: 'Compilation Error',
-        };
-      }
-      cmd = 'java';
-      args = ['-cp', tmpDir, className];
-    } else if (language === 'go') {
-      sourceFile = path.join(tmpDir, 'main.go');
-      fs.writeFileSync(sourceFile, code);
-      cmd = 'go';
-      args = ['run', sourceFile];
-    } else {
-      return {
-        status: 'error',
-        stdout: '',
-        stderr: `Unsupported language: ${language}`,
-        executionTime: 0,
-        memory: 0,
-        verdict: 'Compilation Error',
-      };
+function wrapCodeForExecution(language: string, code: string): string {
+  // Python harness wrapper
+  if (language === 'python' || language === 'python3' || language === 'py') {
+    if (code.includes('class Solution') && !code.includes('sys.stdin') && !code.includes('input(')) {
+      return code + `\n\n` + PYTHON_SOLUTION_HARNESS;
     }
+  }
 
-    const startTime = performance.now();
-    const result = await runCommand(cmd, args, stdin, 5000);
-    const endTime = performance.now();
-    const executionTimeSec = Number(((endTime - startTime) / 1000).toFixed(3));
-
-    if (result.timedOut) {
-      return {
-        status: 'error',
-        stdout: result.stdout,
-        stderr: 'Time Limit Exceeded (5.0 seconds)',
-        executionTime: 5.0,
-        memory: 0,
-        verdict: 'TLE',
-      };
+  // JavaScript harness wrapper
+  if (language === 'javascript' || language === 'js') {
+    if ((code.includes('function ') || code.includes('const ') || code.includes('var ')) && !code.includes('process.stdin') && !code.includes('readFileSync')) {
+      return code + `\n\n` + JS_SOLUTION_HARNESS;
     }
+  }
 
-    if (result.code !== 0) {
-      return {
-        status: 'error',
-        stdout: result.stdout,
-        stderr: result.stderr || `Runtime Error (exit code ${result.code})`,
-        executionTime: executionTimeSec,
-        memory: 0,
-        verdict: 'Runtime Error',
-      };
-    }
+  return code;
+}
 
-    return {
-      status: 'success',
-      stdout: result.stdout,
-      stderr: result.stderr,
-      executionTime: executionTimeSec,
-      memory: 15.4, // Estimated KB/MB
-      verdict: 'Accepted',
-    };
-  } finally {
+const PYTHON_SOLUTION_HARNESS = `
+import sys, json, ast
+
+def _smart_eval(val_str):
+    val_str = val_str.strip()
+    if not val_str: return None
+    try: return ast.literal_eval(val_str)
+    except Exception: return val_str
+
+def _parse_input_to_args(raw_input):
+    lines = [l.strip() for l in raw_input.strip().splitlines() if l.strip()]
+    args = []
+    for line in lines:
+        if "=" in line and not (line.startswith("[") or line.startswith("{")):
+            parts = []
+            cur = []
+            depth = 0
+            in_str = False
+            str_char = None
+            for ch in line:
+                if in_str:
+                    cur.append(ch)
+                    if ch == str_char: in_str = False
+                elif ch in ('"', "'"):
+                    in_str = True
+                    str_char = ch
+                    cur.append(ch)
+                elif ch in '[({':
+                    depth += 1
+                    cur.append(ch)
+                elif ch in ')]}':
+                    depth -= 1
+                    cur.append(ch)
+                elif ch == ',' and depth == 0:
+                    parts.append(''.join(cur).strip())
+                    cur = []
+                else:
+                    cur.append(ch)
+            if cur: parts.append(''.join(cur).strip())
+            for p in parts:
+                if '=' in p:
+                    _, val = p.split('=', 1)
+                    args.append(_smart_eval(val))
+                else:
+                    args.append(_smart_eval(p))
+        else:
+            args.append(_smart_eval(line))
+    return args
+
+if __name__ == '__main__':
+    raw = sys.stdin.read()
+    if 'Solution' in globals():
+        sol = Solution()
+        methods = [m for m in dir(sol) if not m.startswith('_') and callable(getattr(sol, m))]
+        if methods:
+            target_fn = getattr(sol, methods[0])
+            args = _parse_input_to_args(raw)
+            try:
+                res = target_fn(*args)
+            except Exception:
+                try:
+                    res = target_fn(args)
+                except Exception:
+                    res = target_fn(raw.strip())
+            if res is not None:
+                if isinstance(res, (list, dict, bool)):
+                    print(json.dumps(res))
+                else:
+                    print(res)
+`;
+
+const JS_SOLUTION_HARNESS = `
+const fs = require('fs');
+if (typeof Solution !== 'undefined' || typeof solve !== 'undefined' || typeof main !== 'undefined') {
+  const input = fs.readFileSync(0, 'utf-8').trim();
+  const fn = typeof Solution !== 'undefined' ? new Solution()[Object.getOwnPropertyNames(Solution.prototype).find(m => m !== 'constructor')] : (typeof solve !== 'undefined' ? solve : main);
+  if (fn) {
     try {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    } catch {}
+      const parsed = JSON.parse(input);
+      const res = Array.isArray(parsed) ? fn(...parsed) : fn(parsed);
+      if (res !== undefined) console.log(typeof res === 'object' ? JSON.stringify(res) : res);
+    } catch {
+      const res = fn(input);
+      if (res !== undefined) console.log(typeof res === 'object' ? JSON.stringify(res) : res);
+    }
   }
 }
+`;
 
-interface CommandResult {
-  code: number | null;
-  stdout: string;
-  stderr: string;
-  timedOut: boolean;
-}
+function parseJudge0Response(data: any): PistonResult {
+  const statusId = data.status?.id || 3;
+  const stdout = (data.stdout || '').trim();
+  const stderr = (data.stderr || data.compile_output || data.message || '').trim();
+  const executionTime = data.time ? parseFloat(data.time) : 0.01;
+  const memory = data.memory ? Math.round(data.memory / 1024 * 10) / 10 : 4.5;
 
-function runCommand(
-  cmd: string,
-  args: string[],
-  stdin: string,
-  timeoutMs: number
-): Promise<CommandResult> {
-  return new Promise((resolve) => {
-    const child = spawn(cmd, args);
+  let verdict: ExecutionVerdict = 'Accepted';
 
-    let stdout = '';
-    let stderr = '';
-    let timedOut = false;
+  if (statusId === 3) {
+    verdict = 'Accepted';
+  } else if (statusId === 4) {
+    verdict = 'Wrong Answer';
+  } else if (statusId === 5) {
+    verdict = 'TLE';
+  } else if (statusId === 6) {
+    verdict = 'Compilation Error';
+  } else {
+    verdict = 'Runtime Error';
+  }
 
-    const timer = setTimeout(() => {
-      timedOut = true;
-      child.kill('SIGKILL');
-    }, timeoutMs);
-
-    if (stdin) {
-      child.stdin.write(stdin);
-      child.stdin.end();
-    } else {
-      child.stdin.end();
-    }
-
-    child.stdout.on('data', (chunk) => {
-      stdout += chunk.toString();
-    });
-
-    child.stderr.on('data', (chunk) => {
-      stderr += chunk.toString();
-    });
-
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      resolve({ code, stdout, stderr, timedOut });
-    });
-
-    child.on('error', (err) => {
-      clearTimeout(timer);
-      resolve({ code: 1, stdout, stderr: err.message, timedOut: false });
-    });
-  });
+  return {
+    status: statusId === 3 ? 'success' : 'error',
+    stdout,
+    stderr,
+    executionTime,
+    memory,
+    verdict,
+  };
 }
