@@ -20,7 +20,7 @@ import {
 interface ProblemVisualizerProps {
   problemId: string;
   problemTitle: string;
-  topicTags?: string;
+  topicTags?: string | string[];
 }
 
 interface FrameStep {
@@ -49,10 +49,16 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({
 
   // Generate Sample Dynamic Frames based on algorithm pattern
   const generateFrames = (): FrameStep[] => {
-    let parsedTopics = [];
-    try {
-      parsedTopics = JSON.parse(topicTags);
-    } catch {}
+    let parsedTopics: string[] = [];
+    if (Array.isArray(topicTags)) {
+      parsedTopics = topicTags;
+    } else if (typeof topicTags === 'string') {
+      try {
+        parsedTopics = JSON.parse(topicTags);
+      } catch {
+        parsedTopics = [topicTags];
+      }
+    }
 
     const pattern = parsedTopics[0] || 'General DSA';
 
