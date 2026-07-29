@@ -20,6 +20,7 @@ import {
   UserPlus,
   LogOut,
   User,
+  Brain,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -35,6 +36,7 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { label: 'Problems', href: '/problems', icon: <Code className="w-4 h-4" /> },
     { label: 'Contests', href: '/contests', icon: <Trophy className="w-4 h-4" /> },
+    { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-purple-400" /> },
     { label: 'Company Prep', href: '/company', icon: <Building2 className="w-4 h-4" /> },
     { label: 'AI Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-cyan-400" /> },
     { label: 'Leaderboard', href: '/leaderboard', icon: <BarChart2 className="w-4 h-4" /> },

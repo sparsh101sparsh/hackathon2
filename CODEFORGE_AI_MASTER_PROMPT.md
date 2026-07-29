@@ -72,6 +72,14 @@ Build **CodeForge AI** — a high-performance, visually stunning platform that h
 - `/dashboard`: Personal stats overview showing Easy/Medium/Hard solved breakdown, topic mastery radar chart, submission heat matrix, streak calendar, and unlocked achievement badges.
 - `/leaderboard`: Global rankings computed dynamically from user submissions.
 
+### R7. Spaced Repetition DSA Revision Flashcard System (Key LeetCode Differentiator)
+- **Automatic Card Creation**: Submitting an `Accepted` solution automatically creates or updates a `RevisionCard` for that problem.
+- **SM-2 Spaced Repetition Intervals**: Schedules review dates based on memory retention (1 day → 3 days → 7 days → 14 days).
+- **Interactive Revision Deck (`/revision`)**:
+  - Flip-card UI (Front: Problem title, pattern pill, difficulty; Back: Socratic key logic, O(N) Time/Space complexity, optimal approach).
+  - Self-rating recall buttons: 🔴 Hard (1 day), 🔵 Good (3 days), 🟢 Easy (7 days).
+  - Tracks "Due Today" cards count, mastered cards (3+ reviews), and total revision deck.
+
 ---
 
 ## 🗄️ DATABASE SCHEMA (`prisma/schema.prisma`)

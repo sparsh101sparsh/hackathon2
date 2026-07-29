@@ -218,6 +218,36 @@ export async function POST(request: NextRequest) {
       } catch (progressError) {
         console.error('Error updating user progress:', progressError);
       }
+
+      // Auto-create or update Revision Flashcard for Spaced Repetition
+      try {
+        let parsedTopics = [];
+        try { parsedTopics = JSON.parse(problem.topicTags || '[]'); } catch {}
+        const pattern = parsedTopics[0] || 'General DSA';
+
+        const nextDueDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day initial revision interval
+
+        await prisma.revisionCard.upsert({
+          where: {
+            userId_problemId: {
+              userId: activeUserId,
+              problemId: problem.id,
+            },
+          },
+          create: {
+            userId: activeUserId,
+            problemId: problem.id,
+            pattern,
+            keyTakeaway: `Mastered ${problem.title}. Review optimal approach and edge cases.`,
+            dueDate: nextDueDate,
+          },
+          update: {
+            dueDate: nextDueDate,
+          },
+        });
+      } catch (revError) {
+        console.error('Error creating revision flashcard:', revError);
+      }
     }
 
     return NextResponse.json({

@@ -37,6 +37,7 @@ model Problem {
   submissions     Submission[]
   contestProblems ContestProblem[]
   companyProblems CompanyProblem[]
+  revisionCards   RevisionCard[]
 }
 
 model CodeTemplate {
@@ -170,4 +171,23 @@ model RoomParticipant {
   joinedAt  DateTime   @default(now())
 
   @@unique([roomId, userId])
+}
+
+model RevisionCard {
+  id             String    @id @default(uuid())
+  userId         String    @default("guest")
+  problemId      String
+  problem        Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  pattern        String    @default("General DSA")
+  keyTakeaway    String    @default("Review key logic and optimal time complexity.")
+  timeComplexity String    @default("O(N)")
+  spaceComplexity String   @default("O(1)")
+  interval       Int       @default(1)
+  easeFactor     Float     @default(2.5)
+  repetitions    Int       @default(0)
+  dueDate        DateTime  @default(now())
+  lastReviewedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@unique([userId, problemId])
 }
