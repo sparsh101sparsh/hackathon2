@@ -61,7 +61,29 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const dbUrl = initDbUrl();
+function buildDbUrl(): string {
+  const base = initDbUrl();
+  // For PostgreSQL on serverless (Vercel), limit connections per function instance
+  // to prevent "Too many clients" errors on Neon / PgBouncer connection pools.
+  if (base.startsWith('postgresql://') || base.startsWith('postgres://')) {
+    try {
+      const url = new URL(base);
+      // Only add if not already set
+      if (!url.searchParams.has('connection_limit')) {
+        url.searchParams.set('connection_limit', '1');
+      }
+      if (!url.searchParams.has('connect_timeout')) {
+        url.searchParams.set('connect_timeout', '10');
+      }
+      return url.toString();
+    } catch {
+      return base;
+    }
+  }
+  return base;
+}
+
+const dbUrl = buildDbUrl();
 
 export const prisma =
   globalForPrisma.prisma ??
@@ -72,6 +94,8 @@ export const prisma =
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// Always persist singleton on globalThis to prevent multiple instances
+// across hot-reload (dev) AND across serverless warm containers (production).
+globalForPrisma.prisma = prisma;
 
 export default prisma;
