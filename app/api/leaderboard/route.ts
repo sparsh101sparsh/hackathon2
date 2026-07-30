@@ -33,6 +33,11 @@ export async function GET(req: NextRequest) {
       include: { problem: true },
     });
 
+    // 3. Fetch all user ratings from DB
+    const allUserRatings = await prisma.userRating.findMany({
+      orderBy: { timestamp: 'desc' },
+    });
+
     // Group submissions by userId
     const userSubMap = new Map<string, typeof allSubmissions>();
     allSubmissions.forEach((sub) => {
@@ -43,13 +48,28 @@ export async function GET(req: NextRequest) {
       userSubMap.get(uid)!.push(sub);
     });
 
-    const leaderboard: LeaderboardUser[] = [];
+    // Map latest rating per user
+    const userRatingMap = new Map<string, number>();
+    allUserRatings.forEach((ur) => {
+      const uid = ur.userId || 'guest';
+      if (!userRatingMap.has(uid)) {
+        userRatingMap.set(uid, ur.rating);
+      }
+    });
 
-    // If we have userProgress records or submission records, aggregate real stats
     const userIds = new Set<string>([
       ...allProgress.map((p) => p.userId || 'guest'),
       ...Array.from(userSubMap.keys()),
     ]);
+
+    // Fetch DB Users for real names and emails
+    const dbUsers = await prisma.user.findMany({
+      where: { id: { in: Array.from(userIds) } },
+      select: { id: true, name: true, email: true },
+    });
+    const dbUserMap = new Map(dbUsers.map((u) => [u.id, u]));
+
+    const leaderboard: LeaderboardUser[] = [];
 
     userIds.forEach((userId) => {
       const userSubs = userSubMap.get(userId) || [];
@@ -63,7 +83,7 @@ export async function GET(req: NextRequest) {
       acceptedSubs.forEach((sub) => {
         if (sub.problem) {
           if (sub.problem.difficulty === 'EASY') solvedEasySet.add(sub.problemId);
-          else if (sub.problem.difficulty === 'MEDIUM') solvedEasySet.add(sub.problemId);
+          else if (sub.problem.difficulty === 'MEDIUM') solvedMediumSet.add(sub.problemId);
           else if (sub.problem.difficulty === 'HARD') solvedHardSet.add(sub.problemId);
         }
       });
@@ -80,14 +100,15 @@ export async function GET(req: NextRequest) {
           : 0;
 
         const progressRec = allProgress.find((p) => (p.userId || 'guest') === userId);
-        const rating = 1500; // Baseline rating
+        const rating = userRatingMap.get(userId) || 0; // Default 0 for unrated users
+        const dbUser = dbUserMap.get(userId);
 
         leaderboard.push({
-          rank: 0, // Will set below
+          rank: 0,
           id: userId,
-          name: userId === 'guest' ? 'Guest Coder' : `Coder (${userId.slice(0, 6)})`,
-          email: `${userId}@codeforge.ai`,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+          name: dbUser?.name || (userId === 'guest' ? 'Guest Coder' : `Coder (${userId.slice(0, 6)})`),
+          email: dbUser?.email || `${userId}@codeforge.ai`,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${dbUser?.name || userId}`,
           rating,
           ratingTier: getRatingTier(rating),
           solved: {
@@ -105,8 +126,8 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // Sort leaderboard by total solved desc, then accuracy desc
-    leaderboard.sort((a, b) => b.solved.total - a.solved.total || b.accuracy - a.accuracy);
+    // Sort leaderboard by rating desc, then total solved desc
+    leaderboard.sort((a, b) => b.rating - a.rating || b.solved.total - a.solved.total || b.accuracy - a.accuracy);
 
     // Assign rank
     leaderboard.forEach((user, idx) => {

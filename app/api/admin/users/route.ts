@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
         email: 'guest@codeforge.ai',
         name: 'Guest Coder',
         role: 'GUEST',
-        rating: 1500,
+        rating: 0,
         avatar: null,
         createdAt: new Date().toISOString(),
         _count: { submissions: 0 },

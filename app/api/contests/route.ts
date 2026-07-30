@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
         isRated: c.isRated,
         status: calculatedStatus,
         problemCount: c.contestProblems.length || 4,
-        participantCount: Math.max(c.contestParticipants.length, calculatedStatus === 'ACTIVE' ? 342 : calculatedStatus === 'ENDED' ? 890 : 124),
+        participantCount: c.contestParticipants.length,
         isRegistered,
       };
     });

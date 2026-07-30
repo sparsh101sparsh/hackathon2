@@ -126,7 +126,7 @@ export async function GET(
         status: calculatedStatus,
         durationSeconds,
         remainingSeconds,
-        participantCount: Math.max(contest.contestParticipants.length, 342),
+        participantCount: contest.contestParticipants.length,
         isRegistered,
         problems,
       },

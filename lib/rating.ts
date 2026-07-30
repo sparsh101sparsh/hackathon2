@@ -67,8 +67,20 @@ export const RATING_TIERS: RatingTier[] = [
 
 /**
  * Get rating tier title and styling parameters for a given rating.
+ * Ratings <= 0 return Unrated status.
  */
 export function getRatingTier(rating: number): RatingTier {
+  if (rating <= 0) {
+    return {
+      name: 'Unrated',
+      badge: 'Unrated',
+      colorClass: 'text-slate-400',
+      badgeBg: 'bg-slate-900/60 border-slate-700/60',
+      badgeText: 'text-slate-400',
+      minRating: 0,
+      maxRating: 0,
+    };
+  }
   const clamped = Math.max(800, Math.min(3500, rating));
   if (clamped < 1200) return RATING_TIERS[0]; // Bronze
   if (clamped < 1400) return RATING_TIERS[1]; // Silver
@@ -99,13 +111,12 @@ export interface RatingUpdateResult {
 
 /**
  * Calculate Codeforces-style rating changes for a contestant in a rated contest.
- * Rating range: 800 - 3500.
  */
 export function calculateRatingUpdate(input: ContestPerformanceInput): RatingUpdateResult {
   const { currentRating, rank, totalParticipants, score, maxScore, opponentRatings = [] } = input;
 
   const N = Math.max(1, totalParticipants);
-  const R_user = Math.max(800, Math.min(3500, currentRating));
+  const R_user = currentRating <= 0 ? 1200 : Math.max(800, Math.min(3500, currentRating));
 
   // 1. Estimate average opponent rating (or default to 1500)
   const avgOpponentRating =
@@ -145,15 +156,14 @@ export function calculateRatingUpdate(input: ContestPerformanceInput): RatingUpd
   rawDelta = Math.max(-150, Math.min(300, Math.round(rawDelta)));
 
   let newRating = Math.round(R_user + rawDelta);
-  // Ensure rating remains in 800 - 3500 range
   newRating = Math.max(800, Math.min(3500, newRating));
   const delta = newRating - R_user;
 
-  const oldTier = getRatingTier(R_user);
+  const oldTier = getRatingTier(currentRating);
   const newTier = getRatingTier(newRating);
 
   return {
-    oldRating: R_user,
+    oldRating: currentRating,
     newRating,
     delta,
     expectedRank: Math.round(expectedRank * 10) / 10,

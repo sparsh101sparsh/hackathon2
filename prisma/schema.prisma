@@ -105,8 +105,8 @@ model ContestParticipant {
   name       String    @default("Guest Coder")
   score      Int       @default(0)
   finishTime DateTime?
-  oldRating  Int       @default(1500)
-  newRating  Int       @default(1500)
+  oldRating  Int       @default(0)
+  newRating  Int       @default(0)
 }
 
 model UserRating {

@@ -18,11 +18,18 @@ export async function GET(req: NextRequest) {
     const session = getSessionFromRequest(req);
     const userId = session?.userId || 'guest';
     let userName = session?.name || 'Guest Coder';
-    let solvedEasy = 12;
-    let solvedMedium = 8;
-    let solvedHard = 3;
-    let currentRating = 1550;
+    
+    // Fetch real user record if available
+    if (session?.userId) {
+      const dbUser = await prisma.user.findUnique({ where: { id: session.userId } });
+      if (dbUser?.name) userName = dbUser.name;
+    }
+
+    let solvedEasy = 0;
+    let solvedMedium = 0;
+    let solvedHard = 0;
     let streak = 0;
+    let currentRating = 0;
 
     const userProgress = await prisma.userProgress.findUnique({
       where: { userId },
@@ -34,6 +41,24 @@ export async function GET(req: NextRequest) {
       solvedHard = userProgress.solvedHard;
       streak = userProgress.streak;
     }
+
+    const latestRating = await prisma.userRating.findFirst({
+      where: { userId },
+      orderBy: { timestamp: 'desc' },
+    });
+    if (latestRating) {
+      currentRating = latestRating.rating;
+    }
+
+    const submissions = await prisma.submission.findMany({
+      where: { userId },
+    });
+
+    const totalSubmissions = submissions.length;
+    const acceptedSubmissions = submissions.filter((s) => s.status === 'Accepted');
+    const accuracy = totalSubmissions > 0
+      ? Math.round((acceptedSubmissions.length / totalSubmissions) * 100)
+      : 0;
 
     const systemPrompt = `You are CodeForge AI Performance Coach analyzing weekly coding progress.
 Provide concise, highly motivating weekly progress insights for competitive programming and interview prep.
@@ -49,13 +74,14 @@ Return ONLY valid JSON matching this schema:
 }`;
 
     const userPrompt = `User: ${userName}
-Current Rating: ${currentRating}
+Current Rating: ${currentRating === 0 ? 'Unrated (0)' : currentRating}
 Solved Breakdown: Easy: ${solvedEasy}, Medium: ${solvedMedium}, Hard: ${solvedHard}
+Submission Accuracy: ${accuracy}%
 Active Streak: ${streak} days`;
 
     const summaryText =
       streak > 0
-        ? `${userName} demonstrated strong commitment with a ${streak}-day active streak, advancing significantly in Dynamic Programming and Graph algorithms.`
+        ? `${userName} demonstrated strong commitment with a ${streak}-day active streak, advancing in algorithmic problem solving.`
         : `${userName} is ready to kickstart their daily streak today and accelerate their progress in Dynamic Programming and Graph algorithms.`;
 
     const streakStrength =
@@ -63,10 +89,15 @@ Active Streak: ${streak} days`;
         ? `Consistent daily practice maintaining a ${streak}-day active streak`
         : 'Proactive engagement in exploring targeted problem categories';
 
+    const accuracyStrength =
+      accuracy > 0
+        ? `Submission accuracy of ${accuracy}% across attempted problems`
+        : 'Active participation in exploring platform problem sets';
+
     const fallbackReport: WeeklyReportResponse = {
       summary: summaryText,
       strengths: [
-        'High submission accuracy (84.4%) on Medium difficulty Array & Two Pointer problems',
+        accuracyStrength,
         streakStrength,
         'Fast implementation speed on Stack and String parsing questions',
       ],

@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
     let solvedMedium = 0;
     let solvedHard = 0;
     let streak = userProgress?.streak ?? 0;
-    let currentRating = userRatings.length > 0 ? userRatings[userRatings.length - 1].rating : 1500;
+    let currentRating = userRatings.length > 0 ? userRatings[userRatings.length - 1].rating : 0;
 
     const totalSubmissions = submissions.length;
     const acceptedSubmissions = submissions.filter((s) => s.status === 'Accepted');

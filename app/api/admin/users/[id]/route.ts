@@ -24,7 +24,7 @@ export async function PATCH(
         email: 'guest@codeforge.ai',
         name: 'Guest Coder',
         role: role.toUpperCase(),
-        rating: 1500,
+        rating: 0,
         createdAt: new Date().toISOString(),
       },
       message: `User role updated to ${role.toUpperCase()}`,

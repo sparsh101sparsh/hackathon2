@@ -41,7 +41,7 @@ export async function POST(
       });
     }
 
-    const userRating = 1500;
+    const userRating = 0;
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
 
     const participant = await prisma.contestParticipant.create({
