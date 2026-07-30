@@ -129,6 +129,10 @@ export function inferParamTypeDescription(
       }
     }
 
+    if (val.includes('"') || val.includes("'") || ['words', 'strs', 'names', 'tokens', 'patterns'].includes(nameLower)) {
+      return `array of strings \`${name}\``;
+    }
+
     if (['root', 'tree', 'root1', 'root2'].includes(nameLower)) {
       return isTreeContext
         ? `root pointer of a Binary Tree \`${name}\``
@@ -139,9 +143,6 @@ export function inferParamTypeDescription(
       return `head node pointer of a Singly Linked List \`${name}\``;
     }
 
-    if (val.includes('"') || val.includes("'") || ['words', 'strs', 'names', 'tokens', 'patterns'].includes(nameLower)) {
-      return `array of strings \`${name}\``;
-    }
     if (val.includes('true') || val.includes('false')) {
       return `array of booleans \`${name}\``;
     }
@@ -250,7 +251,7 @@ export function synthesizeInputFormat(
   if (topics.some((t) => t.includes('string')) || titleLower.includes('string') || titleLower.includes('word') || titleLower.includes('palindrome')) {
     return 'A single input string `s` (and optional target string/pattern parameters).';
   }
-  if (topics.some((t) => t.includes('linked list')) || titleLower.includes('list')) {
+  if (topics.some((t) => t.includes('linked list')) || /\blinked list\b/i.test(titleLower)) {
     return 'Head node pointer of a Singly Linked List `head`.';
   }
   if (topics.some((t) => t.includes('tree') || /\bbst\b/i.test(t)) || /\b(tree|bst)\b/i.test(titleLower)) {
@@ -343,7 +344,7 @@ export function synthesizeOutputFormat(
   }
 
   if (cleanOutput.startsWith('[') && cleanOutput.endsWith(']')) {
-    if (topics.some((t) => t.includes('linked list')) || titleLower.includes('list')) {
+    if (topics.some((t) => t.includes('linked list')) || /\blinked list\b/i.test(titleLower)) {
       return 'Return the head node pointer of the modified Linked List.';
     }
     if (cleanOutput.includes('"') || cleanOutput.includes("'")) {
@@ -397,7 +398,7 @@ export function synthesizeOutputFormat(
     return 'Return boolean `true` if the condition is satisfied; otherwise `false`.';
   }
 
-  if (topics.some((t) => t.includes('linked list')) || titleLower.includes('list') || titleLower.includes('linked list')) {
+  if (topics.some((t) => t.includes('linked list')) || /\blinked list\b/i.test(titleLower)) {
     if (titleLower.includes('intersection') || titleLower.includes('middle') || titleLower.includes('cycle')) {
       return 'Return the target node pointer of the Linked List (or null).';
     }
@@ -487,6 +488,7 @@ export function cleanStatementMarkdown(statement: string): string {
     .replace(/```\s*\n\s*\*\*Output:\*\*/g, '**Output:**')
     .replace(/```\s*\n\s*\*\*Explanation:\*\*/g, '**Explanation:**')
     .replace(/```\s*\n\s*Explanation:/g, '**Explanation:**')
+    .replace(/(?<!\*\*)\bExplanation:\s*/g, '**Explanation:** ')
     .replace(/```\s*$/g, '')
     .replace(/```\s*\n\s*(\*\*Example \d+:\*\*)/g, '$1')
     .replace(/\n\t+[-*]\s*/g, '\n- ')
@@ -671,6 +673,17 @@ async function refineAllProblems() {
             obj.canonical.inputFormat = refined.inputFormat;
             obj.canonical.outputFormat = refined.outputFormat;
             obj.canonical.constraints = refined.constraints;
+
+            if (Array.isArray(obj.canonical.samples)) {
+              for (const sample of obj.canonical.samples) {
+                if (typeof sample.expectedOutput === 'string') {
+                  sample.expectedOutput = sample.expectedOutput.replace(/(?<!\*\*)\bExplanation:\s*/g, '**Explanation:** ');
+                }
+                if (typeof sample.explanation === 'string') {
+                  sample.explanation = sample.explanation.replace(/(?<!\*\*)\bExplanation:\s*/g, '**Explanation:** ');
+                }
+              }
+            }
           }
 
           if (obj.messages && obj.messages[1] && typeof obj.messages[1].content === 'string') {
@@ -680,6 +693,8 @@ async function refineAllProblems() {
             content = content.replace(/(Input format:\n)([\s\S]*?)(\n\nOutput format:)/, `$1${refined.inputFormat}$3`);
             content = content.replace(/(Output format:\n)([\s\S]*?)(\n\nConstraints:)/, `$1${refined.outputFormat}$3`);
             content = content.replace(/(Constraints:\n)([\s\S]*?)(\n\nSample cases:)/, `$1${refined.constraints}$3`);
+
+            content = content.replace(/(?<!\*\*)\bExplanation:\s*/g, '**Explanation:** ');
 
             obj.messages[1].content = content;
           }
