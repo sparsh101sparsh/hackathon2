@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import {
   Code2,
-  LayoutDashboard,
   Trophy,
   Building2,
   Bot,
@@ -19,8 +18,8 @@ import {
   LogIn,
   UserPlus,
   LogOut,
-  User,
   Brain,
+  Sparkles,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -40,7 +39,7 @@ export const Navbar: React.FC = () => {
     { label: 'Company Prep', href: '/company', icon: <Building2 className="w-4 h-4" /> },
     { label: 'AI Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-cyan-400" /> },
     { label: 'Leaderboard', href: '/leaderboard', icon: <BarChart2 className="w-4 h-4" /> },
-    { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-amber-400" /> },
   ];
 
   return (
@@ -92,16 +91,22 @@ export const Navbar: React.FC = () => {
         </a>
 
         {user ? (
-          <div className="flex items-center gap-3 bg-slate-900/90 border border-slate-800 rounded-xl p-1 pr-3 shadow-inner">
-            <img
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-              alt={user.name}
-              className="w-7 h-7 rounded-lg border border-slate-700 bg-slate-950 shrink-0"
-            />
-            <div className="text-left leading-none">
-              <div className="text-xs font-bold text-slate-100">{user.name}</div>
-              <div className="text-[10px] text-slate-400">{user.email}</div>
-            </div>
+          <div className="flex items-center gap-3 bg-slate-900/90 border border-slate-800 rounded-xl p-1 pr-3 shadow-inner hover:border-cyan-500/50 transition">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2.5 group cursor-pointer"
+              title="View User Dashboard"
+            >
+              <img
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                alt={user.name}
+                className="w-7 h-7 rounded-lg border border-slate-700 bg-slate-950 shrink-0 group-hover:border-cyan-400 transition"
+              />
+              <div className="text-left leading-none">
+                <div className="text-xs font-bold text-slate-100 group-hover:text-cyan-400 transition">{user.name}</div>
+                <div className="text-[10px] text-slate-400">{user.email}</div>
+              </div>
+            </Link>
             <button
               onClick={() => logout()}
               title="Sign Out"
@@ -173,17 +178,21 @@ export const Navbar: React.FC = () => {
             <div className="pt-4 border-t border-slate-800 space-y-3">
               {user ? (
                 <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-                  <div className="flex items-center gap-3">
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 group"
+                  >
                     <img
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
                       alt={user.name}
-                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950"
+                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-cyan-400 transition"
                     />
                     <div>
-                      <div className="text-xs font-bold text-white">{user.name}</div>
+                      <div className="text-xs font-bold text-white group-hover:text-cyan-400 transition">{user.name}</div>
                       <div className="text-[11px] text-slate-400">{user.email}</div>
                     </div>
-                  </div>
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
