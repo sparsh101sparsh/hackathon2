@@ -43,6 +43,8 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
           difficulty,
           problemCount,
           mode: format === 'AI_BOT_DUEL' ? 'DUEL' : 'SQUAD',
+          addAiBot: format === 'AI_BOT_DUEL',
+          isAiDuel: format === 'AI_BOT_DUEL',
           durationSeconds,
         }),
       });

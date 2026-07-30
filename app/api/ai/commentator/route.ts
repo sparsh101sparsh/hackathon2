@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
     const codeSnippet = body.codeSnippet || '';
     const linesOfCode = body.linesOfCode || (codeSnippet ? codeSnippet.split('\n').length : 0);
     const executionResult = body.executionResult;
-    const actorName = body.userName || 'Coder';
+    const actorName = body.userName || participants[0]?.userName || participants[0]?.name || 'Coder';
 
     // Extract leader and second place participant details
     const sortedParticipants = [...participants].sort(
@@ -215,7 +215,7 @@ export async function POST(req: NextRequest) {
           commentaryText = cleanedText.startsWith('🎙️') ? cleanedText : `🎙️ ${cleanedText}`;
           if (['LEAD_SWAP', 'FAST_SUBMISSION', 'HIGH_SCORE', 'SUBMIT_FAILED', 'SAMPLE_PASSED'].includes(eventType)) {
             hypeLevel = 'high';
-          } else if (['SUBMIT', 'JOIN', 'TYPING_PROGRESS', 'RUN_CODE'].includes(eventType)) {
+          } else if (['SUBMIT', 'SUBMIT_ATTEMPT', 'JOIN', 'TYPING_PROGRESS', 'RUN_CODE'].includes(eventType)) {
             hypeLevel = 'medium';
           }
         }

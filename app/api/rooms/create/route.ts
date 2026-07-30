@@ -55,6 +55,24 @@ export async function POST(req: NextRequest) {
       existing = await prisma.customRoom.findUnique({ where: { code: roomCode } });
     }
 
+    const isAiDuel = Boolean(body.addAiBot || body.isAiDuel);
+    const initialParticipants: Array<{ userId: string; userName: string; score: number; solved: number }> = [
+      {
+        userId,
+        userName: finalHostName,
+        score: 0,
+        solved: 0,
+      },
+    ];
+    if (isAiDuel) {
+      initialParticipants.push({
+        userId: 'ai_bot_gemini',
+        userName: 'Grandmaster Gemini',
+        score: 0,
+        solved: 0,
+      });
+    }
+
     const room = await prisma.customRoom.create({
       data: {
         code: roomCode,
@@ -68,12 +86,7 @@ export async function POST(req: NextRequest) {
         mode: battleMode,
         durationSeconds: battleMode === 'DUEL' ? 900 : Math.max(300, Math.min(3600, Number(durationSeconds) || 900)),
         participants: {
-          create: {
-            userId,
-            userName: finalHostName,
-            score: 0,
-            solved: 0,
-          },
+          create: initialParticipants,
         },
       },
       include: {

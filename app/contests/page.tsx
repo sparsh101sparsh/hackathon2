@@ -127,8 +127,8 @@ export default function ContestsPage() {
               onClick={() => setIsOnDemandModalOpen(true)}
               className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-amber-500 to-cyan-500 text-slate-950 font-black text-xs shadow-xl shadow-purple-500/20 hover:scale-105 transition flex items-center justify-center gap-2"
             >
-              <Bot className="w-4 h-4" />
-              <span>Instant AI Contest</span>
+              <Zap className="w-4 h-4" />
+              <span>⚡ Instant AI Duel / Blitz Challenge</span>
             </button>
             <button
               onClick={() => setIsCreateModalOpen(true)}

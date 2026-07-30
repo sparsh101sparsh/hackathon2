@@ -52,6 +52,7 @@ function stripEmojis(text: string): string {
       ''
     )
     .replace(/🎙️|🔥|⚡|👀|🎯|⚔️|🧠|👑|🏎️|🏆|🥇|🥈|🥉|💥|🚀|💎|📢/g, '')
+    .replace(/\uFE0F/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -85,6 +86,11 @@ export const AICommentator: React.FC<AICommentatorProps> = ({
   const [isMuted, setIsMuted] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+
+  const codeSnippetRef = useRef(codeSnippet);
+  useEffect(() => {
+    codeSnippetRef.current = codeSnippet;
+  }, [codeSnippet]);
 
   const effectiveProblemTitle = problemTitle || activeProblemTitle || 'DSA Challenge';
   const effectiveEvent = eventType || lastEvent || 'TICK';
@@ -137,8 +143,9 @@ export const AICommentator: React.FC<AICommentatorProps> = ({
 
   // TTS Execution helper
   const speakCommentary = useCallback(
-    (rawText: string) => {
-      if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    (rawText: string, overrideMuted: boolean = isMuted) => {
+      const effectiveMuted = overrideMuted;
+      if (effectiveMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
       try {
         window.speechSynthesis.cancel();
         const cleanText = stripEmojis(rawText);
@@ -178,7 +185,7 @@ export const AICommentator: React.FC<AICommentatorProps> = ({
             problemTitle: effectiveProblemTitle,
             activeProblemTitle: effectiveProblemTitle,
             language,
-            codeSnippet,
+            codeSnippet: codeSnippetRef.current,
             linesOfCode,
             executionResult,
             userName,
@@ -230,7 +237,6 @@ export const AICommentator: React.FC<AICommentatorProps> = ({
       participants,
       effectiveProblemTitle,
       language,
-      codeSnippet,
       mode,
       status,
       speakCommentary,
@@ -255,7 +261,7 @@ export const AICommentator: React.FC<AICommentatorProps> = ({
     const nextMute = !isMuted;
     setIsMuted(nextMute);
     if (!nextMute && currentMessage.text) {
-      speakCommentary(currentMessage.text);
+      speakCommentary(currentMessage.text, false);
     }
   };
 

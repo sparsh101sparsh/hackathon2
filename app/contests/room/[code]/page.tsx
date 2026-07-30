@@ -338,13 +338,18 @@ export default function BattleRoomPage() {
               code,
               language,
               problemTitle: activeProblem.title,
+              problemDescription: activeProblem.statement,
               problemStatement: activeProblem.statement,
+              testResults: data.testResults || data.results || { verdict: data.verdict },
+              executionTime: data.time || data.executionTime || 15,
+              memoryUsed: data.memory || data.memoryUsed || 14.5,
             }),
           });
           if (judgeRes.ok) {
             const judgeData = await judgeRes.json();
-            if (judgeData.report) {
-              setAiJudgeReport(judgeData.report);
+            const reportObj = judgeData.report || judgeData;
+            if (reportObj) {
+              setAiJudgeReport(reportObj);
               setIsJudgeModalOpen(true);
             }
           }
