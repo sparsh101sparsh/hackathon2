@@ -8,6 +8,8 @@ import { useToast } from '@/components/ui/Toast';
 import { ContestScoreboardSkeleton } from '@/components/ui/Skeletons';
 import { CreateRoomModal } from '@/components/contests/CreateRoomModal';
 import { JoinRoomModal } from '@/components/contests/JoinRoomModal';
+import { OnDemandContestModal } from '@/components/contests/OnDemandContestModal';
+import { Bot, Sparkles } from 'lucide-react';
 
 interface ContestItem {
   id: string;
@@ -28,6 +30,7 @@ export default function ContestsPage() {
   const [registeringId, setRegisteringId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [isOnDemandModalOpen, setIsOnDemandModalOpen] = useState(false);
   const { showToast } = useToast();
 
   const fetchContests = async () => {
@@ -83,6 +86,7 @@ export default function ContestsPage() {
       {/* Modals */}
       <CreateRoomModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
       <JoinRoomModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
+      <OnDemandContestModal isOpen={isOnDemandModalOpen} onClose={() => setIsOnDemandModalOpen(false)} />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
@@ -118,18 +122,27 @@ export default function ContestsPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button
+              onClick={() => setIsOnDemandModalOpen(true)}
+              className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-amber-500 to-cyan-500 text-slate-950 font-black text-xs shadow-xl shadow-purple-500/20 hover:scale-105 transition flex items-center justify-center gap-2"
+            >
+              <Bot className="w-4 h-4" />
+              <span>Instant AI Contest</span>
+            </button>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-extrabold text-xs shadow-xl shadow-amber-500/20 hover:scale-105 transition flex items-center gap-2"
+              className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/20 hover:scale-105 transition flex items-center justify-center gap-2"
             >
-              <Plus className="w-4 h-4" /> Create Private Room
+              <Plus className="w-4 h-4" />
+              <span>Create Private Room</span>
             </button>
             <button
               onClick={() => setIsJoinModalOpen(true)}
-              className="px-5 py-3 rounded-xl bg-slate-900 border border-slate-700 text-cyan-400 hover:text-white hover:bg-slate-800 font-bold text-xs shadow-md transition flex items-center gap-2"
+              className="px-5 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 hover:border-cyan-500 text-cyan-400 font-bold text-xs hover:bg-slate-900 transition flex items-center justify-center gap-2"
             >
-              <KeyRound className="w-4 h-4" /> Join via Room Code
+              <KeyRound className="w-4 h-4" />
+              <span>Join Room</span>
             </button>
           </div>
         </div>

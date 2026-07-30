@@ -34,6 +34,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/context/AuthContext';
+import { AICommentator } from '@/components/contests/AICommentator';
+import { AIJudgeScorecardModal } from '@/components/contests/AIJudgeScorecardModal';
 
 interface Participant {
   id: string;
@@ -95,6 +97,9 @@ export default function BattleRoomPage() {
   const [solvedProblems, setSolvedProblems] = useState<Record<string, boolean>>({});
   const [battleUserId, setBattleUserId] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [aiJudgeReport, setAiJudgeReport] = useState<any>(null);
+  const [isJudgeModalOpen, setIsJudgeModalOpen] = useState(false);
+  const [lastEvent, setLastEvent] = useState<string>('GENERAL');
 
   const currentUserId = user?.id || battleUserId || `guest_local`;
   const currentUserName = user?.name || 'Guest Coder';
@@ -282,6 +287,7 @@ export default function BattleRoomPage() {
       if (data.verdict === 'Accepted') {
         showToast('🎉 Accepted! Solution passed all test cases!', 'success');
         setSolvedProblems((prev) => ({ ...prev, [activeProblem.id]: true }));
+        setLastEvent('SCORE_POINTS');
 
         // Award points in battle room
         await fetch(`/api/rooms/${roomCode}`, {
@@ -295,6 +301,30 @@ export default function BattleRoomPage() {
             pointsToAdd: 150, // 100 pts base + 50 speed bonus
           }),
         });
+
+        // Trigger AI Judge Evaluation
+        try {
+          const judgeRes = await fetch('/api/ai/judge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              code,
+              language,
+              problemTitle: activeProblem.title,
+              problemStatement: activeProblem.statement,
+            }),
+          });
+          if (judgeRes.ok) {
+            const judgeData = await judgeRes.json();
+            if (judgeData.report) {
+              setAiJudgeReport(judgeData.report);
+              setIsJudgeModalOpen(true);
+            }
+          }
+        } catch (err) {
+          console.error('AI Judge evaluation error:', err);
+        }
 
         await fetchRoomDetails();
       } else {
@@ -357,6 +387,7 @@ export default function BattleRoomPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+      <AIJudgeScorecardModal isOpen={isJudgeModalOpen} onClose={() => setIsJudgeModalOpen(false)} report={aiJudgeReport} />
       {/* Top Arena Navigation Bar */}
       <header className="h-16 bg-slate-900/90 border-b border-slate-800/80 px-4 sm:px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-4">
@@ -582,8 +613,17 @@ export default function BattleRoomPage() {
           )}
         </div>
 
-        {/* Live Leaderboard Sidebar (Max 10 Players) */}
+        {/* Live Leaderboard Sidebar (Max 10 Players) & AI Commentator */}
         <div className="p-4 bg-slate-950 space-y-4 overflow-y-auto">
+          {/* AI Live Commentator Component */}
+          <AICommentator
+            roomName={room.name}
+            mode={room.mode}
+            status={room.status}
+            participants={room.participants}
+            activeProblemTitle={activeProblem?.title}
+            lastEvent={lastEvent}
+          />
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-400" />
