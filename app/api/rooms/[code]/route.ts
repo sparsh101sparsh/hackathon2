@@ -104,6 +104,46 @@ export async function POST(
       return NextResponse.json({ success: true, room: updated, deadline: updated.startedAt ? updated.startedAt.getTime() + updated.durationSeconds * 1000 : null });
     }
 
+    if (action === 'LEAVE_ROOM') {
+      const participant = await prisma.roomParticipant.findUnique({
+        where: { roomId_userId: { roomId: room.id, userId } },
+      });
+
+      if (participant) {
+        await prisma.roomParticipant.delete({
+          where: { id: participant.id },
+        });
+      }
+
+      const remaining = room.participants.filter((p) => p.userId !== userId);
+      if (remaining.length === 0) {
+        // Delete room if no participants left
+        await prisma.customRoom.delete({ where: { id: room.id } });
+      } else if (room.hostName === userName) {
+        // Reassign host
+        await prisma.customRoom.update({
+          where: { id: room.id },
+          data: { hostName: remaining[0].userName },
+        });
+      }
+
+      return NextResponse.json({ success: true, left: true });
+    }
+
+    if (action === 'CLOSE_ROOM') {
+      if (room.status === 'WAITING') {
+        await prisma.customRoom.delete({ where: { id: room.id } });
+        return NextResponse.json({ success: true, closed: true, deleted: true });
+      } else {
+        const updated = await prisma.customRoom.update({
+          where: { id: room.id },
+          data: { status: 'FINISHED', endedAt: new Date() },
+          include: { participants: true },
+        });
+        return NextResponse.json({ success: true, closed: true, room: updated });
+      }
+    }
+
     if (action === 'UPDATE_PROGRESS') {
       if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
       const allowed = ['WAITING', 'CODING', 'SUBMITTED', 'SOLVED'];

@@ -29,6 +29,8 @@ import {
   Flame,
   Share2,
   ArrowLeft,
+  LogOut,
+  Power,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/context/AuthContext';
@@ -191,6 +193,40 @@ export default function BattleRoomPage() {
     }
   };
 
+  const handleLeaveRoom = async () => {
+    try {
+      await fetch(`/api/rooms/${roomCode}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'LEAVE_ROOM' }),
+      });
+      showToast('You left the battle room', 'info');
+      router.push('/contests');
+    } catch {
+      router.push('/contests');
+    }
+  };
+
+  const handleCloseRoom = async () => {
+    try {
+      const res = await fetch(`/api/rooms/${roomCode}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'CLOSE_ROOM' }),
+      });
+      if (res.ok) {
+        showToast('Room has been closed', 'info');
+        router.push('/contests');
+      } else {
+        showToast('Failed to close room', 'error');
+      }
+    } catch {
+      showToast('Failed to close room', 'error');
+    }
+  };
+
   const handleRunCode = async () => {
     const activeProblem = problems[activeProblemIdx];
     if (!activeProblem) return;
@@ -323,9 +359,14 @@ export default function BattleRoomPage() {
       {/* Top Arena Navigation Bar */}
       <header className="h-16 bg-slate-900/90 border-b border-slate-800/80 px-4 sm:px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-4">
-          <Link href="/contests" className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-white transition">
+          <button
+            onClick={handleLeaveRoom}
+            title="Leave Room"
+            className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition flex items-center gap-1 text-xs font-bold"
+          >
             <ArrowLeft className="w-4 h-4" />
-          </Link>
+            <span className="hidden sm:inline">Exit</span>
+          </button>
           <div>
             <div className="flex items-center gap-2">
               <span className="p-1 rounded-md bg-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
@@ -365,6 +406,27 @@ export default function BattleRoomPage() {
             <div className={`px-4 py-1.5 rounded-xl border font-mono text-sm font-black flex items-center gap-2 ${room.status === 'FINISHED' ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : remainingSeconds < 60 ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'}`}>
               <Clock className="w-4 h-4" /> {room.status === 'FINISHED' ? 'MATCH OVER' : `${minutes}:${seconds}`}
             </div>
+          )}
+
+          {/* Host Close Room vs Participant Leave Room */}
+          {user?.name === room.hostName ? (
+            <button
+              onClick={handleCloseRoom}
+              title="Close Battle Room"
+              className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <Power className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Close Room</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleLeaveRoom}
+              title="Leave Room"
+              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Leave</span>
+            </button>
           )}
         </div>
       </header>
