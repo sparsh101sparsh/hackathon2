@@ -163,18 +163,18 @@ function NodeScene({ frame }: SceneProps) {
   return (
     <SceneFrame>
       <g>
-        {nodes.slice(0, -1).map((_, index) => <motion.line key={`edge-${index}`} x1={startX + index * gap + 31} y1="150" x2={startX + (index + 1) * gap - 31} y2="150" stroke={active.has(index) ? accent : muted} strokeWidth="2" markerEnd={active.has(index) ? 'url(#scene-arrow-active)' : 'url(#scene-arrow)'} animate={{ stroke: active.has(index) ? accent : muted }} transition={cellTransition} />)}
+        {nodes.slice(0, -1).map((_, index) => <motion.line key={`edge-${index}`} x1={startX + index * gap + 31} y1="150" x2={startX + (index + 1) * gap - 31} y2="150" stroke={active.has(index) ? '#eb7c45' : '#575247'} strokeWidth="4" markerEnd={active.has(index) ? 'url(#scene-arrow-active)' : 'url(#scene-arrow)'} animate={{ stroke: active.has(index) ? '#eb7c45' : '#575247' }} transition={cellTransition} />)}
         {nodes.map((node, index) => {
           const x = startX + index * gap;
           const isActive = active.has(index);
           return (
-            <motion.g key={`${node}-${index}`} animate={{ x: 0, y: isActive ? -5 : 0, scale: isActive ? 1.06 : 1 }} transition={cellTransition} style={{ transformOrigin: `${x}px 150px` }}>
-              <motion.circle cx={x} cy="150" r="31" fill={isActive ? accentSoft : '#25231e'} stroke={isActive ? accent : line} strokeWidth="2" animate={{ fill: isActive ? accentSoft : '#25231e', stroke: isActive ? accent : line }} transition={cellTransition} />
-              <Label x={x} y={155} fill={isActive ? '#ffc199' : ink} size={node.length > 5 ? 10 : 14}>{node}</Label>
+            <motion.g key={`${node}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
+              <motion.circle cx={x} cy={150 + 4} r="31" fill={isActive ? '#8c4c32' : 'transparent'} transition={cellTransition} />
+              <motion.circle cx={x} cy={150} r="31" fill={isActive ? '#3e2821' : '#24211a'} stroke={isActive ? '#eb7c45' : '#ded1b6'} strokeWidth="2" animate={{ fill: isActive ? '#3e2821' : '#24211a', stroke: isActive ? '#eb7c45' : '#ded1b6' }} transition={cellTransition} />
+              <text x={x} y={150 + 5} textAnchor="middle" fill={isActive ? '#ffffff' : '#f1ede5'} fontSize={node.length > 5 ? 12 : 18} fontWeight="900" fontFamily="sans-serif">{node}</text>
             </motion.g>
           );
         })}
-        <Label x={340} y={250} fill={muted} size={11}>DIRECTIONAL NODE STATE</Label>
       </g>
     </SceneFrame>
   );
@@ -191,14 +191,19 @@ function GraphScene({ frame }: SceneProps) {
           const [x1, y1] = positions[from] || positions[0];
           const [x2, y2] = positions[to] || positions[0];
           const edgeActive = active.has(from) && (active.has(to) || index < active.size);
-          return <motion.line key={`${from}-${to}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={edgeActive ? accent : line} strokeWidth={edgeActive ? 3 : 2} markerEnd={edgeActive ? 'url(#scene-arrow-active)' : 'url(#scene-arrow)'} animate={{ stroke: edgeActive ? accent : line }} transition={cellTransition} />;
+          return <motion.line key={`${from}-${to}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={edgeActive ? '#eb7c45' : '#575247'} strokeWidth={edgeActive ? 4 : 3} markerEnd={edgeActive ? 'url(#scene-arrow-active)' : 'url(#scene-arrow)'} animate={{ stroke: edgeActive ? '#eb7c45' : '#575247' }} transition={cellTransition} />;
         })}
         {nodes.map((node, index) => {
           const [x, y] = positions[index];
           const isActive = active.has(index);
-          return <motion.g key={`${node}-${index}`} animate={{ scale: isActive ? 1.12 : 1 }} transition={cellTransition} style={{ transformOrigin: `${x}px ${y}px` }}><motion.circle cx={x} cy={y} r="32" fill={isActive ? accentSoft : '#25231e'} stroke={isActive ? accent : line} strokeWidth="2" animate={{ fill: isActive ? accentSoft : '#25231e', stroke: isActive ? accent : line }} transition={cellTransition} /><Label x={x} y={y + 5} fill={isActive ? '#ffc199' : ink} size={16}>{node}</Label></motion.g>;
+          return (
+            <motion.g key={`${node}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
+              <motion.circle cx={x} cy={y + 4} r="32" fill={isActive ? '#8c4c32' : 'transparent'} transition={cellTransition} />
+              <motion.circle cx={x} cy={y} r="32" fill={isActive ? '#3e2821' : '#24211a'} stroke={isActive ? '#eb7c45' : '#ded1b6'} strokeWidth="2" animate={{ fill: isActive ? '#3e2821' : '#24211a', stroke: isActive ? '#eb7c45' : '#ded1b6' }} transition={cellTransition} />
+              <text x={x} y={y + 6} textAnchor="middle" fill={isActive ? '#ffffff' : '#f1ede5'} fontSize={18} fontWeight="900" fontFamily="sans-serif">{node}</text>
+            </motion.g>
+          );
         })}
-        <Label x={340} y={275} fill={muted} size={11}>FRONTIER / VISITED GRAPH</Label>
       </g>
     </SceneFrame>
   );
@@ -213,15 +218,21 @@ function BarsScene({ frame }: SceneProps) {
   return (
     <SceneFrame>
       <g>
-        <line x1="80" y1="238" x2="600" y2="238" stroke={line} strokeWidth="2" />
+        <line x1="80" y1="238" x2="600" y2="238" stroke="#575247" strokeWidth="4" />
         {bars.map((value, index) => {
-          const height = (value / max) * 170;
+          const height = Math.max((value / max) * 170, 10);
           const x = startX + index * width + 4;
           const y = 238 - height;
           const isActive = active.has(index);
-          return <motion.g key={`${value}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}><motion.rect x={x} y={y} width={width - 8} height={height} rx="5" fill={isActive ? accent : '#777163'} animate={{ y, height, fill: isActive ? accent : '#777163' }} transition={cellTransition} /><Label x={x + (width - 8) / 2} y={257} size={10}>{index}</Label></motion.g>;
+          const boxWidth = width - 8;
+          return (
+            <motion.g key={`${value}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
+              <motion.rect x={x + 3} y={y + 3} width={boxWidth} height={height} rx="4" fill={isActive ? '#8c4c32' : 'transparent'} animate={{ y: y + 3, height: height }} transition={cellTransition} />
+              <motion.rect x={x} y={y} width={boxWidth} height={height} rx="4" fill={isActive ? '#3e2821' : '#24211a'} stroke={isActive ? '#eb7c45' : '#ded1b6'} strokeWidth="2" animate={{ y, height, fill: isActive ? '#3e2821' : '#24211a', stroke: isActive ? '#eb7c45' : '#ded1b6' }} transition={cellTransition} />
+              <text x={x + boxWidth / 2} y={257} textAnchor="middle" fill={isActive ? '#ffffff' : '#f1ede5'} fontSize={12} fontWeight="900" fontFamily="sans-serif">{index}</text>
+            </motion.g>
+          );
         })}
-        <Label x={340} y={285} fill={muted} size={11}>COMPARISON / PRIORITY BARS</Label>
       </g>
     </SceneFrame>
   );
@@ -229,17 +240,27 @@ function BarsScene({ frame }: SceneProps) {
 
 function BitsScene({ frame }: SceneProps) {
   const bits = frame.bits || '';
-  const size = Math.min(48, 500 / Math.max(bits.length, 1));
-  const startX = 340 - (bits.length * size) / 2;
+  const cellWidth = Math.min(64, 560 / Math.max(bits.length, 1));
+  const boxSize = cellWidth - 8;
+  const total = cellWidth * bits.length;
+  const startX = (680 - total) / 2;
+  const active = new Set(frame.active || []);
+
   return (
     <SceneFrame>
       <g>
         {bits.split('').map((bit, index) => {
-          const x = startX + index * size;
-          const isOne = bit === '1';
-          return <motion.g key={`${index}-${bit}`} animate={{ y: isOne ? -5 : 0 }} transition={cellTransition}><motion.rect x={x + 3} y={115} width={size - 6} height={60} rx={8} fill={isOne ? accentSoft : '#22211d'} stroke={isOne ? accent : line} strokeWidth={2} animate={{ fill: isOne ? accentSoft : '#22211d', stroke: isOne ? accent : line }} transition={cellTransition} /><Label x={x + size / 2} y={153} fill={isOne ? '#ffc199' : muted} size={20}>{bit}</Label><Label x={x + size / 2} y={200} size={10}>{bits.length - index - 1}</Label></motion.g>;
+          const x = startX + index * cellWidth + 4;
+          const isActive = bit === '1' || active.has(index);
+          return (
+            <motion.g key={`${index}-${bit}`} animate={{ x: 0, y: 0 }} transition={cellTransition} style={{ transformOrigin: `${x + boxSize / 2}px 145px` }}>
+              <motion.rect x={x} y={100 + 4} width={boxSize} height={boxSize} rx="8" fill={isActive ? '#8c4c32' : 'transparent'} animate={{ fill: isActive ? '#8c4c32' : 'transparent' }} transition={cellTransition} />
+              <motion.rect x={x} y={100} width={boxSize} height={boxSize} rx="8" fill={isActive ? '#3e2821' : '#24211a'} stroke={isActive ? '#eb7c45' : '#ded1b6'} strokeWidth="2" animate={{ fill: isActive ? '#3e2821' : '#24211a', stroke: isActive ? '#eb7c45' : '#ded1b6' }} transition={cellTransition} />
+              <text x={x + boxSize / 2} y={100 + boxSize / 2 + 10} textAnchor="middle" fill={isActive ? '#ffffff' : '#f1ede5'} fontSize={24} fontWeight="900" fontFamily="sans-serif">{bit}</text>
+              <Label x={x + boxSize / 2} y={100 + boxSize + 22} size={11}>{bits.length - index - 1}</Label>
+            </motion.g>
+          );
         })}
-        <Label x={340} y={250} fill={muted} size={11}>BIT POSITIONS</Label>
       </g>
     </SceneFrame>
   );
