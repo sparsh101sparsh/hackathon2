@@ -99,7 +99,8 @@ export default function BattleRoomPage() {
   const [now, setNow] = useState(Date.now());
   const [aiJudgeReport, setAiJudgeReport] = useState<any>(null);
   const [isJudgeModalOpen, setIsJudgeModalOpen] = useState(false);
-  const [lastEvent, setLastEvent] = useState<string>('GENERAL');
+  const [lastEvent, setLastEvent] = useState<string>('JOIN');
+  const prevTopLeaderRef = React.useRef<{ id: string; score: number } | null>(null);
 
   const currentUserId = user?.id || battleUserId || `guest_local`;
   const currentUserName = user?.name || 'Guest Coder';
@@ -115,6 +116,15 @@ export default function BattleRoomPage() {
       const data = await res.json();
       setRoom(data.room);
       setProblems(data.problems || []);
+
+      if (data.room?.participants?.length > 0) {
+        const top = data.room.participants[0];
+        if (prevTopLeaderRef.current && prevTopLeaderRef.current.id !== top.userId && top.score > 0) {
+          setLastEvent('LEAD_SWAP');
+        }
+        prevTopLeaderRef.current = { id: top.userId, score: top.score };
+      }
+
       if (data.room.startedAt) {
         setNow(Date.now());
       }
@@ -254,8 +264,14 @@ export default function BattleRoomPage() {
 
       const data = await res.json();
       setExecutionResult(data);
+      if (data.verdict === 'Accepted' || (!data.stderr && !data.error)) {
+        setLastEvent('SAMPLE_PASSED');
+      } else {
+        setLastEvent('SAMPLE_FAILED');
+      }
     } catch (err: any) {
       showToast('Code execution error', 'error');
+      setLastEvent('SAMPLE_FAILED');
     } finally {
       setExecuting(false);
     }
@@ -287,7 +303,17 @@ export default function BattleRoomPage() {
       if (data.verdict === 'Accepted') {
         showToast('🎉 Accepted! Solution passed all test cases!', 'success');
         setSolvedProblems((prev) => ({ ...prev, [activeProblem.id]: true }));
-        setLastEvent('SCORE_POINTS');
+
+        const startTime = room?.startedAt ? new Date(room.startedAt).getTime() : now;
+        const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+
+        if (elapsedSeconds > 0 && elapsedSeconds <= 120) {
+          setLastEvent('FAST_SUBMISSION');
+        } else if ((viewerParticipant?.score || 0) + 150 >= 300) {
+          setLastEvent('HIGH_SCORE');
+        } else {
+          setLastEvent('SUBMIT');
+        }
 
         // Award points in battle room
         await fetch(`/api/rooms/${roomCode}`, {
@@ -329,6 +355,7 @@ export default function BattleRoomPage() {
         await fetchRoomDetails();
       } else {
         showToast(`Verdict: ${data.verdict || 'Wrong Answer'}`, 'error');
+        setLastEvent('SUBMIT_FAILED');
       }
     } catch (err: any) {
       showToast('Submission error', 'error');
@@ -586,7 +613,12 @@ export default function BattleRoomPage() {
                     language={language}
                     value={code}
                     onChange={(val) => {
-                      setCode(val || '');
+                      const newCode = val || '';
+                      setCode(newCode);
+                      const lineCount = newCode.split('\n').filter((l) => l.trim().length > 0).length;
+                      if (lineCount >= 10 && lineCount % 10 === 0) {
+                        setLastEvent('TYPING_PROGRESS');
+                      }
                       if (room.status === 'IN_PROGRESS' && viewerParticipant?.progress !== 'CODING') void updateProgress('CODING');
                     }}
                   />
@@ -617,12 +649,20 @@ export default function BattleRoomPage() {
         <div className="p-4 bg-slate-950 space-y-4 overflow-y-auto">
           {/* AI Live Commentator Component */}
           <AICommentator
+            roomCode={roomCode}
             roomName={room.name}
             mode={room.mode}
             status={room.status}
             participants={room.participants}
+            problemTitle={activeProblem?.title}
             activeProblemTitle={activeProblem?.title}
+            language={language}
+            codeSnippet={code}
+            linesOfCode={code.split('\n').filter((l) => l.trim().length > 0).length}
+            executionResult={executionResult}
+            userName={currentUserName}
             lastEvent={lastEvent}
+            eventType={lastEvent}
           />
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2">

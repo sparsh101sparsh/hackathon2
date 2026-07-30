@@ -117,3 +117,9 @@ export async function callFreeModelJSON<T = any>(options: FreeModelOptions): Pro
     throw new Error(`Failed to parse FreeModel JSON response: ${parseError.message}`);
   }
 }
+
+/**
+ * Alias export for callFreeModel
+ */
+export const callFreeModel = callFreeModelText;
+
