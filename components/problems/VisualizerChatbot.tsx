@@ -38,12 +38,12 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
   }, []);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, currentFrame?.commentary]);
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
