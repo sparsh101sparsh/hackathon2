@@ -353,6 +353,7 @@ export default function BattleRoomPage() {
   const seconds = (remainingSeconds % 60).toString().padStart(2, '0');
   const viewerParticipant = room.participants.find((participant) => participant.userId === currentUserId);
   const winner = room.winnerId ? room.participants.find((participant) => participant.userId === room.winnerId) : null;
+  const isHost = (user?.name && user.name === room.hostName) || (room.participants.length > 0 && room.participants[0].userId === currentUserId);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -408,24 +409,24 @@ export default function BattleRoomPage() {
             </div>
           )}
 
-          {/* Host Close Room vs Participant Leave Room */}
-          {user?.name === room.hostName ? (
+          {/* Host Close Room & Participant Leave Buttons */}
+          <button
+            onClick={handleLeaveRoom}
+            title="Leave Battle"
+            className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-rose-400 hover:border-rose-500/40 text-xs font-bold transition flex items-center gap-1.5"
+          >
+            <LogOut className="w-3.5 h-3.5 text-rose-400" />
+            <span>Leave Battle</span>
+          </button>
+
+          {isHost && (
             <button
               onClick={handleCloseRoom}
               title="Close Battle Room"
-              className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 text-xs font-bold transition flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition flex items-center gap-1.5"
             >
-              <Power className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Close Room</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleLeaveRoom}
-              title="Leave Room"
-              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Leave</span>
+              <Power className="w-3.5 h-3.5 text-rose-400" />
+              <span>Close Room</span>
             </button>
           )}
         </div>
@@ -644,7 +645,7 @@ export default function BattleRoomPage() {
             })}
           </div>
 
-          {/* Room Share Footer */}
+          {/* Room Share & Action Controls Footer */}
           <div className="pt-4 border-t border-slate-800 text-center space-y-2">
             <p className="text-[11px] text-slate-400">Invite up to 10 friends with code:</p>
             <button
@@ -654,6 +655,26 @@ export default function BattleRoomPage() {
               <Share2 className="w-3.5 h-3.5" />
               <span>Copy Invite Code ({roomCode})</span>
             </button>
+
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                onClick={handleLeaveRoom}
+                className="w-full py-2 bg-slate-900 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition"
+              >
+                <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                <span>Leave Battle Room</span>
+              </button>
+
+              {isHost && (
+                <button
+                  onClick={handleCloseRoom}
+                  className="w-full py-2 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 rounded-xl text-xs font-bold text-rose-300 flex items-center justify-center gap-2 transition"
+                >
+                  <Power className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Close & End Room (Host)</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
