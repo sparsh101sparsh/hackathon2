@@ -17,6 +17,7 @@ for (const entry of entries) {
     scenario &&
     scenario.visualType &&
     scenario.phases.length === 4 &&
+    new Set(scenario.phases).size === 4 &&
     scenario.comments.length === 4 &&
     new Set(scenario.comments).size === 4 &&
     scenario.comments.every((comment) => comment.length >= 24),
