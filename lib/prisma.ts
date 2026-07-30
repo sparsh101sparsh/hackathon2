@@ -75,6 +75,9 @@ function buildDbUrl(): string {
       if (!url.searchParams.has('connect_timeout')) {
         url.searchParams.set('connect_timeout', '10');
       }
+      if (!url.searchParams.has('pgbouncer')) {
+        url.searchParams.set('pgbouncer', 'true');
+      }
       return url.toString();
     } catch {
       return base;
