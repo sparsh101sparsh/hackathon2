@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Lock, Unlock, ChevronDown, ChevronUp, Loader2, Lightbulb } from 'lucide-react';
 import { HintResponse } from '@/app/api/ai/hints/route';
+import { PERSONALITY_STORAGE_KEY } from '@/lib/aiPersonalities';
 
 interface ProgressiveHintsProps {
   problemId?: string;
@@ -32,6 +33,7 @@ export const ProgressiveHints: React.FC<ProgressiveHintsProps> = ({
 
     setLoadingLevel(level);
     try {
+      const personalityId = typeof window !== 'undefined' ? localStorage.getItem(PERSONALITY_STORAGE_KEY) : null;
       const res = await fetch('/api/ai/hints', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -42,6 +44,7 @@ export const ProgressiveHints: React.FC<ProgressiveHintsProps> = ({
           userCode,
           language,
           hintLevel: level,
+          personality: personalityId,
         }),
       });
 

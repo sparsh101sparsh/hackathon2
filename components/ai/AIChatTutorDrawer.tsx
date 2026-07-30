@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Sparkles, User, Loader2, MessageSquare, Zap } from 'lucide-react';
+import { PERSONALITY_STORAGE_KEY, getPersonality } from '@/lib/aiPersonalities';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -34,15 +35,26 @@ export const AIChatTutorDrawer: React.FC<AIChatTutorDrawerProps> = ({
   userCode,
   language,
 }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: `Hello! I'm your Socratic DSA Tutor. How can I help you tackle "${problemTitle}" today? Feel free to ask about algorithms, edge cases, or optimizations!`,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Read personality from localStorage
+  const personality = getPersonality(
+    typeof window !== 'undefined' ? localStorage.getItem(PERSONALITY_STORAGE_KEY) : null
+  );
+
+  // Set welcome message based on personality
+  useEffect(() => {
+    setMessages([
+      {
+        role: 'assistant',
+        content: `${personality.emoji} Hello! I'm your ${personality.name} (${personality.title}). How can I help you tackle "${problemTitle}" today? ${personality.tagline}`,
+      },
+    ]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [problemTitle]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -74,6 +86,7 @@ export const AIChatTutorDrawer: React.FC<AIChatTutorDrawerProps> = ({
           userCode,
           language,
           messages: newMessages,
+          personality: personality.id,
         }),
       });
 

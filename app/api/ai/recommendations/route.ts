@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 import { getSessionFromRequest } from '@/lib/auth';
+import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = getSessionFromRequest(request)?.userId || 'guest';
+    const personalityId = searchParams.get('personality');
 
     // Fetch user progress or fallback
     let userProgress = await prisma.userProgress.findUnique({
@@ -59,7 +61,12 @@ export async function GET(request: NextRequest) {
       companyTags: typeof p.companyTags === 'string' ? JSON.parse(p.companyTags) : p.companyTags,
     }));
 
-    const systemPrompt = `You are an AI DSA Coach analyzing user solving stats across the complete ${allProblems.length}-question catalog:
+    const personality = getPersonality(personalityId);
+    const personalityPrefix = buildPersonalityPrefix(personality);
+
+    const systemPrompt = `${personalityPrefix}${personality.recommendationsSystemPrompt}
+
+You are analyzing user solving stats across the complete ${allProblems.length}-question catalog:
 Solved Easy: ${solvedEasy}, Solved Medium: ${solvedMedium}, Solved Hard: ${solvedHard}.
 
 Generate personalized recommendations for 3 selected problems.

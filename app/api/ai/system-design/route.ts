@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
+import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,13 +19,17 @@ export async function POST(request: NextRequest) {
       architectureDoc = '',
       company = 'Uber',
       topic = 'Distributed Rate Limiter / Ride Matching',
+      personality: personalityId,
     } = body;
 
     if (!architectureDoc || !architectureDoc.trim()) {
       return NextResponse.json({ error: 'architectureDoc is required' }, { status: 400 });
     }
 
-    const systemPrompt = `You are a Principal Infrastructure & Distributed Systems Architect reviewing a System Design Proposal for ${company} (${topic}).
+    const personality = getPersonality(personalityId);
+    const personalityPrefix = buildPersonalityPrefix(personality);
+
+    const systemPrompt = `${personalityPrefix}You are a Principal Infrastructure & Distributed Systems Architect reviewing a System Design Proposal for ${company} (${topic}).
 Evaluate the architecture document for scalability, fault-tolerance, data model, caching, load balancing, and storage choices.
 Output MUST be a single raw JSON object matching schema:
 {

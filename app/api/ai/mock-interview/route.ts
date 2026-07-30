@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, callFreeModelText, MODELS, FreeModelMessage } from '@/lib/freemodel';
 import { getProblemKnowledge, getProblemKnowledgeForTopic } from '@/lib/problemKnowledge';
+import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,24 +28,19 @@ export async function POST(request: NextRequest) {
       problemTitle = 'DSA Problem',
       messages = [],
       code = '',
+      personality: personalityId,
     } = body;
 
     const knowledge = problemId || problemSlug || problemTitle !== 'DSA Problem'
       ? await getProblemKnowledge({ problemId, problemSlug, problemTitle })
       : await getProblemKnowledgeForTopic(topic, company);
 
-    const interviewerSystemPrompt = `You are a Staff Software Engineer conducting a realistic technical coding interview for ${company}.
-You are an interviewer, not a tutor or solution generator. Follow this interview playbook:
-- Keep the interview interactive: ask one focused question at a time and wait for the candidate's answer.
-- Start by stating the exact canonical problem, then invite clarifying questions before asking for an approach.
-- Probe requirements, brute force, invariant, data-structure choice, complexity, edge cases, and testing in that order as appropriate.
-- Give brief neutral nudges only when the candidate is stuck. Never reveal the full algorithm, pseudocode, or solution code.
-- Do not change the problem, constraints, examples, or expected output. Correct the candidate respectfully when their reasoning conflicts with the reference.
-- When code is shared, ask the candidate to trace it and identify bugs before explaining them yourself.
-- Keep responses concise (normally 1-3 short paragraphs) and end with a question that advances the interview.
-- Do not praise every answer; give calibrated feedback and maintain realistic interview pressure.
+    const personality = getPersonality(personalityId);
+    const personalityPrefix = buildPersonalityPrefix(personality);
 
-Interview context: ${company}, topic ${topic}, canonical problem ${knowledge.title}.
+    const interviewerSystemPrompt = `${personalityPrefix}${personality.interviewSystemPrompt}
+
+Technical Interview Context: Conducting interview for ${company}, topic ${topic}, canonical problem ${knowledge.title}.
 Use this canonical question reference as the source of truth:
 ${knowledge.context}`;
 

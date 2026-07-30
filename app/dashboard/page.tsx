@@ -8,6 +8,7 @@ import { RatingHistoryChart } from '@/components/dashboard/RatingHistoryChart';
 import { ActivityCalendar } from '@/components/dashboard/ActivityCalendar';
 import { BadgesGrid } from '@/components/dashboard/BadgesGrid';
 import { WeeklyAiInsights } from '@/components/dashboard/WeeklyAiInsights';
+import { AIPersonalitySelector } from '@/components/dashboard/AIPersonalitySelector';
 import { DashboardStatsResponse } from '@/app/api/dashboard/stats/route';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { LayoutDashboard, Trophy } from 'lucide-react';
@@ -117,12 +118,19 @@ export default function DashboardPage() {
         />
       </motion.div>
 
-      {/* 2. AI Weekly Insights */}
+      {/* 2. AI Personality Selector */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
+        className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-5"
+      >
+        <AIPersonalitySelector />
+      </motion.div>
+
+      {/* 3. AI Weekly Insights */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
         <WeeklyAiInsights />
       </motion.div>
 
-      {/* 3. Recharts Section: Topic Radar + Rating Line Chart */}
+      {/* 4. Recharts Section: Topic Radar + Rating Line Chart */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -133,12 +141,12 @@ export default function DashboardPage() {
         <RatingHistoryChart history={data.ratingHistory} currentRating={data.user.rating} />
       </motion.div>
 
-      {/* 4. GitHub-style Activity Streak Calendar */}
+      {/* 5. GitHub-style Activity Streak Calendar */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}>
         <ActivityCalendar matrix={data.activityMatrix} streak={data.user.streak} />
       </motion.div>
 
-      {/* 5. Achievement Badges Grid */}
+      {/* 6. Achievement Badges Grid */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}>
         <BadgesGrid badges={data.badges} />
       </motion.div>

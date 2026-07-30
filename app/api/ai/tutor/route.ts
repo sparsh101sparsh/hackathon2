@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelText, MODELS, FreeModelMessage } from '@/lib/freemodel';
 import { getProblemKnowledge } from '@/lib/problemKnowledge';
+import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
       userCode = '',
       language = 'cpp',
       messages = [],
+      personality: personalityId,
     } = body;
 
     const knowledge = await getProblemKnowledge({
@@ -24,14 +26,13 @@ export async function POST(request: NextRequest) {
       fallbackStatement: problemStatement,
     });
 
-    const systemPrompt = `You are a world-class Socratic DSA Tutor on CodeForge AI.
-Your goal is to guide students through data structures, algorithms, space/time complexity analysis, and debugging.
-Rules:
-- Be encouraging, concise, and structured.
-- Use Socratic questions to prompt the student to think deeply about their algorithm.
-- If the user asks for explanations, break down the intuition clearly with small examples.
-- Never dump full solution code unless explicitly guided through all steps.
-- Current Context: Problem "${knowledge.title}", Language "${language}".
+    const personality = getPersonality(personalityId);
+    const personalityPrefix = buildPersonalityPrefix(personality);
+
+    const systemPrompt = `${personalityPrefix}${personality.tutorSystemPrompt}
+
+DSA Tutor Context:
+- Problem: "${knowledge.title}", Language: "${language}".
 - Use this canonical question reference as your source of truth and never invent a different problem:
 ${knowledge.context}`;
 

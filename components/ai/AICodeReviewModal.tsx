@@ -16,6 +16,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { CodeReviewResponse } from '@/app/api/ai/review/route';
+import { PERSONALITY_STORAGE_KEY, getPersonality } from '@/lib/aiPersonalities';
 
 interface AICodeReviewModalProps {
   isOpen: boolean;
@@ -47,6 +48,8 @@ export const AICodeReviewModal: React.FC<AICodeReviewModalProps> = ({
   const fetchCodeReview = async () => {
     setIsLoading(true);
     setError(null);
+    const personalityId = typeof window !== 'undefined' ? localStorage.getItem(PERSONALITY_STORAGE_KEY) : null;
+    const personality = getPersonality(personalityId);
     try {
       const res = await fetch('/api/ai/review', {
         method: 'POST',
@@ -58,6 +61,7 @@ export const AICodeReviewModal: React.FC<AICodeReviewModalProps> = ({
           userCode,
           language,
           verdict,
+          personality: personality.id,
         }),
       });
 

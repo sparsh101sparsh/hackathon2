@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Sparkles, ArrowRight, RefreshCw, Zap, Target, BookOpen } from 'lucide-react';
 import { DailyRecommendation } from '@/app/api/ai/recommendations/route';
+import { PERSONALITY_STORAGE_KEY } from '@/lib/aiPersonalities';
 
 export const DailyRecommendationsWidget: React.FC = () => {
   const [recommendations, setRecommendations] = useState<DailyRecommendation[]>([]);
@@ -14,7 +15,9 @@ export const DailyRecommendationsWidget: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/ai/recommendations');
+      const personalityId = typeof window !== 'undefined' ? localStorage.getItem(PERSONALITY_STORAGE_KEY) : '';
+      const url = personalityId ? `/api/ai/recommendations?personality=${personalityId}` : '/api/ai/recommendations';
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setRecommendations(data.recommendations || []);

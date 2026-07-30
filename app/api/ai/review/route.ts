@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 import { getProblemKnowledge } from '@/lib/problemKnowledge';
+import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
       userCode = '',
       language = 'cpp',
       verdict = 'Accepted',
+      personality: personalityId,
     } = body;
 
     if (!userCode || !userCode.trim()) {
@@ -39,8 +41,12 @@ export async function POST(request: NextRequest) {
       fallbackStatement: problemStatement,
     });
 
-    const systemPrompt = `You are a Senior Staff Software Engineer and AI Code Auditor. Perform a deep technical code review on a user's DSA code submission.
-Use the canonical question reference below as the source of truth for correctness, constraints, edge cases, and complexity. Do not review against a guessed problem.
+    const personality = getPersonality(personalityId);
+    const personalityPrefix = buildPersonalityPrefix(personality);
+
+    const systemPrompt = `${personalityPrefix}${personality.reviewSystemPrompt}
+
+You are conducting a deep technical code review. Use the canonical question reference below as the source of truth for correctness, constraints, edge cases, and complexity. Do not review against a guessed problem.
 
 ${knowledge.context}
 Output MUST be a single, raw JSON object with NO extra text or markdown syntax outside JSON.

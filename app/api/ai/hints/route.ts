@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 import { getProblemKnowledge } from '@/lib/problemKnowledge';
+import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,7 @@ export async function POST(request: NextRequest) {
       userCode = '',
       language = 'cpp',
       hintLevel = 1,
+      personality: personalityId,
     } = body;
 
     const level = Number(hintLevel) as 1 | 2 | 3;
@@ -41,8 +43,12 @@ export async function POST(request: NextRequest) {
       3: 'Level 3 - Detailed Logic & Step-by-Step Pseudocode: Provide detailed logical breakdown or clean pseudocode without providing complete solution code in the target language.',
     };
 
-    const systemPrompt = `You are a Socratic DSA Coach. Provide a progressive hint for the user working on a coding problem.
-${levelDescriptions[level]}
+    const personality = getPersonality(personalityId);
+    const personalityPrefix = buildPersonalityPrefix(personality);
+
+    const systemPrompt = `${personalityPrefix}${personality.hintsSystemPrompt}
+
+Hint Level Context: ${levelDescriptions[level]}
 IMPORTANT: DO NOT leak the full final solution code in the user's language. Encourage learning!
 Use the canonical question reference below as the source of truth. Do not invent constraints or change the problem.
 
