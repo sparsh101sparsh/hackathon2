@@ -65,8 +65,8 @@ export default function ContestArenaPage({ params }: { params: { id: string } })
     async function loadContestData() {
       try {
         const [cRes, sRes] = await Promise.all([
-          fetch(`/api/contests/${params.id}`),
-          fetch(`/api/contests/${params.id}/leaderboard`),
+          fetch(`/api/contests/${params.id}`, { credentials: 'include' }),
+          fetch(`/api/contests/${params.id}/leaderboard`, { credentials: 'include' }),
         ]);
 
         if (cRes.ok) {
