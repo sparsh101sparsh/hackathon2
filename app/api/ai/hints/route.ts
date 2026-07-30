@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
+import { getProblemKnowledge } from '@/lib/problemKnowledge';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +16,10 @@ export async function POST(request: NextRequest) {
     const {
       problemTitle = 'DSA Problem',
       problemStatement = '',
+      problemId,
+      problemSlug,
       userCode = '',
-      language = 'python',
+      language = 'cpp',
       hintLevel = 1,
     } = body;
 
@@ -24,6 +27,13 @@ export async function POST(request: NextRequest) {
     if (![1, 2, 3].includes(level)) {
       return NextResponse.json({ error: 'hintLevel must be 1, 2, or 3' }, { status: 400 });
     }
+
+    const knowledge = await getProblemKnowledge({
+      problemId,
+      problemSlug,
+      problemTitle,
+      fallbackStatement: problemStatement,
+    });
 
     const levelDescriptions = {
       1: 'Level 1 - Intuition & High-Level Direction: Give a high-level conceptual nudge or mathematical intuition without revealing data structures or specific algorithms.',
@@ -34,6 +44,9 @@ export async function POST(request: NextRequest) {
     const systemPrompt = `You are a Socratic DSA Coach. Provide a progressive hint for the user working on a coding problem.
 ${levelDescriptions[level]}
 IMPORTANT: DO NOT leak the full final solution code in the user's language. Encourage learning!
+Use the canonical question reference below as the source of truth. Do not invent constraints or change the problem.
+
+${knowledge.context}
 
 Output MUST be a single raw JSON object matching schema:
 {
@@ -42,8 +55,8 @@ Output MUST be a single raw JSON object matching schema:
   "hint": "Detailed hint text corresponding to level ${level}"
 }`;
 
-    const userPrompt = `Problem Title: ${problemTitle}
-Problem Statement: ${problemStatement}
+    const userPrompt = `Problem Title: ${knowledge.title}
+Problem Statement: ${knowledge.context}
 User Current Code (${language}):
 ${userCode ? userCode : '(No code written yet)'}
 
@@ -56,9 +69,9 @@ Provide Hint Level ${level}.`;
     };
 
     const fallbackHints = {
-      1: `To solve "${problemTitle}", think about what information you need at each step. Can you avoid re-evaluating subproblems or nested loops by tracking intermediate results?`,
-      2: `Consider using a Hash Table (Map/Dictionary) or a Two-Pointer technique. A Hash Table allows O(1) average lookup time to instantly check if a complement value exists.`,
-      3: `Step-by-step logic:\n1. Initialize an empty hash map 'seen'.\n2. Loop through the array with index 'i' and value 'x'.\n3. Calculate target complement 'needed = target - x'.\n4. If 'needed' exists in 'seen', return indices [seen[needed], i].\n5. Otherwise, store seen[x] = i.`,
+      1: `To solve "${knowledge.title}", think about what information you need at each step. Can you avoid re-evaluating subproblems or nested loops by tracking intermediate results?`,
+      2: `For "${knowledge.title}", identify the invariant that lets you discard work after each step. Which data structure best preserves that invariant under the stated constraints?`,
+      3: `Break "${knowledge.title}" into smaller decisions. Trace one sample from the canonical reference, name the state you maintain, and check how each update preserves correctness before writing code.`,
     };
 
     const fallbackJson: HintResponse = {

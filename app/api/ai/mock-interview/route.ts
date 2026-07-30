@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, callFreeModelText, MODELS, FreeModelMessage } from '@/lib/freemodel';
+import { getProblemKnowledge, getProblemKnowledgeForTopic } from '@/lib/problemKnowledge';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,26 +22,36 @@ export async function POST(request: NextRequest) {
       action = 'start',
       company = 'Google',
       topic = 'Arrays & Hashing',
+      problemId,
+      problemSlug,
+      problemTitle = 'DSA Problem',
       messages = [],
       code = '',
     } = body;
 
-    const interviewerSystemPrompt = `You are a Staff Software Engineer conducting a realistic technical coding interview for ${company} focused on ${topic}.
-Maintain a professional, encouraging yet thorough tone. Ask clarifying questions, evaluate candidate's thought process, time/space complexity explanations, and code.`;
+    const knowledge = problemId || problemSlug || problemTitle !== 'DSA Problem'
+      ? await getProblemKnowledge({ problemId, problemSlug, problemTitle })
+      : await getProblemKnowledgeForTopic(topic, company);
+
+    const interviewerSystemPrompt = `You are a Staff Software Engineer conducting a realistic technical coding interview for ${company}.
+You are an interviewer, not a tutor or solution generator. Follow this interview playbook:
+- Keep the interview interactive: ask one focused question at a time and wait for the candidate's answer.
+- Start by stating the exact canonical problem, then invite clarifying questions before asking for an approach.
+- Probe requirements, brute force, invariant, data-structure choice, complexity, edge cases, and testing in that order as appropriate.
+- Give brief neutral nudges only when the candidate is stuck. Never reveal the full algorithm, pseudocode, or solution code.
+- Do not change the problem, constraints, examples, or expected output. Correct the candidate respectfully when their reasoning conflicts with the reference.
+- When code is shared, ask the candidate to trace it and identify bugs before explaining them yourself.
+- Keep responses concise (normally 1-3 short paragraphs) and end with a question that advances the interview.
+- Do not praise every answer; give calibrated feedback and maintain realistic interview pressure.
+
+Interview context: ${company}, topic ${topic}, canonical problem ${knowledge.title}.
+Use this canonical question reference as the source of truth:
+${knowledge.context}`;
 
     if (action === 'start') {
-      const userPrompt = `Start the technical interview for a Senior Software Engineer candidate interviewing at ${company} focusing on ${topic}. Introduce yourself, state the problem clearly, provide input/output constraints, and invite the candidate to share their initial thoughts.`;
+      const userPrompt = `Begin the interview. Introduce yourself in one sentence, state the exact problem "${knowledge.title}" with its key constraints, then ask the candidate to restate the requirements and call out any clarifying questions. Do not discuss the solution yet.`;
 
-      const fallbackGreeting = `Hello! I'm your Senior Tech Lead interviewer at ${company}. Today we'll be working on a classic ${topic} problem.
-
-**Problem**: Given an array of integers \`nums\` and an integer \`target\`, return indices of the two numbers such that they add up to \`target\`.
-
-**Constraints**:
-- Each input would have exactly one solution.
-- You may not use the same element twice.
-- Expected Time Complexity: O(N).
-
-Before you start coding, could you walk me through your initial intuition and proposed approach?`;
+      const fallbackGreeting = `Hello, I'm your ${company} interviewer. Today we'll discuss **${knowledge.title}**. Please restate the requirements in your own words and tell me what clarifying questions you would ask before proposing an approach.`;
 
       const message = await callFreeModelText({
         model: MODELS.COMPLEX,
@@ -54,7 +65,8 @@ Before you start coding, could you walk me through your initial intuition and pr
         message,
         company,
         topic,
-        problemTitle: `Two Sum (${company} Tech Interview)`,
+        problemId: knowledge.problemId,
+        problemTitle: knowledge.title,
       });
     }
 
@@ -81,10 +93,12 @@ Before you start coding, could you walk me through your initial intuition and pr
         });
       }
 
-      const lastCandidateMsg = messages.length > 0 ? messages[messages.length - 1].content : '';
-      let fallbackText = `That's a solid explanation. How does your algorithm handle edge cases such as empty input arrays, negative target values, or duplicates?`;
+      const turnNumber = Array.isArray(messages) ? Math.ceil(messages.length / 2) : 1;
+      let fallbackText = `Let's examine that carefully. What invariant does your approach maintain, and what is its time and space complexity?`;
       if (code && code.trim()) {
-        fallbackText = `I see your implementation. Let's trace your code with \`nums = [3, 2, 4]\` and \`target = 6\`. Can you explain what values your data structure holds at each iteration?`;
+        fallbackText = `I see your implementation. Please trace it on one canonical sample and explain what each key variable contains after every important iteration.`;
+      } else if (turnNumber >= 3) {
+        fallbackText = `Before we move on, which edge case would most likely break this approach, and how would you test it?`;
       }
 
       const message = await callFreeModelText({
@@ -98,7 +112,12 @@ Before you start coding, could you walk me through your initial intuition and pr
     }
 
     if (action === 'evaluate') {
-      const evalSystemPrompt = `You are an Interview Evaluation Committee Chair at ${company}. Analyze the candidate's full interview transcript and code submission.
+      const evalKnowledge = await getProblemKnowledge({ problemId, problemSlug, problemTitle });
+      const evalSystemPrompt = `You are an Interview Evaluation Committee Chair at ${company}. Analyze the candidate's full interview transcript and code submission against the exact canonical problem below.
+Do not reward an answer that solves a different problem. Separate communication quality from algorithm correctness. Check whether the candidate clarified requirements, identified a valid invariant, justified complexity, considered edge cases, tested the code, and responded to probing.
+Canonical reference:
+${evalKnowledge.context}
+
 Output MUST be a single raw JSON object matching schema:
 {
   "score": number between 1 and 100,
@@ -123,7 +142,7 @@ Output MUST be a single raw JSON object matching schema:
           'Demonstrated clear thought process, explained time and space complexity tradeoffs effectively before jumping straight into code.',
         problemSolvingScore: 88,
         codeQualityScore: 82,
-        summary: `The candidate successfully arrived at an optimal O(N) Hash Map solution during the ${company} mock interview. Communicated trade-offs effectively and addressed interviewer follow-ups.`,
+        summary: `The candidate completed a structured interview on ${evalKnowledge.title}. The scorecard reflects the transcript, code, and canonical problem constraints.`,
         keyStrengths: [
           'Strong algorithmic intuition and quick recognition of optimal data structure',
           'Clean variable naming and clear explanation of time complexity O(N)',

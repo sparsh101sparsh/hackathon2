@@ -22,6 +22,8 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Radio,
+  Medal,
   Sparkles,
   Zap,
   Flame,
@@ -37,6 +39,8 @@ interface Participant {
   userName: string;
   score: number;
   solved: number;
+  progress: 'WAITING' | 'CODING' | 'SUBMITTED' | 'SOLVED';
+  acceptedAt?: string | null;
 }
 
 interface RoomData {
@@ -49,6 +53,11 @@ interface RoomData {
   problemCount: number;
   status: 'WAITING' | 'IN_PROGRESS' | 'FINISHED';
   participants: Participant[];
+  mode: 'DUEL' | 'SQUAD';
+  durationSeconds: number;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  winnerId?: string | null;
 }
 
 interface ProblemItem {
@@ -75,26 +84,33 @@ export default function BattleRoomPage() {
   const [room, setRoom] = useState<RoomData | null>(null);
   const [problems, setProblems] = useState<ProblemItem[]>([]);
   const [activeProblemIdx, setActiveProblemIdx] = useState(0);
-  const [language, setLanguage] = useState('python');
-  const [code, setCode] = useState('# Write your solution here\n');
+  const [language, setLanguage] = useState('cpp');
+  const [code, setCode] = useState('// Write your C++ solution here\n');
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [executionResult, setExecutionResult] = useState<any>(null);
   const [solvedProblems, setSolvedProblems] = useState<Record<string, boolean>>({});
+  const [battleUserId, setBattleUserId] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
 
-  const currentUserId = user?.id || `guest_local`;
+  const currentUserId = user?.id || battleUserId || `guest_local`;
   const currentUserName = user?.name || 'Guest Coder';
 
   const fetchRoomDetails = async () => {
     try {
-      const res = await fetch(`/api/rooms/${roomCode}`);
+      const res = await fetch(`/api/rooms/${roomCode}`, {
+        credentials: 'include',
+      });
       if (!res.ok) {
         throw new Error('Room not found');
       }
       const data = await res.json();
       setRoom(data.room);
       setProblems(data.problems || []);
+      if (data.room.startedAt) {
+        setNow(Date.now());
+      }
 
       // Automatically set starter code for active problem
       if (data.problems && data.problems.length > 0) {
@@ -113,11 +129,28 @@ export default function BattleRoomPage() {
 
   useEffect(() => {
     if (roomCode) {
+      const storedId = window.localStorage.getItem(`codeforge_battle_${roomCode}`);
+      if (storedId) setBattleUserId(storedId);
       fetchRoomDetails();
       const interval = setInterval(fetchRoomDetails, 3000); // Live sync room leaderboard
       return () => clearInterval(interval);
     }
   }, [roomCode, activeProblemIdx]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const updateProgress = async (nextProgress: 'CODING' | 'SUBMITTED') => {
+    if (!room || room.status !== 'IN_PROGRESS') return;
+    await fetch(`/api/rooms/${roomCode}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: 'UPDATE_PROGRESS', userId: currentUserId, progress: nextProgress }),
+    });
+  };
 
   useEffect(() => {
     if (problems.length > 0) {
@@ -143,11 +176,15 @@ export default function BattleRoomPage() {
       const res = await fetch(`/api/rooms/${roomCode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ action: 'START_BATTLE' }),
       });
+      const data = await res.json();
       if (res.ok) {
         showToast('⚔️ Battle Started! First to submit gets bonus speed points!', 'success');
         await fetchRoomDetails();
+      } else {
+        showToast(data.error || 'Battle needs two coders to start', 'error');
       }
     } catch (err) {
       showToast('Failed to start battle', 'error');
@@ -166,6 +203,7 @@ export default function BattleRoomPage() {
       const res = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           language,
           code,
@@ -190,9 +228,11 @@ export default function BattleRoomPage() {
     setExecutionResult(null);
 
     try {
+      await updateProgress('SUBMITTED');
       const res = await fetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           problemId: activeProblem.id,
           language,
@@ -211,6 +251,7 @@ export default function BattleRoomPage() {
         await fetch(`/api/rooms/${roomCode}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             action: 'SCORE_POINTS',
             userId: currentUserId,
@@ -229,6 +270,25 @@ export default function BattleRoomPage() {
       setExecuting(false);
     }
   };
+
+  // Redirect to login if not authenticated
+  if (!loading && !user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-4 p-4">
+        <Swords className="w-10 h-10 text-amber-400" />
+        <h2 className="text-xl font-bold text-white">Sign In to Battle</h2>
+        <p className="text-xs text-slate-400 text-center max-w-xs">You need to be signed in to access battle rooms</p>
+        <div className="flex gap-3">
+          <Link href="/contests" className="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl font-bold">
+            Back to Contests
+          </Link>
+          <Link href="/login" className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-xs rounded-xl font-bold">
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -251,6 +311,12 @@ export default function BattleRoomPage() {
   }
 
   const activeProblem = problems[activeProblemIdx];
+  const deadline = room.startedAt ? new Date(room.startedAt).getTime() + room.durationSeconds * 1000 : null;
+  const remainingSeconds = deadline ? Math.max(0, Math.ceil((deadline - now) / 1000)) : room.durationSeconds;
+  const minutes = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
+  const seconds = (remainingSeconds % 60).toString().padStart(2, '0');
+  const viewerParticipant = room.participants.find((participant) => participant.userId === currentUserId);
+  const winner = room.winnerId ? room.participants.find((participant) => participant.userId === room.winnerId) : null;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -289,13 +355,32 @@ export default function BattleRoomPage() {
           {room.status === 'WAITING' && (
             <button
               onClick={handleStartBattle}
-              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 hover:scale-105 transition flex items-center gap-1.5"
+              disabled={room.mode === 'DUEL' && room.participants.length < 2}
+              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 hover:scale-105 transition flex items-center gap-1.5 disabled:opacity-40 disabled:hover:scale-100"
             >
-              <Flame className="w-4 h-4" /> Start Battle
+              <Flame className="w-4 h-4" /> {room.mode === 'DUEL' && room.participants.length < 2 ? 'Waiting for Opponent' : 'Start Battle'}
             </button>
+          )}
+          {room.status !== 'WAITING' && (
+            <div className={`px-4 py-1.5 rounded-xl border font-mono text-sm font-black flex items-center gap-2 ${room.status === 'FINISHED' ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : remainingSeconds < 60 ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'}`}>
+              <Clock className="w-4 h-4" /> {room.status === 'FINISHED' ? 'MATCH OVER' : `${minutes}:${seconds}`}
+            </div>
           )}
         </div>
       </header>
+
+      {room.status === 'FINISHED' && (
+        <div className="border-b border-amber-500/30 bg-gradient-to-r from-amber-950/60 via-slate-900 to-cyan-950/40 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Medal className="w-6 h-6 text-amber-400" />
+            <div>
+              <p className="text-xs uppercase tracking-widest font-black text-amber-400">Final Result</p>
+              <p className="text-sm font-bold text-white">{winner ? `${winner.userName} won the duel` : 'Time expired. Review the rankings.'}</p>
+            </div>
+          </div>
+          <div className="text-xs text-slate-400">{viewerParticipant?.acceptedAt ? 'Accepted solution recorded.' : 'Keep the momentum and rematch.'}</div>
+        </div>
+      )}
 
       {/* Main Grid: Left Problem & Editor, Right Live Leaderboard */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 overflow-hidden">
@@ -406,7 +491,10 @@ export default function BattleRoomPage() {
                   <CodeEditor
                     language={language}
                     value={code}
-                    onChange={(val) => setCode(val || '')}
+                    onChange={(val) => {
+                      setCode(val || '');
+                      if (room.status === 'IN_PROGRESS' && viewerParticipant?.progress !== 'CODING') void updateProgress('CODING');
+                    }}
                   />
                 </div>
 
@@ -479,6 +567,9 @@ export default function BattleRoomPage() {
                       </div>
                       <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
                         <span>{p.solved} Solved</span>
+                        <span className={`flex items-center gap-1 ${p.progress === 'SOLVED' ? 'text-emerald-400' : p.progress === 'SUBMITTED' ? 'text-amber-400' : p.progress === 'CODING' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                          <Radio className="w-3 h-3" /> {p.progress === 'WAITING' ? 'Ready' : p.progress.toLowerCase()}
+                        </span>
                       </div>
                     </div>
                   </div>

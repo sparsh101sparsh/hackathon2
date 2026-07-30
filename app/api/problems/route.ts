@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,8 @@ export async function GET(request: NextRequest) {
     const company = searchParams.get('company');
     const search = searchParams.get('search')?.trim();
     const solved = searchParams.get('solved');
-    const userId = searchParams.get('userId');
+    const session = getSessionFromRequest(request);
+    const userId = session?.userId || null;
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '20', 10)));
 

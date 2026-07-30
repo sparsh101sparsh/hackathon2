@@ -39,13 +39,19 @@ interface RevisionCardItem {
   interval: number;
   repetitions: number;
   dueDate: string;
+  failureCount: number;
+  lastFailureType?: string | null;
+  lastError?: string | null;
+  lastFailedInput?: string | null;
+  lastExpectedOutput?: string | null;
+  lastActualOutput?: string | null;
   problem: ProblemData;
 }
 
 export default function RevisionPage() {
   const [cards, setCards] = useState<RevisionCardItem[]>([]);
   const [dueCards, setDueCards] = useState<RevisionCardItem[]>([]);
-  const [stats, setStats] = useState({ totalCards: 0, dueTodayCount: 0, masteredCount: 0 });
+  const [stats, setStats] = useState({ totalCards: 0, dueTodayCount: 0, masteredCount: 0, learnedMistakeCount: 0 });
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -59,7 +65,7 @@ export default function RevisionPage() {
       const data = await res.json();
       setCards(data.cards || []);
       setDueCards(data.dueCards || []);
-      setStats(data.stats || { totalCards: 0, dueTodayCount: 0, masteredCount: 0 });
+      setStats(data.stats || { totalCards: 0, dueTodayCount: 0, masteredCount: 0, learnedMistakeCount: 0 });
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -142,6 +148,13 @@ export default function RevisionPage() {
             </div>
           </div>
           <div className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-2xl flex items-center gap-2">
+            <Zap className="w-4 h-4 text-rose-400" />
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400">Learned Mistakes</div>
+              <div className="text-sm font-black text-rose-400 font-mono">{stats.learnedMistakeCount}</div>
+            </div>
+          </div>
+          <div className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-2xl flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-400" />
             <div>
               <div className="text-[10px] uppercase font-bold text-slate-400">Mastered</div>
@@ -202,6 +215,15 @@ export default function RevisionPage() {
                   <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-purple-300 transition">
                     {currentCard.problem?.title}
                   </h2>
+                  {currentCard.failureCount > 0 && (
+                    <div className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25">
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-rose-300">
+                        Learned from {currentCard.failureCount} failed {currentCard.failureCount === 1 ? 'attempt' : 'attempts'}
+                        {currentCard.lastFailureType ? ` · ${currentCard.lastFailureType}` : ''}
+                      </div>
+                      <p className="text-xs text-rose-100/80 mt-1">This card was brought forward because the platform found a weak spot in your latest submission.</p>
+                    </div>
+                  )}
                   <p className="text-xs text-slate-400 mt-2 line-clamp-4 leading-relaxed">
                     {currentCard.problem?.statement}
                   </p>
@@ -234,6 +256,25 @@ export default function RevisionPage() {
                       {currentCard.keyTakeaway}
                     </p>
                   </div>
+
+                  {currentCard.failureCount > 0 && (
+                    <div className="p-4 rounded-2xl bg-rose-950/30 border border-rose-800/40 space-y-3">
+                      <div className="text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                        <Zap className="w-4 h-4 text-rose-400" /> What tripped you up
+                      </div>
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                        Latest {currentCard.lastFailureType || 'failed'} submission
+                      </div>
+                      {currentCard.lastError && (
+                        <pre className="text-[11px] text-rose-100/90 bg-slate-950/80 border border-rose-900/40 rounded-lg p-2 whitespace-pre-wrap break-words max-h-24 overflow-auto">{currentCard.lastError}</pre>
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                        <div className="bg-slate-950/70 rounded-lg p-2"><span className="block text-slate-500 uppercase text-[9px]">Input</span><span className="text-slate-200 break-words">{currentCard.lastFailedInput || 'Unavailable'}</span></div>
+                        <div className="bg-slate-950/70 rounded-lg p-2"><span className="block text-slate-500 uppercase text-[9px]">Expected</span><span className="text-emerald-300 break-words">{currentCard.lastExpectedOutput || 'Unavailable'}</span></div>
+                        <div className="bg-slate-950/70 rounded-lg p-2"><span className="block text-slate-500 uppercase text-[9px]">Your output</span><span className="text-rose-300 break-words">{currentCard.lastActualOutput || 'No output'}</span></div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3 font-mono text-xs">
                     <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">

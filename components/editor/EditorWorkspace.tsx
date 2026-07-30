@@ -14,9 +14,11 @@ import {
   Loader2,
   Code2,
   Sparkles,
+  Brain,
 } from 'lucide-react';
 import { ExecuteApiResponse, SubmissionApiResponse, TestCaseResult } from '@/lib/types';
 import AICodeReviewModal from '@/components/ai/AICodeReviewModal';
+import { useAuth } from '@/context/AuthContext';
 
 interface CodeTemplateItem {
   id?: string;
@@ -56,7 +58,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   sampleTestCases = [],
   onSubmissionSuccess,
 }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('python');
+  const { user } = useAuth();
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('cpp');
   const [code, setCode] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'testcases' | 'results' | 'custom'>('testcases');
   const [selectedTestCaseIndex, setSelectedTestCaseIndex] = useState<number>(0);
@@ -153,6 +156,20 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       return;
     }
 
+    if (!user) {
+      setSubmissionResult({
+        verdict: 'Runtime Error',
+        passedCount: 0,
+        totalCount: 0,
+        executionTime: 0,
+        memory: 0,
+        testResults: [],
+        failedTestCase: { input: '', expectedOutput: '', actualOutput: '', error: 'Sign in to save submissions and progress.' },
+      });
+      setActiveTab('results');
+      return;
+    }
+
     setIsSubmitting(true);
     setActiveTab('results');
     setExecuteResult(null);
@@ -166,7 +183,6 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           problemId,
           language: selectedLanguage,
           code,
-          userId: 'guest',
         }),
       });
 
@@ -483,6 +499,16 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                     </div>
                   </div>
 
+                  {submissionResult.learning && (
+                    <div className="flex items-start gap-2 p-3 bg-cyan-950/25 border border-cyan-800/50 rounded-lg">
+                      <Brain className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
+                      <div className="text-[11px] text-cyan-100/85 font-sans">
+                        <span className="font-bold text-cyan-300">Revision Deck updated.</span>{' '}
+                        This {submissionResult.learning.pattern} mistake is due for review now and will be shown with the failing case.
+                      </div>
+                    </div>
+                  )}
+
                   {submissionResult.failedTestCase && (
                     <div className="p-3 bg-rose-950/20 border border-rose-900/50 rounded-lg space-y-2">
                       <div className="text-xs font-bold text-rose-400 font-sans">
@@ -608,6 +634,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       <AICodeReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
+        problemId={problemId}
         problemTitle={problemTitle}
         problemStatement={problemStatement}
         userCode={code}

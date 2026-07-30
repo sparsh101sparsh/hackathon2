@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { executeCode } from '@/lib/piston';
 import { ExecutionVerdict, TestCaseResult } from '@/lib/types';
+import { getSessionFromRequest } from '@/lib/auth';
+import { buildRevisionLearning, snapshotForRevision } from '@/lib/revisionLearning';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +14,7 @@ function normalizeOutput(str: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { problemId, language, code, userId } = body;
+    const { problemId, language, code } = body;
 
     if (!problemId || !language || !code) {
       return NextResponse.json(
@@ -21,7 +23,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const activeUserId = userId || 'guest';
+    const session = getSessionFromRequest(request);
+    if (!session?.userId) {
+      return NextResponse.json({ error: 'Sign in to submit code and save progress.' }, { status: 401 });
+    }
+    const activeUserId = session.userId;
 
     // Fetch problem and all test cases
     const problem = await prisma.problem.findUnique({
@@ -219,7 +225,7 @@ export async function POST(request: NextRequest) {
         console.error('Error updating user progress:', progressError);
       }
 
-      // Auto-create or update Revision Flashcard for Spaced Repetition
+      // Keep successful problems in the deck while preserving any learned failure history.
       try {
         let parsedTopics = [];
         try { parsedTopics = JSON.parse(problem.topicTags || '[]'); } catch {}
@@ -243,10 +249,70 @@ export async function POST(request: NextRequest) {
           },
           update: {
             dueDate: nextDueDate,
+            keyTakeaway: `Mastered ${problem.title}. Review the learned edge cases and optimal approach.`,
           },
         });
       } catch (revError) {
         console.error('Error creating revision flashcard:', revError);
+      }
+    }
+
+    let learning: {
+      failureCount: number;
+      failureType: ExecutionVerdict;
+      pattern: string;
+    } | null = null;
+
+    if (overallVerdict !== 'Accepted' && failedTestCaseInfo) {
+      try {
+        const revision = buildRevisionLearning(overallVerdict, problem.topicTags, failedTestCaseInfo);
+        const snapshot = snapshotForRevision(failedTestCaseInfo);
+        const existingCard = await prisma.revisionCard.findUnique({
+          where: { userId_problemId: { userId: activeUserId, problemId: problem.id } },
+          select: { failureCount: true },
+        });
+        const failureCount = (existingCard?.failureCount || 0) + 1;
+
+        await prisma.revisionCard.upsert({
+          where: {
+            userId_problemId: {
+              userId: activeUserId,
+              problemId: problem.id,
+            },
+          },
+          create: {
+            userId: activeUserId,
+            problemId: problem.id,
+            pattern: revision.pattern,
+            keyTakeaway: revision.keyTakeaway,
+            interval: 1,
+            repetitions: 0,
+            dueDate: new Date(),
+            failureCount,
+            lastFailureType: revision.failureType,
+            ...snapshot,
+            learnedAt: new Date(),
+          },
+          update: {
+            pattern: revision.pattern,
+            keyTakeaway: revision.keyTakeaway,
+            interval: 1,
+            repetitions: 0,
+            dueDate: new Date(),
+            failureCount,
+            lastFailureType: revision.failureType,
+            ...snapshot,
+            learnedAt: new Date(),
+          },
+        });
+
+        learning = {
+          failureCount,
+          failureType: revision.failureType,
+          pattern: revision.pattern,
+        };
+      } catch (revError) {
+        console.error('Error learning from failed submission:', revError);
       }
     }
 
@@ -258,6 +324,7 @@ export async function POST(request: NextRequest) {
       executionTime: avgExecutionTime,
       memory: maxMemory,
       failedTestCase: failedTestCaseInfo,
+      learning,
       testResults,
       createdAt: submission.createdAt,
     });
@@ -274,13 +341,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const problemId = searchParams.get('problemId');
-    const userId = searchParams.get('userId');
+    const session = getSessionFromRequest(request);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '20', 10)));
 
     const whereClause: any = {};
     if (problemId) whereClause.problemId = problemId;
-    if (userId) whereClause.userId = userId;
+    whereClause.userId = session?.userId || 'guest';
 
     const total = await prisma.submission.count({ where: whereClause });
     const submissions = await prisma.submission.findMany({

@@ -57,14 +57,11 @@ export interface DashboardStatsResponse {
   }>;
 }
 
-import { verifyToken } from '@/lib/auth';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    const cookieToken = req.cookies.get('codeforge_session')?.value;
-    const authHeader = req.headers.get('Authorization');
-    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const payload = verifyToken(cookieToken || headerToken || '');
+    const payload = getSessionFromRequest(req);
 
     const targetUserId = payload?.userId || 'guest';
     const dbUser = payload?.userId ? await prisma.user.findUnique({ where: { id: payload.userId } }) : null;

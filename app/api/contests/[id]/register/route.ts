@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,11 @@ export async function POST(
 ) {
   try {
     const { id: contestId } = params;
-    const userId = 'guest';
+    const session = getSessionFromRequest(req);
+    if (!session?.userId) {
+      return NextResponse.json({ error: 'Sign in to register for contests.' }, { status: 401 });
+    }
+    const userId = session.userId;
 
     let contest = await prisma.contest.findUnique({ where: { id: contestId } });
     if (!contest) {
@@ -37,12 +42,13 @@ export async function POST(
     }
 
     const userRating = 1500;
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
 
     const participant = await prisma.contestParticipant.create({
       data: {
         contestId: contest.id,
         userId: userId,
-        name: 'Guest Coder',
+        name: user?.name || session.name,
         oldRating: userRating,
         newRating: userRating,
         score: 0,

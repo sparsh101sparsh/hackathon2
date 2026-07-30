@@ -20,6 +20,7 @@ import { CodeReviewResponse } from '@/app/api/ai/review/route';
 interface AICodeReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
+  problemId?: string;
   problemTitle: string;
   problemStatement?: string;
   userCode: string;
@@ -30,6 +31,7 @@ interface AICodeReviewModalProps {
 export const AICodeReviewModal: React.FC<AICodeReviewModalProps> = ({
   isOpen,
   onClose,
+  problemId,
   problemTitle,
   problemStatement = '',
   userCode,
@@ -50,6 +52,7 @@ export const AICodeReviewModal: React.FC<AICodeReviewModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          problemId,
           problemTitle,
           problemStatement,
           userCode,

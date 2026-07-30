@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, X, Sparkles, Loader2, Trophy, Swords } from 'lucide-react';
+import { Users, X, Loader2, Swords, Lock, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 interface CreateRoomModalProps {
   isOpen: boolean;
@@ -12,10 +14,12 @@ interface CreateRoomModalProps {
 
 export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
+  const { user } = useAuth();
   const [name, setName] = useState('');
-  const [hostName, setHostName] = useState('');
   const [difficulty, setDifficulty] = useState<'MIXED' | 'EASY' | 'MEDIUM' | 'HARD'>('MIXED');
   const [problemCount, setProblemCount] = useState<number>(3);
+  const [mode, setMode] = useState<'DUEL' | 'SQUAD'>('DUEL');
+  const [durationSeconds, setDurationSeconds] = useState<number>(900);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,17 +28,25 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!user) {
+      setError('You must be signed in to create a battle room.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch('/api/rooms/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // CRITICAL: sends session cookie
         body: JSON.stringify({
           name: name || undefined,
-          hostName: hostName || undefined,
           difficulty,
-          problemCount,
+          problemCount: mode === 'DUEL' ? 1 : problemCount,
+          mode,
+          durationSeconds,
         }),
       });
 
@@ -83,106 +95,167 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
             </button>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Room Name */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 mb-1 block">Room Name</label>
-              <input
-                type="text"
-                placeholder="Speed Demons Arena"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
-              />
-            </div>
-
-            {/* Display Name */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 mb-1 block">Your Display Name</label>
-              <input
-                type="text"
-                placeholder="SpeedCoder"
-                value={hostName}
-                onChange={(e) => setHostName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
-              />
-            </div>
-
-            {/* Difficulty Selection */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 mb-1.5 block">Difficulty Pool</label>
-              <div className="grid grid-cols-4 gap-2">
-                {(['MIXED', 'EASY', 'MEDIUM', 'HARD'] as const).map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setDifficulty(d)}
-                    className={`py-2 rounded-xl text-[11px] font-bold border transition ${
-                      difficulty === d
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-sm'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {d}
-                  </button>
-                ))}
+          {/* Auth gate */}
+          {!user ? (
+            <div className="py-8 text-center space-y-4">
+              <div className="inline-flex p-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                <Lock className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Sign In Required</p>
+                <p className="text-xs text-slate-400 mt-1">You must be signed in to create a battle room</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+                  Cancel
+                </button>
+                <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-xs font-bold text-center transition">
+                  Sign In
+                </Link>
               </div>
             </div>
-
-            {/* Problem Count */}
-            <div>
-              <label className="text-xs font-bold text-slate-300 mb-1.5 block">
-                Number of Problems: <span className="text-amber-400 font-mono">{problemCount}</span>
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {[2, 3, 4, 5].map((cnt) => (
-                  <button
-                    key={cnt}
-                    type="button"
-                    onClick={() => setProblemCount(cnt)}
-                    className={`py-2 rounded-xl text-xs font-bold border transition ${
-                      problemCount === cnt
-                        ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {cnt} Questions
-                  </button>
-                ))}
+          ) : (
+            <>
+              {/* Host Info Badge */}
+              <div className="mb-4 px-3 py-2 bg-slate-950 border border-slate-800/80 rounded-xl flex items-center gap-2 text-xs text-slate-400">
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Hosting as <span className="text-white font-bold">{user.name}</span></span>
               </div>
-            </div>
 
-            {/* Player Limit Note */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-              <span className="flex items-center gap-1.5 font-medium">
-                <Users className="w-4 h-4 text-cyan-400" /> Max Players Limit
-              </span>
-              <span className="font-bold text-amber-400 font-mono">10 Friends</span>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold text-xs shadow-xl shadow-amber-500/20 hover:scale-[1.01] transition flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Creating Battle Arena...
-                </>
-              ) : (
-                <>
-                  <Swords className="w-4 h-4" /> Create Battle Room
-                </>
+              {error && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  {error}
+                </div>
               )}
-            </button>
-          </form>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Room Name */}
+                <div>
+                  <label className="text-xs font-bold text-slate-300 mb-1 block">Room Name <span className="text-slate-500">(optional)</span></label>
+                  <input
+                    type="text"
+                    placeholder={`${user.name}'s Battle Arena`}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
+                  />
+                </div>
+
+                {/* Battle Format */}
+                <div>
+                  <label className="text-xs font-bold text-slate-300 mb-1.5 block">Battle Format</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(['DUEL', 'SQUAD'] as const).map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setMode(value)}
+                        className={`py-2.5 rounded-xl text-[11px] font-bold border transition ${mode === value ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'}`}
+                      >
+                        {value === 'DUEL' ? '⚔️ 1v1 Duel' : '🛡️ Squad Race'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Difficulty */}
+                <div>
+                  <label className="text-xs font-bold text-slate-300 mb-1.5 block">Difficulty Pool</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {(['MIXED', 'EASY', 'MEDIUM', 'HARD'] as const).map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setDifficulty(d)}
+                        className={`py-2 rounded-xl text-[11px] font-bold border transition ${
+                          difficulty === d
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-sm'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Problem Count (Squad only) */}
+                <div className={mode === 'DUEL' ? 'opacity-40 pointer-events-none' : ''}>
+                  <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                    Problems: <span className="text-amber-400 font-mono">{mode === 'DUEL' ? 1 : problemCount}</span>
+                    {mode === 'DUEL' && <span className="text-slate-500 font-normal ml-2">(1 per duel)</span>}
+                  </label>
+                  {mode === 'SQUAD' && (
+                    <div className="grid grid-cols-4 gap-2">
+                      {[2, 3, 4, 5].map((cnt) => (
+                        <button
+                          key={cnt}
+                          type="button"
+                          onClick={() => setProblemCount(cnt)}
+                          className={`py-2 rounded-xl text-xs font-bold border transition ${
+                            problemCount === cnt
+                              ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
+                              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {cnt}Q
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Duration */}
+                <div>
+                  <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                    Time Limit: <span className="text-amber-400 font-mono">{Math.floor(durationSeconds / 60)} min</span>
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[300, 600, 900, 1800].map((secs) => (
+                      <button
+                        key={secs}
+                        type="button"
+                        onClick={() => setDurationSeconds(secs)}
+                        className={`py-2 rounded-xl text-[11px] font-bold border transition ${
+                          durationSeconds === secs
+                            ? 'bg-purple-500/20 border-purple-500 text-purple-400'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {secs / 60}m
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Player Limit Note */}
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Users className="w-4 h-4 text-cyan-400" /> Max Players
+                  </span>
+                  <span className="font-bold text-amber-400 font-mono">10 Friends</span>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold text-xs shadow-xl shadow-amber-500/20 hover:scale-[1.01] transition flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Creating Battle Arena...
+                    </>
+                  ) : (
+                    <>
+                      <Swords className="w-4 h-4" /> Create Battle Room
+                    </>
+                  )}
+                </button>
+              </form>
+            </>
+          )}
         </motion.div>
       </div>
     </AnimatePresence>

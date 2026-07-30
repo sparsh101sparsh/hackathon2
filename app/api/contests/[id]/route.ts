@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,7 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+    const session = getSessionFromRequest(req);
 
     let contest = await prisma.contest.findUnique({
       where: { id },
@@ -63,7 +65,9 @@ export async function GET(
       calculatedStatus = 'ENDED';
     }
 
-    const isRegistered = contest.contestParticipants.some((p) => p.userId === 'guest');
+    const isRegistered = session?.userId
+      ? contest.contestParticipants.some((p) => p.userId === session.userId)
+      : false;
 
     let problems = contest.contestProblems.map((cp, idx) => {
       const pointValues = [100, 250, 500, 1000];

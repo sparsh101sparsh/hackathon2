@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 import { prisma } from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,15 +15,17 @@ export interface WeeklyReportResponse {
 
 export async function GET(req: NextRequest) {
   try {
-    let userName = 'Guest Coder';
+    const session = getSessionFromRequest(req);
+    const userId = session?.userId || 'guest';
+    let userName = session?.name || 'Guest Coder';
     let solvedEasy = 12;
     let solvedMedium = 8;
     let solvedHard = 3;
     let currentRating = 1550;
-    let streak = 7;
+    let streak = 0;
 
     const userProgress = await prisma.userProgress.findUnique({
-      where: { userId: 'guest' },
+      where: { userId },
     });
 
     if (userProgress) {
@@ -34,6 +37,8 @@ export async function GET(req: NextRequest) {
 
     const systemPrompt = `You are CodeForge AI Performance Coach analyzing weekly coding progress.
 Provide concise, highly motivating weekly progress insights for competitive programming and interview prep.
+CRITICAL STREAK RULE: If Active Streak is 0 days, do NOT claim the user has a strong streak or consistent daily practice. Instead, encourage them to solve 1 problem today to kickstart their streak!
+
 Return ONLY valid JSON matching this schema:
 {
   "summary": "1-2 sentence executive summary of user progress this week",
@@ -48,11 +53,21 @@ Current Rating: ${currentRating}
 Solved Breakdown: Easy: ${solvedEasy}, Medium: ${solvedMedium}, Hard: ${solvedHard}
 Active Streak: ${streak} days`;
 
+    const summaryText =
+      streak > 0
+        ? `${userName} demonstrated strong commitment with a ${streak}-day active streak, advancing significantly in Dynamic Programming and Graph algorithms.`
+        : `${userName} is ready to kickstart their daily streak today and accelerate their progress in Dynamic Programming and Graph algorithms.`;
+
+    const streakStrength =
+      streak > 0
+        ? `Consistent daily practice maintaining a ${streak}-day active streak`
+        : 'Proactive engagement in exploring targeted problem categories';
+
     const fallbackReport: WeeklyReportResponse = {
-      summary: `${userName} demonstrated strong consistency with a ${streak}-day active streak, advancing significantly in Dynamic Programming and Graph algorithms.`,
+      summary: summaryText,
       strengths: [
         'High submission accuracy (84.4%) on Medium difficulty Array & Two Pointer problems',
-        'Consistent daily practice maintaining a strong streak',
+        streakStrength,
         'Fast implementation speed on Stack and String parsing questions',
       ],
       focusAreas: [
@@ -61,7 +76,9 @@ Active Streak: ${streak} days`;
         'Contest penalty time management during high-pressure timed rounds',
       ],
       recommendations: [
-        'Solve 3 Medium Dynamic Programming problems (e.g. Coin Change, Longest Common Subsequence)',
+        streak === 0
+          ? 'Solve 1 problem today to start your active streak!'
+          : 'Solve 3 Medium Dynamic Programming problems (e.g. Coin Change, Longest Common Subsequence)',
         'Participate in the upcoming CodeForge Rated Contest to test time management',
         'Review space complexity trade-offs in Graph Traversal algorithms',
       ],

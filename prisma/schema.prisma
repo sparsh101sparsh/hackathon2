@@ -3,13 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   id           String        @id @default(uuid())
   email        String        @unique
+  googleId     String?       @unique
   name         String
   passwordHash String
   role         String        @default("USER") // USER, ADMIN
@@ -156,6 +157,11 @@ model CustomRoom {
   problemCount Int               @default(3)
   status       String            @default("WAITING") // WAITING, IN_PROGRESS, FINISHED
   problemIds   String            // JSON string array of problem IDs
+  mode         String            @default("DUEL") // DUEL or SQUAD
+  durationSeconds Int            @default(900)
+  startedAt    DateTime?
+  endedAt      DateTime?
+  winnerId     String?
   createdAt    DateTime          @default(now())
   participants RoomParticipant[]
 }
@@ -168,6 +174,8 @@ model RoomParticipant {
   userName  String
   score     Int        @default(0)
   solved    Int        @default(0)
+  progress  String     @default("WAITING") // WAITING, CODING, SUBMITTED, SOLVED
+  acceptedAt DateTime?
   joinedAt  DateTime   @default(now())
 
   @@unique([roomId, userId])
@@ -187,7 +195,27 @@ model RevisionCard {
   repetitions    Int       @default(0)
   dueDate        DateTime  @default(now())
   lastReviewedAt DateTime?
+  failureCount   Int       @default(0)
+  lastFailureType String?
+  lastError      String?
+  lastFailedInput String?
+  lastExpectedOutput String?
+  lastActualOutput String?
+  learnedAt      DateTime?
   createdAt      DateTime  @default(now())
 
   @@unique([userId, problemId])
+}
+
+model EmailVerification {
+  id           String   @id @default(uuid())
+  email        String
+  code         String   // 6-digit verification OTP code e.g. "482910"
+  purpose      String   // "SIGNUP" or "LOGIN"
+  name         String?  // Saved for signup completion
+  passwordHash String?  // Saved for signup completion
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([email, code])
 }

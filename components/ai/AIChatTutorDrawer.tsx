@@ -11,6 +11,7 @@ interface Message {
 interface AIChatTutorDrawerProps {
   isOpen: boolean;
   onToggle: () => void;
+  problemId?: string;
   problemTitle: string;
   problemStatement?: string;
   userCode: string;
@@ -27,6 +28,7 @@ const QUICK_PROMPTS = [
 export const AIChatTutorDrawer: React.FC<AIChatTutorDrawerProps> = ({
   isOpen,
   onToggle,
+  problemId,
   problemTitle,
   problemStatement = '',
   userCode,
@@ -66,6 +68,7 @@ export const AIChatTutorDrawer: React.FC<AIChatTutorDrawerProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          problemId,
           problemTitle,
           problemStatement,
           userCode,

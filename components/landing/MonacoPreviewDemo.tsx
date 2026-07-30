@@ -57,7 +57,7 @@ std::vector<int> twoSum(std::vector<int>& nums, int target) {
 };
 
 export const MonacoPreviewDemo: React.FC = () => {
-  const [lang, setLang] = useState<'python' | 'cpp' | 'javascript'>('python');
+  const [lang, setLang] = useState<'python' | 'cpp' | 'javascript'>('cpp');
   const [activeTab, setActiveTab] = useState<'code' | 'ai_review'>('code');
   const [isExecuting, setIsExecuting] = useState(false);
   const [verdict, setVerdict] = useState<string | null>(null);

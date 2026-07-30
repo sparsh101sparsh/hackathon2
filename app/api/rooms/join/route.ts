@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,13 +24,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Battle room not found. Check the code and try again.' }, { status: 404 });
     }
 
-    const cookieToken = req.cookies.get('codeforge_session')?.value;
-    const authHeader = req.headers.get('Authorization');
-    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const payload = verifyToken(cookieToken || headerToken || '');
+    const payload = getSessionFromRequest(req);
+    if (!payload?.userId) {
+      return NextResponse.json({ error: 'Sign in to join a battle room.' }, { status: 401 });
+    }
 
-    const userId = payload?.userId || `guest_${Math.floor(1000 + Math.random() * 9000)}`;
-    const finalUserName = userName || payload?.name || `Coder_${Math.floor(100 + Math.random() * 900)}`;
+    const userId = payload.userId;
+    const finalUserName = payload.name;
 
     // Check if user is already in the room
     const alreadyParticipant = room.participants.find(p => p.userId === userId);
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       roomCode: room.code,
+      participantUserId: userId,
       room: updatedRoom,
     });
   } catch (error: any) {

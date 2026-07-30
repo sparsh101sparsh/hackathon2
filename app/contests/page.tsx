@@ -32,7 +32,7 @@ export default function ContestsPage() {
 
   const fetchContests = async () => {
     try {
-      const res = await fetch('/api/contests');
+      const res = await fetch('/api/contests', { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch contests');
       const data = await res.json();
       setContests(data.contests || []);
@@ -52,12 +52,14 @@ export default function ContestsPage() {
     try {
       const res = await fetch(`/api/contests/${contestId}/register`, {
         method: 'POST',
+        credentials: 'include',
       });
       if (res.ok) {
         showToast('Contest Registered Successfully!', 'success');
         await fetchContests();
       } else {
-        showToast('Failed to register for contest', 'error');
+        const data = await res.json();
+        showToast(data.error || 'Failed to register for contest', 'error');
       }
     } catch (err) {
       console.error('Failed to register', err);

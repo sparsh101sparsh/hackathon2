@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
+import { getProblemKnowledge } from '@/lib/problemKnowledge';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,13 +18,31 @@ export interface CodeReviewResponse {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { problemTitle = 'DSA Problem', problemStatement = '', userCode = '', language = 'python', verdict = 'Accepted' } = body;
+    const {
+      problemTitle = 'DSA Problem',
+      problemStatement = '',
+      problemId,
+      problemSlug,
+      userCode = '',
+      language = 'cpp',
+      verdict = 'Accepted',
+    } = body;
 
     if (!userCode || !userCode.trim()) {
       return NextResponse.json({ error: 'userCode is required' }, { status: 400 });
     }
 
+    const knowledge = await getProblemKnowledge({
+      problemId,
+      problemSlug,
+      problemTitle,
+      fallbackStatement: problemStatement,
+    });
+
     const systemPrompt = `You are a Senior Staff Software Engineer and AI Code Auditor. Perform a deep technical code review on a user's DSA code submission.
+Use the canonical question reference below as the source of truth for correctness, constraints, edge cases, and complexity. Do not review against a guessed problem.
+
+${knowledge.context}
 Output MUST be a single, raw JSON object with NO extra text or markdown syntax outside JSON.
 
 JSON Schema:
@@ -38,8 +57,8 @@ JSON Schema:
   "refactoredCode": "clean, optimized, production-ready refactored version of the user code"
 }`;
 
-    const userPrompt = `Problem Title: ${problemTitle}
-Problem Statement: ${problemStatement}
+    const userPrompt = `Problem Title: ${knowledge.title}
+Problem Statement: ${knowledge.context}
 Programming Language: ${language}
 Execution Verdict: ${verdict}
 

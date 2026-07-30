@@ -41,13 +41,14 @@ export default function MockInterviewPage() {
   const [selectedCompany, setSelectedCompany] = useState<string>('Google');
   const [selectedTopic, setSelectedTopic] = useState<string>('Arrays & Hashing');
   const [problemTitle, setProblemTitle] = useState<string>('DSA Coding Interview');
+  const [problemId, setProblemId] = useState<string>('');
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState<string>('');
   const [code, setCode] = useState<string>(
-    '# Write your candidate solution here\ndef solution():\n    pass\n'
+    '// Write your candidate C++ solution here\n#include <iostream>\nusing namespace std;\n\nint main() {\n    return 0;\n}\n'
   );
-  const [language, setLanguage] = useState<string>('python');
+  const [language, setLanguage] = useState<string>('cpp');
 
   const [isStarting, setIsStarting] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
@@ -97,6 +98,7 @@ export default function MockInterviewPage() {
 
       if (res.ok) {
         const data = await res.json();
+        setProblemId(data.problemId || '');
         setProblemTitle(data.problemTitle || `Technical Interview (${selectedCompany})`);
         setMessages([{ role: 'assistant', content: data.message }]);
         setStage('interview');
@@ -130,6 +132,8 @@ export default function MockInterviewPage() {
           action: 'message',
           company: selectedCompany,
           topic: selectedTopic,
+          problemId,
+          problemTitle,
           messages: newMsgs,
           code,
         }),
@@ -158,6 +162,8 @@ export default function MockInterviewPage() {
           action: 'evaluate',
           company: selectedCompany,
           topic: selectedTopic,
+          problemId,
+          problemTitle,
           messages,
           code,
         }),

@@ -1,14 +1,17 @@
 import crypto from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'codeforge-jwt-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'codeforge-jwt-secret-key-2026');
+const PASSWORD_SCHEME = 'pbkdf2-sha512';
+const PASSWORD_ITERATIONS = 210_000;
 
 /**
  * Hashes password using Node.js native crypto (pbkdf2)
  */
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-  return `${salt}:${hash}`;
+  const hash = crypto.pbkdf2Sync(password, salt, PASSWORD_ITERATIONS, 64, 'sha512').toString('hex');
+  return `${PASSWORD_SCHEME}$${PASSWORD_ITERATIONS}$${salt}$${hash}`;
 }
 
 /**
@@ -16,10 +19,16 @@ export function hashPassword(password: string): string {
  */
 export function verifyPassword(password: string, storedHash: string): boolean {
   try {
-    const [salt, originalHash] = storedHash.split(':');
+    const modernParts = storedHash.split('$');
+    const isModern = modernParts.length === 4 && modernParts[0] === PASSWORD_SCHEME;
+    const iterations = isModern ? Number(modernParts[1]) : 1000;
+    const salt = isModern ? modernParts[2] : storedHash.split(':')[0];
+    const originalHash = isModern ? modernParts[3] : storedHash.split(':')[1];
     if (!salt || !originalHash) return false;
-    const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-    return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(originalHash));
+    const hash = crypto.pbkdf2Sync(password, salt, iterations, 64, 'sha512').toString('hex');
+    const expected = Buffer.from(originalHash, 'hex');
+    const actual = Buffer.from(hash, 'hex');
+    return expected.length === actual.length && crypto.timingSafeEqual(actual, expected);
   } catch {
     return false;
   }
@@ -38,6 +47,7 @@ export interface UserSessionPayload {
  * Signs a JWT-style session token with HMAC-SHA256
  */
 export function signToken(user: { id: string; email: string; name: string; role: string }): string {
+  if (!JWT_SECRET) throw new Error('JWT_SECRET is required in production');
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
   const payload: UserSessionPayload = {
     userId: user.id,
@@ -61,7 +71,7 @@ export function signToken(user: { id: string; email: string; name: string; role:
  */
 export function verifyToken(token: string): UserSessionPayload | null {
   try {
-    if (!token) return null;
+    if (!JWT_SECRET || !token) return null;
     const parts = token.split('.');
     if (parts.length !== 3) return null;
 
@@ -84,4 +94,27 @@ export function verifyToken(token: string): UserSessionPayload | null {
   } catch {
     return null;
   }
+}
+
+export function getRequestToken(req: NextRequest): string | null {
+  const cookieToken = req.cookies.get('codeforge_session')?.value;
+  const authHeader = req.headers.get('Authorization');
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  return cookieToken || headerToken || null;
+}
+
+export function getSessionFromRequest(req: NextRequest): UserSessionPayload | null {
+  const token = getRequestToken(req);
+  return token ? verifyToken(token) : null;
+}
+
+export function setSessionCookie(response: NextResponse, token: string): NextResponse {
+  response.cookies.set('codeforge_session', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60,
+    path: '/',
+  });
+  return response;
 }

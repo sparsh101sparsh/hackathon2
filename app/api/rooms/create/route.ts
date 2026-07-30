@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,15 +16,17 @@ function generateRoomCode(): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, hostName, difficulty = 'MIXED', problemCount = 3 } = body;
+    const { name, hostName, difficulty = 'MIXED', problemCount = 1, mode = 'DUEL', durationSeconds = 900 } = body;
+    const battleMode = mode === 'SQUAD' ? 'SQUAD' : 'DUEL';
+    const requestedProblemCount = battleMode === 'DUEL' ? 1 : Math.max(1, Math.min(5, Number(problemCount) || 3));
 
-    const cookieToken = req.cookies.get('codeforge_session')?.value;
-    const authHeader = req.headers.get('Authorization');
-    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const payload = verifyToken(cookieToken || headerToken || '');
+    const payload = getSessionFromRequest(req);
+    if (!payload?.userId) {
+      return NextResponse.json({ error: 'Sign in to create a battle room.' }, { status: 401 });
+    }
 
-    const userId = payload?.userId || `guest_${Math.floor(1000 + Math.random() * 9000)}`;
-    const finalHostName = hostName || payload?.name || 'SpeedCoder';
+    const userId = payload.userId;
+    const finalHostName = payload.name;
 
     // Pick random problems based on difficulty
     let problemWhere: any = {};
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     // Shuffle and pick problemCount
     const shuffled = availableProblems.sort(() => 0.5 - Math.random());
-    const selectedProblemIds = shuffled.slice(0, Math.min(problemCount, availableProblems.length)).map(p => p.id);
+    const selectedProblemIds = shuffled.slice(0, Math.min(requestedProblemCount, availableProblems.length)).map(p => p.id);
 
     let roomCode = generateRoomCode();
     let existing = await prisma.customRoom.findUnique({ where: { code: roomCode } });
@@ -63,6 +65,8 @@ export async function POST(req: NextRequest) {
         problemCount: selectedProblemIds.length,
         status: 'WAITING',
         problemIds: JSON.stringify(selectedProblemIds),
+        mode: battleMode,
+        durationSeconds: battleMode === 'DUEL' ? 900 : Math.max(300, Math.min(3600, Number(durationSeconds) || 900)),
         participants: {
           create: {
             userId,
@@ -80,6 +84,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       roomCode: room.code,
+      participantUserId: userId,
       room,
     });
   } catch (error: any) {

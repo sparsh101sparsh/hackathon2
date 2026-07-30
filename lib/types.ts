@@ -53,6 +53,11 @@ export interface SubmissionApiResponse {
     actualOutput: string;
     error?: string;
   } | null;
+  learning?: {
+    failureCount: number;
+    failureType: ExecutionVerdict;
+    pattern: string;
+  } | null;
   testResults: TestCaseResult[];
   createdAt?: string;
 }

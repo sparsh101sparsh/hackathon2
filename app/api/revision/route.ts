@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
         totalCards: cards.length,
         dueTodayCount: dueCards.length,
         masteredCount,
+        learnedMistakeCount: cards.filter((c) => c.failureCount > 0).length,
       },
     });
   } catch (error: any) {
@@ -52,6 +53,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const cookieToken = req.cookies.get('codeforge_session')?.value;
+    const authHeader = req.headers.get('Authorization');
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const payload = verifyToken(cookieToken || headerToken || '');
+    if (!payload?.userId) {
+      return NextResponse.json({ error: 'Sign in to review flashcards.' }, { status: 401 });
+    }
     const body = await req.json();
     const { cardId, quality } = body; // quality: 'HARD' | 'GOOD' | 'EASY'
 
@@ -63,8 +71,12 @@ export async function POST(req: NextRequest) {
       where: { id: cardId },
     });
 
-    if (!card) {
+    if (!card || card.userId !== payload.userId) {
       return NextResponse.json({ error: 'Flashcard not found' }, { status: 404 });
+    }
+
+    if (!['HARD', 'GOOD', 'EASY'].includes(quality)) {
+      return NextResponse.json({ error: 'quality must be HARD, GOOD, or EASY' }, { status: 400 });
     }
 
     let nextInterval = card.interval;

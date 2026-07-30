@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
     const now = new Date();
+    const session = getSessionFromRequest(req);
 
     let dbContests = await prisma.contest.findMany({
       orderBy: { startTime: 'desc' },
@@ -73,7 +75,9 @@ export async function GET(req: NextRequest) {
         calculatedStatus = 'ENDED';
       }
 
-      const isRegistered = c.contestParticipants.some((p) => p.userId === 'guest');
+      const isRegistered = session?.userId
+        ? c.contestParticipants.some((p) => p.userId === session.userId)
+        : false;
 
       return {
         id: c.id,

@@ -358,6 +358,7 @@ export default function ProblemDetailPage() {
             {/* TAB 2: HINTS */}
             {activeLeftTab === 'hints' && (
               <ProgressiveHints
+                problemId={problem.id}
                 problemTitle={problem.title}
                 problemStatement={problem.statement}
               />
@@ -471,10 +472,11 @@ export default function ProblemDetailPage() {
 
       {/* Floating AI Chat Tutor Drawer */}
       <AIChatTutorDrawer
+        problemId={problem.id}
         problemTitle={problem.title}
         problemStatement={problem.statement}
         userCode=""
-        language="python"
+        language="cpp"
         isOpen={isTutorOpen}
         onToggle={() => setIsTutorOpen(!isTutorOpen)}
       />

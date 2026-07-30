@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { hashPassword, signToken } from '@/lib/auth';
+import { hashPassword, setSessionCookie, signToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, email, password } = body;
 
-    if (!email || !password || !name) {
+    if (typeof email !== 'string' || typeof password !== 'string' || typeof name !== 'string') {
       return NextResponse.json(
         { error: 'Name, email, and password are required' },
         { status: 400 }
@@ -19,16 +19,20 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
 
-    if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+    if (cleanName.length < 2 || cleanName.length > 80) {
+      return NextResponse.json({ error: 'Name must be between 2 and 80 characters' }, { status: 400 });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.length > 254) {
       return NextResponse.json(
         { error: 'Please enter a valid email address' },
         { status: 400 }
       );
     }
 
-    if (password.length < 6) {
+    if (password.length < 8 || password.length > 128) {
       return NextResponse.json(
-        { error: 'Password must be at least 6 characters long' },
+        { error: 'Password must be between 8 and 128 characters long' },
         { status: 400 }
       );
     }
@@ -47,25 +51,12 @@ export async function POST(req: NextRequest) {
 
     // Hash password and create user
     const passwordHash = hashPassword(password);
-    const user = await prisma.user.create({
-      data: {
-        name: cleanName,
-        email: cleanEmail,
-        passwordHash,
-        role: 'USER',
-      },
-    });
-
-    // Create initial user progress record
-    await prisma.userProgress.create({
-      data: {
-        userId: user.id,
-        solvedEasy: 0,
-        solvedMedium: 0,
-        solvedHard: 0,
-        streak: 1,
-        lastActiveDate: new Date(),
-      },
+    const user = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: { name: cleanName, email: cleanEmail, passwordHash, role: 'USER' },
+      });
+      await tx.userProgress.create({ data: { userId: createdUser.id } });
+      return createdUser;
     });
 
     const token = signToken({
@@ -83,21 +74,14 @@ export async function POST(req: NextRequest) {
         email: user.email,
         role: user.role,
       },
-      token,
     });
 
-    // Set HTTP-only cookie
-    response.cookies.set('codeforge_session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    });
-
-    return response;
+    return setSessionCookie(response, token);
   } catch (error: any) {
     console.error('Error in /api/auth/signup:', error);
+    if (error?.code === 'P2002') {
+      return NextResponse.json({ error: 'An account with this email address already exists' }, { status: 409 });
+    }
     return NextResponse.json(
       { error: error.message || 'Failed to create account' },
       { status: 500 }

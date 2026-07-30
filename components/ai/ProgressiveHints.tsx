@@ -5,6 +5,7 @@ import { Sparkles, Lock, Unlock, ChevronDown, ChevronUp, Loader2, Lightbulb } fr
 import { HintResponse } from '@/app/api/ai/hints/route';
 
 interface ProgressiveHintsProps {
+  problemId?: string;
   problemTitle: string;
   problemStatement?: string;
   userCode?: string;
@@ -12,10 +13,11 @@ interface ProgressiveHintsProps {
 }
 
 export const ProgressiveHints: React.FC<ProgressiveHintsProps> = ({
+  problemId,
   problemTitle,
   problemStatement = '',
   userCode = '',
-  language = 'python',
+  language = 'cpp',
 }) => {
   const [unlockedLevel, setUnlockedLevel] = useState<number>(0);
   const [hints, setHints] = useState<{ [key: number]: HintResponse }>({});
@@ -34,6 +36,7 @@ export const ProgressiveHints: React.FC<ProgressiveHintsProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          problemId,
           problemTitle,
           problemStatement,
           userCode,

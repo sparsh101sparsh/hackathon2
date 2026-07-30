@@ -14,6 +14,9 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  sendCode: (email: string, purpose?: 'SIGNUP' | 'LOGIN' | 'RESET_PASSWORD', name?: string, password?: string) => Promise<{ success: boolean; error?: string; message?: string; devCode?: string }>;
+  verifyCode: (email: string, code: string, purpose?: 'SIGNUP' | 'LOGIN' | 'RESET_PASSWORD', name?: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -26,13 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('codeforge_token') : null;
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch('/api/auth/me', { headers });
+      const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user || null);
@@ -55,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -63,9 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: data.error || 'Failed to sign in' };
       }
 
-      if (data.token) {
-        localStorage.setItem('codeforge_token', data.token);
-      }
       setUser(data.user);
       return { success: true };
     } catch (err: any) {
@@ -78,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ name, email, password }),
       });
 
@@ -86,9 +82,78 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: data.error || 'Failed to create account' };
       }
 
-      if (data.token) {
-        localStorage.setItem('codeforge_token', data.token);
+      setUser(data.user);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error' };
+    }
+  };
+
+  const sendCode = async (
+    email: string,
+    purpose: 'SIGNUP' | 'LOGIN' | 'RESET_PASSWORD' = 'SIGNUP',
+    name?: string,
+    password?: string
+  ) => {
+    try {
+      const res = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose, name, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to send verification code' };
       }
+
+      return { success: true, message: data.message, devCode: data.devCode };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error' };
+    }
+  };
+
+  const verifyCode = async (
+    email: string,
+    code: string,
+    purpose: 'SIGNUP' | 'LOGIN' | 'RESET_PASSWORD' = 'SIGNUP',
+    name?: string,
+    password?: string
+  ) => {
+    try {
+      const res = await fetch('/api/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, code, purpose, name, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to verify code' };
+      }
+
+      setUser(data.user);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error' };
+    }
+  };
+
+  const resetPassword = async (email: string, code: string, newPassword: string) => {
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, code, newPassword }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to reset password' };
+      }
+
       setUser(data.user);
       return { success: true };
     } catch (err: any) {
@@ -98,14 +163,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     } catch {}
-    localStorage.removeItem('codeforge_token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        signup,
+        sendCode,
+        verifyCode,
+        resetPassword,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

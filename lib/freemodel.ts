@@ -1,6 +1,5 @@
 export const FREEMODEL_BASE_URL = 'https://api.freemodel.dev/v1';
-export const FREEMODEL_API_KEY =
-  process.env.FREEMODEL_API_KEY || 'fe_oa_058124071b87b1a4c0677776c264ed56b0463b70257c750f';
+export const FREEMODEL_API_KEY = process.env.FREEMODEL_API_KEY || '';
 
 export const MODELS = {
   FAST: 'gpt-5.4-mini',
@@ -54,6 +53,11 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
   }
 
   try {
+    if (!FREEMODEL_API_KEY) {
+      if (fallbackString !== undefined) return fallbackString;
+      throw new Error('FREEMODEL_API_KEY is not configured');
+    }
+
     const response = await fetch(`${FREEMODEL_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyPassword, signToken } from '@/lib/auth';
+import { verifyPassword, setSessionCookie, signToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, password } = body;
 
-    if (!email || !password) {
+    if (typeof email !== 'string' || typeof password !== 'string') {
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
@@ -17,6 +17,9 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || password.length > 128) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -70,19 +73,9 @@ export async function POST(req: NextRequest) {
         email: user.email,
         role: user.role,
       },
-      token,
     });
 
-    // Set HTTP-only cookie
-    response.cookies.set('codeforge_session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    });
-
-    return response;
+    return setSessionCookie(response, token);
   } catch (error: any) {
     console.error('Error in /api/auth/login:', error);
     return NextResponse.json(

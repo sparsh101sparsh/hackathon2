@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,24 +19,20 @@ export interface DailyRecommendation {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'guest';
+    const userId = getSessionFromRequest(request)?.userId || 'guest';
 
     // Fetch user progress or fallback
     let userProgress = await prisma.userProgress.findUnique({
       where: { userId },
     });
 
-    if (!userProgress) {
-      userProgress = await prisma.userProgress.findFirst();
-    }
-
     const solvedEasy = userProgress?.solvedEasy || 5;
     const solvedMedium = userProgress?.solvedMedium || 2;
     const solvedHard = userProgress?.solvedHard || 0;
 
-    // Fetch candidate problems from DB
+    // Read the complete catalog so recommendation selection is never limited to the first page.
     const allProblems = await prisma.problem.findMany({
-      take: 30,
+      orderBy: { title: 'asc' },
       select: {
         id: true,
         title: true,
@@ -50,14 +47,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ recommendations: [] });
     }
 
-    // Select 3 diverse problems (mix of difficulties or topics)
-    const selectedProblems = allProblems.slice(0, 3).map((p) => ({
+    // Select deterministic representatives across the complete catalog.
+    const candidateIndexes = [
+      0,
+      Math.floor((allProblems.length - 1) / 2),
+      Math.max(0, allProblems.length - 1),
+    ];
+    const selectedProblems = [...new Set(candidateIndexes)].map((index) => allProblems[index]).map((p) => ({
       ...p,
       topicTags: typeof p.topicTags === 'string' ? JSON.parse(p.topicTags) : p.topicTags,
       companyTags: typeof p.companyTags === 'string' ? JSON.parse(p.companyTags) : p.companyTags,
     }));
 
-    const systemPrompt = `You are an AI DSA Coach analyzing user solving stats:
+    const systemPrompt = `You are an AI DSA Coach analyzing user solving stats across the complete ${allProblems.length}-question catalog:
 Solved Easy: ${solvedEasy}, Solved Medium: ${solvedMedium}, Solved Hard: ${solvedHard}.
 
 Generate personalized recommendations for 3 selected problems.
