@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { OtpInput } from '@/components/ui/OtpInput';
@@ -22,9 +22,10 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
   const { login, sendCode, verifyCode, resetPassword } = useAuth();
+  const searchParams = useSearchParams();
 
   // Auth Mode: 'password' | 'code' | 'forgot'
   const [authMode, setAuthMode] = useState<'password' | 'code' | 'forgot'>('password');
@@ -42,6 +43,26 @@ export default function LoginPage() {
   const [cooldown, setCooldown] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Show errors from Google OAuth redirect
+  useEffect(() => {
+    const urlError = searchParams.get('error');
+    if (urlError) {
+      const errorMessages: Record<string, string> = {
+        google_not_configured: 'Google login is not configured.',
+        google_invalid_state: 'Google sign-in session expired. Please try again.',
+        google_token_exchange_failed: 'Google authentication failed. Please try again.',
+        google_missing_access_token: 'Could not retrieve Google access token. Try again.',
+        google_profile_failed: 'Could not fetch Google profile. Try again.',
+        google_email_not_verified: 'Your Google account email is not verified.',
+        google_login_failed: 'Google sign-in failed. Please try again or use email/password.',
+        google_no_code: 'Google did not return an authorization code.',
+        google_missing_profile: 'Could not retrieve Google profile info.',
+        google_state_error: 'Security validation failed. Please try again.',
+      };
+      setError(errorMessages[urlError] || `Sign-in error: ${urlError}`);
+    }
+  }, [searchParams]);
 
   // Cooldown countdown effect
   useEffect(() => {
@@ -608,5 +629,13 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+      <LoginPageInner />
+    </Suspense>
   );
 }

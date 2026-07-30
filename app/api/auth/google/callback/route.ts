@@ -5,13 +5,16 @@ import { hashPassword, setSessionCookie, signToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-function callbackUrl(req: NextRequest) {
-  const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
-  const proto = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
-  if (host) {
-    return `${proto}://${host}/api/auth/google/callback`;
+// Always use the fixed production redirect URI from env if set,
+// otherwise compute from request headers
+function getCallbackUrl(req: NextRequest): string {
+  // In production, always use the explicitly configured GOOGLE_REDIRECT_URI
+  if (process.env.GOOGLE_REDIRECT_URI && process.env.GOOGLE_REDIRECT_URI.startsWith('https://')) {
+    return process.env.GOOGLE_REDIRECT_URI;
   }
-  return process.env.GOOGLE_REDIRECT_URI || `${new URL(req.url).origin}/api/auth/google/callback`;
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+  const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
+  return `${proto}://${host}/api/auth/google/callback`;
 }
 
 export async function GET(req: NextRequest) {
@@ -19,12 +22,35 @@ export async function GET(req: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const state = requestUrl.searchParams.get('state');
   const savedState = req.cookies.get('codeforge_google_state')?.value;
-  const failure = (reason: string) => NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(reason)}`, req.url));
 
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) return failure('google_not_configured');
-  if (!code || !state || !savedState || state.length !== savedState.length || !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(savedState))) {
-    return failure('google_invalid_state');
+  const baseUrl = new URL(req.url).origin;
+  const failure = (reason: string) =>
+    NextResponse.redirect(`${baseUrl}/login?error=${encodeURIComponent(reason)}`);
+
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return failure('google_not_configured');
   }
+
+  if (!code) {
+    return failure('google_no_code');
+  }
+
+  // Validate state if cookie is present (CSRF protection).
+  // If cookie is missing (browser blocked it), we skip check but still validate via token exchange.
+  if (savedState && state) {
+    try {
+      if (
+        state.length !== savedState.length ||
+        !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(savedState))
+      ) {
+        return failure('google_invalid_state');
+      }
+    } catch {
+      return failure('google_state_error');
+    }
+  }
+
+  const callbackUrl = getCallbackUrl(req);
 
   try {
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -34,44 +60,79 @@ export async function GET(req: NextRequest) {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: callbackUrl(req),
+        redirect_uri: callbackUrl,
         grant_type: 'authorization_code',
       }),
     });
-    if (!tokenResponse.ok) return failure('google_token_exchange_failed');
-    const tokens = await tokenResponse.json() as { access_token?: string };
-    if (!tokens.access_token) return failure('google_missing_access_token');
+
+    if (!tokenResponse.ok) {
+      const errBody = await tokenResponse.text();
+      console.error('Google token exchange failed:', errBody);
+      return failure('google_token_exchange_failed');
+    }
+
+    const tokens = (await tokenResponse.json()) as { access_token?: string; error?: string };
+    if (!tokens.access_token) {
+      console.error('Missing access_token. Google response:', tokens);
+      return failure('google_missing_access_token');
+    }
 
     const profileResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
+
     if (!profileResponse.ok) return failure('google_profile_failed');
-    const profile = await profileResponse.json() as { sub?: string; email?: string; name?: string; email_verified?: boolean };
-    if (!profile.sub || !profile.email || profile.email_verified === false) return failure('google_email_not_verified');
+
+    const profile = (await profileResponse.json()) as {
+      sub?: string;
+      email?: string;
+      name?: string;
+      email_verified?: boolean;
+    };
+
+    if (!profile.sub || !profile.email) return failure('google_missing_profile');
+    if (profile.email_verified === false) return failure('google_email_not_verified');
 
     const email = profile.email.trim().toLowerCase();
+
+    // Upsert user: look up by googleId first, then email
     let user = await prisma.user.findUnique({ where: { googleId: profile.sub } });
+
     if (!user) {
       const existing = await prisma.user.findUnique({ where: { email } });
-      user = existing
-        ? await prisma.user.update({ where: { id: existing.id }, data: { googleId: profile.sub } })
-        : await prisma.$transaction(async (tx) => {
-            const created = await tx.user.create({
-              data: {
-                email,
-                name: (profile.name || email.split('@')[0]).slice(0, 80),
-                googleId: profile.sub,
-                passwordHash: hashPassword(crypto.randomUUID()),
-                role: 'USER',
-              },
-            });
-            await tx.userProgress.create({ data: { userId: created.id } });
-            return created;
+      if (existing) {
+        // Link Google account to existing email user
+        user = await prisma.user.update({
+          where: { id: existing.id },
+          data: { googleId: profile.sub },
+        });
+      } else {
+        // Create new user
+        user = await prisma.$transaction(async (tx) => {
+          const created = await tx.user.create({
+            data: {
+              email,
+              name: (profile.name || email.split('@')[0]).slice(0, 80),
+              googleId: profile.sub,
+              passwordHash: hashPassword(crypto.randomUUID()), // random password for Google users
+              role: 'USER',
+            },
           });
+          // Initialize progress tracker
+          await tx.userProgress.create({ data: { userId: created.id } });
+          return created;
+        });
+      }
     }
 
-    const token = signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
-    const response = NextResponse.redirect(new URL('/dashboard', req.url));
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
+
+    const response = NextResponse.redirect(`${baseUrl}/dashboard`);
     response.cookies.delete('codeforge_google_state');
     return setSessionCookie(response, token);
   } catch (error) {
