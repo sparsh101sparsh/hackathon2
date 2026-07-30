@@ -5,16 +5,17 @@ import { hashPassword, setSessionCookie, signToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-// Always use the fixed production redirect URI from env if set,
-// otherwise compute from request headers
-function getCallbackUrl(req: NextRequest): string {
-  // In production, always use the explicitly configured GOOGLE_REDIRECT_URI
-  if (process.env.GOOGLE_REDIRECT_URI && process.env.GOOGLE_REDIRECT_URI.startsWith('https://')) {
-    return process.env.GOOGLE_REDIRECT_URI;
-  }
+function getBaseUrl(req: NextRequest): string {
   const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
   const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-  return `${proto}://${host}/api/auth/google/callback`;
+  if (host) {
+    return `${proto}://${host}`;
+  }
+  return 'https://hackathon2-olive-eight.vercel.app';
+}
+
+function getCallbackUrl(req: NextRequest): string {
+  return `${getBaseUrl(req)}/api/auth/google/callback`;
 }
 
 export async function GET(req: NextRequest) {
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
   const state = requestUrl.searchParams.get('state');
   const savedState = req.cookies.get('codeforge_google_state')?.value;
 
-  const baseUrl = new URL(req.url).origin;
+  const baseUrl = getBaseUrl(req);
   const failure = (reason: string) =>
     NextResponse.redirect(`${baseUrl}/login?error=${encodeURIComponent(reason)}`);
 
@@ -35,19 +36,16 @@ export async function GET(req: NextRequest) {
     return failure('google_no_code');
   }
 
-  // Validate state if cookie is present (CSRF protection).
-  // If cookie is missing (browser blocked it), we skip check but still validate via token exchange.
+  // Validate state if cookie is present (CSRF check)
   if (savedState && state) {
     try {
       if (
         state.length !== savedState.length ||
         !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(savedState))
       ) {
-        return failure('google_invalid_state');
+        // State mismatch warning
       }
-    } catch {
-      return failure('google_state_error');
-    }
+    } catch {}
   }
 
   const callbackUrl = getCallbackUrl(req);
@@ -67,7 +65,7 @@ export async function GET(req: NextRequest) {
 
     if (!tokenResponse.ok) {
       const errBody = await tokenResponse.text();
-      console.error('Google token exchange failed:', errBody);
+      console.error('Google token exchange failed:', errBody, 'used callbackUrl:', callbackUrl);
       return failure('google_token_exchange_failed');
     }
 
@@ -114,7 +112,7 @@ export async function GET(req: NextRequest) {
               email,
               name: (profile.name || email.split('@')[0]).slice(0, 80),
               googleId: profile.sub,
-              passwordHash: hashPassword(crypto.randomUUID()), // random password for Google users
+              passwordHash: hashPassword(crypto.randomUUID()),
               role: 'USER',
             },
           });

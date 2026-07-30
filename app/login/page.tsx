@@ -24,8 +24,15 @@ import {
 
 function LoginPageInner() {
   const router = useRouter();
-  const { login, sendCode, verifyCode, resetPassword } = useAuth();
+  const { user, login, sendCode, verifyCode, resetPassword } = useAuth();
   const searchParams = useSearchParams();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   // Auth Mode: 'password' | 'code' | 'forgot'
   const [authMode, setAuthMode] = useState<'password' | 'code' | 'forgot'>('password');
