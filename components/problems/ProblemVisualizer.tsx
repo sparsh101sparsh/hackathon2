@@ -15,8 +15,9 @@ import {
 import { getVisualizerLesson } from './visualizerLessons';
 import { problemVisualizerScenarios, ProblemVisualizerScenario } from './problemVisualizerScenarios';
 import { VisualizerScene } from './VisualizerScene';
+import { VisualizerChatbot } from './VisualizerChatbot';
 
-type VisualType = 'array' | 'matrix' | 'stack' | 'nodes' | 'graph' | 'bars' | 'bits';
+export type VisualType = 'array' | 'matrix' | 'stack' | 'nodes' | 'graph' | 'bars' | 'bits';
 
 interface VisualizerConfig {
   pattern: string;
@@ -24,7 +25,7 @@ interface VisualizerConfig {
   hasVisualizer: boolean;
 }
 
-interface LessonFrame {
+export interface LessonFrame {
   visualType: VisualType;
   values?: (string | number)[];
   matrix?: (string | number)[][];
@@ -394,7 +395,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
 
   return (
     <div className="min-h-[640px] bg-[#1d2021] text-[#ebdbb2] border border-[#928374] rounded overflow-hidden font-mono">
-      <div className="grid lg:grid-cols-[220px_minmax(0,1fr)] min-h-[640px]">
+      <div className="grid lg:grid-cols-[220px_minmax(0,1fr)_320px] min-h-[640px]">
         <aside className="hidden lg:flex flex-col border-r border-[#4b483e] bg-[#11110f] p-4 gap-6">
           <div>
             <div className="text-[11px] text-[#8b877a] mb-2">PATTERN</div>
@@ -446,6 +447,11 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
 
           <footer className="px-5 sm:px-8 py-5 mt-4 flex flex-wrap items-center gap-3 border-t border-[#39372f]"><button type="button" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2 border border-[#5d594d] rounded-lg hover:border-[#e98b5b]"><RotateCcw className="w-4 h-4" /></button><button type="button" title="Previous step" disabled={step === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2 border border-[#5d594d] rounded-lg disabled:opacity-40 hover:border-[#e98b5b]"><ChevronLeft className="w-4 h-4" /></button><button type="button" onClick={() => setPlaying((value) => !value)} className="px-4 py-2 rounded-lg bg-[#f0e6d5] text-[#24211c] font-sans font-bold text-xs flex items-center gap-2 hover:bg-white">{playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />} {playing ? 'Pause' : 'Play'}</button><button type="button" title="Next step" disabled={step === frames.length - 1} onClick={() => { setPlaying(false); setStep((value) => Math.min(frames.length - 1, value + 1)); }} className="p-2 border border-[#5d594d] rounded-lg disabled:opacity-40 hover:border-[#e98b5b]"><ChevronRight className="w-4 h-4" /></button><input aria-label="Lesson progress" type="range" min="0" max={frames.length - 1} value={step} onChange={(event) => { setPlaying(false); setStep(Number(event.target.value)); }} className="flex-1 min-w-[120px] accent-[#e98b5b]" /><select aria-label="Playback speed" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="bg-[#1b1a16] border border-[#5d594d] rounded-lg px-2 py-2 text-xs"><option value="1800">0.5x</option><option value="1200">1x</option><option value="700">2x</option></select><span className="text-[10px] text-[#8b877a] w-10 text-right">{Math.round(progress)}%</span></footer>
         </section>
+
+        {/* AI Chatbot Sidebar */}
+        <aside className="hidden lg:block border-l border-[#4b483e]">
+          <VisualizerChatbot currentFrame={current} problemTitle={problemTitle} step={step} />
+        </aside>
       </div>
     </div>
   );

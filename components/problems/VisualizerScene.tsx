@@ -35,9 +35,6 @@ function SceneFrame({ children }: { children: React.ReactNode }) {
   return (
     <svg viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated algorithm state" className="w-full h-[300px] overflow-visible">
       <defs>
-        <pattern id="scene-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-          <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#2d2b26" strokeWidth="1" />
-        </pattern>
         <marker id="scene-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
           <path d="M0,0 L7,3.5 L0,7 z" fill={muted} />
         </marker>
@@ -45,8 +42,7 @@ function SceneFrame({ children }: { children: React.ReactNode }) {
           <path d="M0,0 L7,3.5 L0,7 z" fill={accent} />
         </marker>
       </defs>
-      <rect x="0" y="0" width="680" height="300" rx="12" fill="#151512" />
-      <rect x="0" y="0" width="680" height="300" rx="12" fill="url(#scene-grid)" opacity="0.58" />
+      <rect x="0" y="0" width="680" height="300" rx="12" fill="#141311" />
       {children}
     </svg>
   );
@@ -58,7 +54,9 @@ function Label({ x, y, children, fill = muted, size = 12, anchor = 'middle' as c
 
 function ArrayScene({ frame }: SceneProps) {
   const values = frame.values || [];
-  const cellWidth = Math.min(66, 560 / Math.max(values.length, 1));
+  // Max size is 76 to keep them nicely spaced. Cell box will be slightly smaller than cellWidth to have gaps.
+  const cellWidth = Math.min(84, 560 / Math.max(values.length, 1));
+  const boxSize = cellWidth - 12; // nice square box
   const total = cellWidth * values.length;
   const startX = (680 - total) / 2;
   const active = new Set(frame.active || []);
@@ -68,28 +66,36 @@ function ArrayScene({ frame }: SceneProps) {
     <SceneFrame>
       <g>
         {values.map((value, index) => {
-          const x = startX + index * cellWidth;
+          const x = startX + index * cellWidth + 6; // offset for gap
           const isActive = active.has(index);
+          const yOffset = isActive ? 0 : 0; // If you want them to pop up, change to -4
           return (
-            <motion.g key={`${value}-${index}`} animate={{ x: 0, y: isActive ? -5 : 0, scale: isActive ? 1.04 : 1 }} transition={cellTransition} style={{ transformOrigin: `${x + cellWidth / 2}px 145px` }}>
-              <motion.rect x={x + 3} y="118" width={cellWidth - 6} height="54" rx="8" fill={isActive ? accentSoft : '#22211d'} stroke={isActive ? accent : line} strokeWidth="2" animate={{ fill: isActive ? accentSoft : '#22211d', stroke: isActive ? accent : line }} transition={cellTransition} />
-              <Label x={x + cellWidth / 2} y={151} fill={isActive ? '#ffc199' : ink} size={17}>{value}</Label>
-              <Label x={x + cellWidth / 2} y={196} size={10}>[{index}]</Label>
+            <motion.g key={`${value}-${index}`} animate={{ x: 0, y: yOffset }} transition={cellTransition} style={{ transformOrigin: `${x + boxSize / 2}px 145px` }}>
+              {/* 3D Depth Shadow Layer */}
+              <motion.rect x={x} y={100 + 4} width={boxSize} height={boxSize} rx="8" fill={isActive ? '#8c4c32' : 'transparent'} animate={{ fill: isActive ? '#8c4c32' : 'transparent' }} transition={cellTransition} />
+              {/* Top Face */}
+              <motion.rect x={x} y={100} width={boxSize} height={boxSize} rx="8" fill={isActive ? '#3e2821' : '#24211a'} stroke={isActive ? '#eb7c45' : '#ded1b6'} strokeWidth="2" animate={{ fill: isActive ? '#3e2821' : '#24211a', stroke: isActive ? '#eb7c45' : '#ded1b6' }} transition={cellTransition} />
+              {/* Value Text */}
+              <text x={x + boxSize / 2} y={100 + boxSize / 2 + 10} textAnchor="middle" fill={isActive ? '#ffffff' : '#f1ede5'} fontSize={28} fontWeight="900" fontFamily="sans-serif">{value}</text>
+              {/* Index */}
+              <Label x={x + boxSize / 2} y={100 + boxSize + 22} size={11}>[{index}]</Label>
             </motion.g>
           );
         })}
         {pointerEntries.map(([name, index], pointerIndex) => {
           const x = startX + index * cellWidth + cellWidth / 2;
-          const color = pointerIndex % 2 === 0 ? accent : cyan;
+          // Colors matching screenshot: first pointer (i) orange, second (j) blue
+          const color = pointerIndex % 2 === 0 ? '#eb7c45' : '#6fa6d6';
           return (
             <motion.g key={name} animate={{ x }} transition={{ duration: 0.5, ease }}>
-              <motion.line x1="0" y1="87" x2="0" y2="112" stroke={color} strokeWidth="2" markerEnd="url(#scene-arrow-active)" />
-              <Label x={0} y={75} fill={color} size={11}>{name}</Label>
+              {/* Pointer Letter */}
+              <text x={0} y={230} textAnchor="middle" fill={color} fontSize={18} fontWeight="900" fontFamily="sans-serif">{name}</text>
+              {/* Upward Triangle */}
+              <path d="M -4 245 L 4 245 L 0 237 Z" fill={color} />
             </motion.g>
           );
         })}
       </g>
-      <Label x={340} y={250} fill={muted} size={11}>ACTIVE ARRAY STATE</Label>
     </SceneFrame>
   );
 }
@@ -110,10 +116,12 @@ function MatrixScene({ frame }: SceneProps) {
           const x = left + colIndex * size;
           const y = top + rowIndex * size;
           const isActive = active.has(index);
+          const boxSize = size - 6;
           return (
-            <motion.g key={`${rowIndex}-${colIndex}`} animate={{ x: 0, y: isActive ? -4 : 0 }} transition={cellTransition}>
-              <motion.rect x={x + 3} y={y + 3} width={size - 6} height={size - 6} rx="7" fill={isActive ? accentSoft : '#24231e'} stroke={isActive ? accent : line} strokeWidth="2" animate={{ fill: isActive ? accentSoft : '#24231e', stroke: isActive ? accent : line }} transition={cellTransition} />
-              <Label x={x + size / 2} y={y + size / 2 + 6} fill={isActive ? '#ffc199' : ink} size={size > 40 ? 16 : 12}>{value}</Label>
+            <motion.g key={`${rowIndex}-${colIndex}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
+              <motion.rect x={x + 3} y={y + 3 + 4} width={boxSize} height={boxSize} rx="6" fill={isActive ? '#8c4c32' : 'transparent'} animate={{ fill: isActive ? '#8c4c32' : 'transparent' }} transition={cellTransition} />
+              <motion.rect x={x + 3} y={y + 3} width={boxSize} height={boxSize} rx="6" fill={isActive ? '#3e2821' : '#24211a'} stroke={isActive ? '#eb7c45' : '#ded1b6'} strokeWidth="2" animate={{ fill: isActive ? '#3e2821' : '#24211a', stroke: isActive ? '#eb7c45' : '#ded1b6' }} transition={cellTransition} />
+              <text x={x + 3 + boxSize / 2} y={y + 3 + boxSize / 2 + 5} textAnchor="middle" fill={isActive ? '#ffffff' : '#f1ede5'} fontSize={size > 40 ? 18 : 14} fontWeight="900" fontFamily="sans-serif">{value}</text>
             </motion.g>
           );
         }))}
@@ -128,13 +136,15 @@ function StackScene({ frame }: SceneProps) {
   return (
     <SceneFrame>
       <g>
-        <motion.line x1="230" y1="248" x2="450" y2="248" stroke={line} strokeWidth="2" />
+        <motion.line x1="230" y1="248" x2="450" y2="248" stroke="#575247" strokeWidth="4" />
         {stack.map((value, index) => {
           const y = 226 - index * 48;
+          const isActive = index === stack.length - 1;
           return (
             <motion.g key={`${value}-${index}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ...cellTransition, delay: index * 0.04 }}>
-              <motion.rect x="270" y={y - 38} width="140" height="38" rx="8" fill={index === stack.length - 1 ? accentSoft : '#29251f'} stroke={index === stack.length - 1 ? accent : line} strokeWidth="2" layoutId={`stack-${index}`} />
-              <Label x={340} y={y - 13} fill={index === stack.length - 1 ? '#ffc199' : ink} size={16}>{value}</Label>
+              <motion.rect x="270" y={y - 38 + 4} width="140" height="40" rx="8" fill={isActive ? '#8c4c32' : 'transparent'} layoutId={`stack-shadow-${index}`} />
+              <motion.rect x="270" y={y - 38} width="140" height="40" rx="8" fill={isActive ? '#3e2821' : '#24211a'} stroke={isActive ? '#eb7c45' : '#ded1b6'} strokeWidth="2" layoutId={`stack-${index}`} />
+              <text x={340} y={y - 12} textAnchor="middle" fill={isActive ? '#ffffff' : '#f1ede5'} fontSize={18} fontWeight="900" fontFamily="sans-serif">{value}</text>
             </motion.g>
           );
         })}
