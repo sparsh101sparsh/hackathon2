@@ -36,6 +36,9 @@ async function runTest() {
       ),
       'Public leaderboard exposes measurable streak and consistency signals',
     );
+    const registeredUsers = await prisma.user.findMany({ select: { id: true } });
+    const publicIds = new Set((leaderboard.leaderboard || []).map((entry: { id: string }) => entry.id));
+    assert(registeredUsers.every((user) => publicIds.has(user.id)), 'Every registered user appears on the public leaderboard');
     const firstProfileId = leaderboard.leaderboard?.[0]?.id;
     if (firstProfileId) {
       const profileResponse = await profileHandler(

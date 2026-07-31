@@ -34,9 +34,11 @@ export default function LeaderboardPage() {
   }, []);
 
   const filteredUsers = users.filter(
-    (u) =>
+      (u) =>
+      u.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.ratingTier.badge.toLowerCase().includes(searchQuery.toLowerCase())
+      u.ratingTier.badge.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(u.rating).includes(searchQuery.trim())
   );
 
   const getRankBadge = (rank: number) => {

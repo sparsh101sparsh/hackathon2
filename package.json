@@ -30,6 +30,7 @@
     "test:visualizer-catalog": "tsx scripts/test-visualizer-catalog.ts",
     "test:revision-learning": "tsx scripts/test-revision-learning.ts",
     "test:company-surface": "tsx scripts/test-company-surface.ts",
+    "test:leaderboard-comparison": "tsx scripts/test-leaderboard-comparison.ts",
     "test:contest-surface": "tsx scripts/test-contest-surface.ts",
     "test:shared-surface": "tsx scripts/test-shared-surface.ts",
     "test:ui-content": "tsx scripts/test-ui-content.ts",

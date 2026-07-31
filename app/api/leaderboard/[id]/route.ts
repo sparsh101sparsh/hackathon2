@@ -1,8 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getRatingTier } from '@/lib/rating';
+import { callFreeModelJSON } from '@/lib/freemodel';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
+
+type ProfileComparison = {
+  summary: string;
+  advantages: string[];
+  focusAreas: string[];
+  recommendation: string;
+};
+
+type LoadedProfile = NonNullable<Awaited<ReturnType<typeof loadProfile>>>;
+
+function fallbackComparison(left: LoadedProfile, right: LoadedProfile): ProfileComparison {
+  const advantages: string[] = [];
+  const focusAreas: string[] = [];
+  if (left.solved.total >= right.solved.total) advantages.push(`${left.name} has solved more problems overall.`);
+  else focusAreas.push(`Increase solved volume to close the ${right.solved.total - left.solved.total}-problem gap.`);
+  if (left.accuracy >= right.accuracy) advantages.push(`${left.name} has the stronger submission accuracy.`);
+  else focusAreas.push(`Review failed submissions and edge cases to improve accuracy.`);
+  if (left.streak >= right.streak) advantages.push(`${left.name} has the stronger active streak.`);
+  else focusAreas.push(`Build a daily practice streak with one focused problem per day.`);
+  const harder = left.solved.hard >= right.solved.hard ? left.name : right.name;
+  return {
+    summary: `${left.name} and ${right.name} show different strengths across volume, accuracy, consistency, and difficulty.` ,
+    advantages: advantages.length ? advantages : [`${harder} currently leads on advanced problem exposure.`],
+    focusAreas: focusAreas.length ? focusAreas : ['Keep difficulty progression steady while preserving accuracy.'],
+    recommendation: 'Compare the next two weeks of accepted submissions, not only the current totals, and target the weaker difficulty band.',
+  };
+}
+
+async function buildComparison(left: LoadedProfile, right: LoadedProfile) {
+  const fallback = fallbackComparison(left, right);
+  return callFreeModelJSON<ProfileComparison>({
+    systemInstruction: 'You are a precise coding-coach analyst. Compare two public DSA profiles using only the supplied aggregate metrics. Return JSON with summary (string), advantages (string array), focusAreas (string array), and recommendation (string). Do not invent facts or mention private data.',
+    userInstruction: JSON.stringify({
+      left: { name: left.name, rating: left.rating, solved: left.solved, accuracy: left.accuracy, streak: left.streak, consistency: left.consistency },
+      right: { name: right.name, rating: right.rating, solved: right.solved, accuracy: right.accuracy, streak: right.streak, consistency: right.consistency },
+    }),
+    temperature: 0.2,
+    maxTokens: 700,
+    timeoutMs: 15_000,
+    fallbackJson: fallback,
+  }).then((result) => ({
+    summary: typeof result.summary === 'string' ? result.summary : fallback.summary,
+    advantages: Array.isArray(result.advantages) ? result.advantages.map(String).slice(0, 4) : fallback.advantages,
+    focusAreas: Array.isArray(result.focusAreas) ? result.focusAreas.map(String).slice(0, 4) : fallback.focusAreas,
+    recommendation: typeof result.recommendation === 'string' ? result.recommendation : fallback.recommendation,
+  }));
+}
 
 async function loadProfile(id: string) {
   const user = await prisma.user.findUnique({
@@ -68,6 +117,8 @@ async function loadProfile(id: string) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const limitResponse = rateLimitResponse(request, 'public:profile-compare', 20, 60 * 1000);
+    if (limitResponse) return limitResponse;
     const { id } = await params;
     if (!id || id.length > 64) return NextResponse.json({ error: 'Invalid profile id' }, { status: 400 });
     const profile = await loadProfile(id);
@@ -75,7 +126,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const compareId = new URL(request.url).searchParams.get('compare');
     const compare = compareId && compareId !== id && compareId.length <= 64 ? await loadProfile(compareId) : null;
-    return NextResponse.json({ profile, compare });
+    const comparison = compare ? await buildComparison(profile, compare) : null;
+    return NextResponse.json({ profile, compare, comparison });
   } catch (error: unknown) {
     console.error('Error fetching public profile:', error);
     return NextResponse.json({ error: 'Unable to load this profile right now.' }, { status: 500 });

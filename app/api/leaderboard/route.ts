@@ -115,8 +115,9 @@ export async function GET(req: NextRequest) {
       const hardCount = solved.hard.size;
       const totalCount = easyCount + medCount + hardCount;
 
-      // Only include users who have made submissions or recorded progress
-      if (counts.total > 0 || totalCount > 0 || userRatingMap.has(userId)) {
+      // Keep every registered user visible. New users are unrated until they
+      // submit, but hiding them makes the public leaderboard look like a demo.
+      if (dbUserMap.has(userId) || counts.total > 0 || totalCount > 0 || userRatingMap.has(userId)) {
         const accuracy = counts.total > 0
           ? Math.round((counts.accepted / counts.total) * 1000) / 10
           : 0;
@@ -152,8 +153,16 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // Sort leaderboard by rating desc, then total solved desc
-    leaderboard.sort((a, b) => b.rating - a.rating || b.solved.total - a.solved.total || b.accuracy - a.accuracy);
+    // Rating leads; progress metrics provide deterministic ordering for unrated
+    // users and users with the same contest rating.
+    leaderboard.sort((a, b) =>
+      b.rating - a.rating ||
+      b.solved.total - a.solved.total ||
+      b.accuracy - a.accuracy ||
+      b.consistency - a.consistency ||
+      b.streak - a.streak ||
+      a.name.localeCompare(b.name),
+    );
 
     // Assign rank
     leaderboard.forEach((user, idx) => {
