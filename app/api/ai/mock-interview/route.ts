@@ -3,6 +3,7 @@ import { callFreeModelJSON, callFreeModelText, MODELS, FreeModelMessage } from '
 import { getProblemKnowledge, getProblemKnowledgeForTopic } from '@/lib/problemKnowledge';
 import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
 import { rateLimitResponse } from '@/lib/rateLimit';
+import { formatInterviewProfile, getInterviewProfile } from '@/lib/interviewProfiles';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,9 @@ export async function POST(request: NextRequest) {
     if (!['start', 'message', 'evaluate'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
     }
+    if (typeof company !== 'string' || typeof topic !== 'string' || company.length > 80 || topic.length > 120) {
+      return NextResponse.json({ error: 'company and topic must be valid short strings' }, { status: 400 });
+    }
     if (!Array.isArray(messages) || messages.length > 60) {
       return NextResponse.json({ error: 'messages must be an array with at most 60 entries' }, { status: 400 });
     }
@@ -57,15 +61,18 @@ export async function POST(request: NextRequest) {
 
     const personality = getTeachingStyle(personalityId);
     const personalityPrefix = buildTeachingStylePrefix(personality);
+    const interviewProfile = getInterviewProfile(company);
 
     const interviewerSystemPrompt = `${personalityPrefix}${personality.interviewSystemInstruction}
 
 Technical Interview Context: Conducting interview for ${company}, topic ${topic}, canonical problem ${knowledge.title}.
+Company interview blueprint:
+${formatInterviewProfile(interviewProfile)}
 Use this canonical question reference as the source of truth:
 ${knowledge.context}`;
 
     if (action === 'start') {
-      const userInstruction = `Begin the interview. Introduce yourself in one sentence, state the exact problem "${knowledge.title}" with its key constraints, then ask the candidate to restate the requirements and call out any clarifying questions. Do not discuss the solution yet.`;
+      const userInstruction = `Begin the interview using the ${company} blueprint. Introduce yourself in one sentence, state the exact problem "${knowledge.title}" with its key constraints, then ask the candidate to restate the requirements and call out any clarifying questions. Do not discuss the solution yet.`;
 
       const fallbackGreeting = `Hello, I'm your ${company} interviewer. Today we'll discuss **${knowledge.title}**. Please restate the requirements in your own words and tell me what clarifying questions you would ask before proposing an approach.`;
 
@@ -83,6 +90,7 @@ ${knowledge.context}`;
         topic,
         problemId: knowledge.problemId,
         problemTitle: knowledge.title,
+        interviewProfile,
       });
     }
 
@@ -110,7 +118,7 @@ ${knowledge.context}`;
       }
 
       const turnNumber = Array.isArray(messages) ? Math.ceil(messages.length / 2) : 1;
-      let fallbackText = `Let's examine that carefully. What invariant does your approach maintain, and what is its time and space complexity?`;
+      let fallbackText = `${interviewProfile.probes[0]} Then connect your answer to the invariant and time and space complexity.`;
       if (code && code.trim()) {
         fallbackText = `I see your implementation. Please trace it on one canonical sample and explain what each key variable contains after every important iteration.`;
       } else if (turnNumber >= 3) {
@@ -130,6 +138,8 @@ ${knowledge.context}`;
     if (action === 'evaluate') {
       const evalKnowledge = await getProblemKnowledge({ problemId, problemSlug, problemTitle });
       const evalSystemPrompt = `You are an Interview Evaluation Committee Chair at ${company}. Analyze the candidate's full interview transcript and code submission against the exact canonical problem below.
+Use this company-specific evaluation blueprint:
+${formatInterviewProfile(interviewProfile)}
 Do not reward an answer that solves a different problem. Separate communication quality from algorithm correctness. Check whether the candidate clarified requirements, identified a valid invariant, justified complexity, considered edge cases, tested the code, and responded to probing.
 Canonical reference:
 ${evalKnowledge.context}
