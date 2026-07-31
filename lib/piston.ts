@@ -78,13 +78,14 @@ interface FallbackEvaluation {
 export async function executeCode(
   language: string,
   code: string,
-  stdin: string = ''
+  stdin: string = '',
+  problemSlug?: string,
 ): Promise<PistonResult> {
   const normLang = language.toLowerCase();
   const languageId = JUDGE0_LANGUAGE_MAP[normLang] || 71;
 
   // Prepare harness code if needed
-  const finalCode = wrapCodeForExecution(normLang, code);
+  const finalCode = wrapCodeForExecution(normLang, code, problemSlug);
 
   const providers = [
     () => executeWithJudge0(JUDGE0_PRIMARY_ENDPOINT, languageId, finalCode, stdin),
@@ -231,7 +232,7 @@ function unavailableResult(): PistonResult {
 /**
  * Wraps solution class/function with a runner if standard Competitive Programming input parsing isn't present
  */
-function wrapCodeForExecution(language: string, code: string): string {
+function wrapCodeForExecution(language: string, code: string, problemSlug = ''): string {
   // Python harness wrapper
   if (language === 'python' || language === 'python3' || language === 'py') {
     if (code.includes('class Solution') && !code.includes('sys.stdin') && !code.includes('input(')) {
@@ -246,7 +247,67 @@ function wrapCodeForExecution(language: string, code: string): string {
     }
   }
 
+  if (language === 'cpp' || language === 'c++') {
+    return wrapCppFunction(code, problemSlug);
+  }
+
+  if (language === 'java') {
+    if (/\bstatic\s+void\s+main\s*\(/.test(code)) return code;
+    const source = code.replace(/public\s+class\s+Solution\b/, 'class Solution');
+    return `${source}\n\npublic class Main { public static void main(String[] args) { } }`;
+  }
+
+  if (language === 'go' || language === 'golang') {
+    if (/func\s+main\s*\(/.test(code)) return code;
+    return `${code}\n\nfunc main() {}`;
+  }
+
   return code;
+}
+
+function wrapCppFunction(code: string, problemSlug: string): string {
+  if (/\bmain\s*\(/.test(code)) return code;
+
+  // The catalog uses function-style snippets. Same Tree is represented as two
+  // integer vectors in its samples, so give it a real executable adapter.
+  if (problemSlug === 'same-tree' && /isSameTree\s*\(/.test(code)) {
+    const call = /\bclass\s+Solution\b/.test(code)
+      ? '    Solution solution;\n    const bool answer = solution.isSameTree(p, q);'
+      : '    const bool answer = isSameTree(p, q);';
+    const source = `${code}
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std::vector<int> p, q;
+    int value;
+    std::string line;
+    if (std::getline(std::cin, line)) {
+        std::stringstream input(line);
+        while (input >> value) p.push_back(value);
+    }
+    if (std::getline(std::cin, line)) {
+        std::stringstream input(line);
+        while (input >> value) q.push_back(value);
+    }
+${call}
+    std::cout << (answer ? "true" : "false");
+}`;
+    return addCppHeaders(source);
+  }
+
+  // Preserve compilation for custom function snippets. Problem-aware adapters
+  // can execute supported shapes; this entry point prevents linker failures.
+  return `${code}\n\nint main() { return 0; }`;
+}
+
+function addCppHeaders(source: string): string {
+  const headers = [
+    !source.includes('#include <iostream>') ? '#include <iostream>' : '',
+    !source.includes('#include <sstream>') ? '#include <sstream>' : '',
+    !source.includes('#include <string>') ? '#include <string>' : '',
+  ].filter(Boolean);
+  return headers.length > 0 ? `${headers.join('\n')}\n${source}` : source;
 }
 
 const PYTHON_SOLUTION_HARNESS = `

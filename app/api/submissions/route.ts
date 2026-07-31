@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     const testResults: TestCaseResult[] = [];
 
     for (const tc of testCases) {
-      const execResult = await executeCode(language, code, tc.input);
+      const execResult = await executeCode(language, code, tc.input, problem.slug);
       totalTime += execResult.executionTime;
       maxMemory = Math.max(maxMemory, execResult.memory);
 

@@ -98,7 +98,7 @@ export async function POST(
     let failedTestCase: { input: string; expectedOutput: string; actualOutput: string; error?: string } | null = null;
 
     for (const testCase of testCases) {
-      const result = await executeCode(language, code, testCase.input);
+      const result = await executeCode(language, code, testCase.input, contestProblem.problem.slug);
       totalTime += result.executionTime;
       maxMemory = Math.max(maxMemory, result.memory);
 

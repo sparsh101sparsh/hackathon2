@@ -42,9 +42,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Custom input exceeds the 50KB limit' }, { status: 413 });
     }
 
+    const problem = problemId
+      ? await prisma.problem.findUnique({
+          where: { id: problemId },
+          include: { testCases: { where: { isSample: true } } },
+        })
+      : null;
+
+    if (problemId && !problem) {
+      return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+    }
+
     // Scenario 1: Custom input execution
     if (customInput !== undefined && customInput !== null) {
-      const result = await executeCode(language, code, customInput);
+      const result = await executeCode(language, code, customInput, problem?.slug);
       return NextResponse.json({
         verdict: result.verdict,
         stdout: result.stdout,
@@ -68,23 +79,14 @@ export async function POST(request: NextRequest) {
 
     // Scenario 2: Sample test cases execution for a given problem
     if (problemId) {
-      const problem = await prisma.problem.findUnique({
-        where: { id: problemId },
-        include: {
-          testCases: {
-            where: { isSample: true },
-          },
-        },
-      });
-
-      if (!problem) {
+      const selectedProblem = problem;
+      if (!selectedProblem) {
         return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
       }
-
-      const sampleTestCases = problem.testCases;
+      const sampleTestCases = selectedProblem.testCases;
       if (!sampleTestCases || sampleTestCases.length === 0) {
         // Fallback if no sample test cases exist
-        const result = await executeCode(language, code, '');
+        const result = await executeCode(language, code, '', selectedProblem.slug);
         return NextResponse.json({
           verdict: result.verdict,
           stdout: result.stdout,
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
       let firstStderr = '';
 
       for (const tc of sampleTestCases) {
-        const execResult = await executeCode(language, code, tc.input);
+        const execResult = await executeCode(language, code, tc.input, selectedProblem.slug);
         totalExecutionTime += execResult.executionTime;
         maxMemory = Math.max(maxMemory, execResult.memory);
 
