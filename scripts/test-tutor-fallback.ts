@@ -4,15 +4,15 @@ const context = [
   'Title: Number of Islands',
   'Reference solution template (python):',
   'def solve(grid):',
-  '    return 42',
+  '    pass',
   '',
   'Editorial reference:',
   'Use DFS to visit each island.',
 ].join('\n');
 
 const cases = [
-  ['write the code for this', 'def solve(grid):'],
-  ['give me the whole code', 'def solve(grid):'],
+  ['write the code for this', 'def numIslands(grid):'],
+  ['give me the whole code', 'def numIslands(grid):'],
   ['how do I optimize time complexity?', 'For **Number of Islands**'],
   ['I get a runtime error', 'compiler/runtime output'],
   ['what edge cases should I test?', 'smallest valid input'],
