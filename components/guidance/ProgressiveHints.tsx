@@ -92,7 +92,7 @@ export const ProgressiveHints: React.FC<ProgressiveHintsProps> = ({
     {
       level: 3 as const,
       name: 'Level 3: Detailed Logic & Pseudocode',
-      badgeColor: 'bg-purple-950/80 text-purple-400 border-purple-800/60',
+      badgeColor: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
       description: 'Step-by-step pseudo-code & structural logic',
     },
   ];
@@ -100,7 +100,7 @@ export const ProgressiveHints: React.FC<ProgressiveHintsProps> = ({
   return (
     <div className="space-y-4 font-sans">
       <div className="flex items-center justify-between p-3.5 bg-slate-900/90 border border-slate-800 rounded-xl">
-        <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-amber-300 font-bold text-xs uppercase tracking-wider">
           <Sparkles className="w-4 h-4" />
           <span>3-Level Progressive Hints</span>
         </div>
@@ -148,16 +148,16 @@ export const ProgressiveHints: React.FC<ProgressiveHintsProps> = ({
                     <button
                       onClick={() => unlockHint(level)}
                       disabled={isLoading}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/80 text-cyan-300 transition disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 transition disabled:opacity-50"
                     >
                       {isLoading ? (
                         <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-300" />
                           <span>Generating...</span>
                         </>
                       ) : (
                         <>
-                          <Unlock className="w-3.5 h-3.5 text-cyan-400" />
+                          <Unlock className="w-3.5 h-3.5 text-amber-300" />
                           <span>Unlock Hint</span>
                         </>
                       )}

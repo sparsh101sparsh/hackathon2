@@ -13,6 +13,9 @@ const files = [
   'app/login/page.tsx',
   'app/register/page.tsx',
   'app/mock-interview/page.tsx',
+  'components/editor/EditorWorkspace.tsx',
+  'components/guidance/ProgressiveHints.tsx',
+  'components/guidance/TutorDrawer.tsx',
 ];
 
 const forbidden = [

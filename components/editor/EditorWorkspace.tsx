@@ -238,14 +238,14 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         {/* Language Selector */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold">
-            <Code2 className="w-4 h-4 text-cyan-400" />
+            <Code2 className="w-4 h-4 text-amber-300" />
             <span>Language:</span>
           </div>
           <select
             aria-label="Programming language"
             value={selectedLanguage}
             onChange={(e) => handleLanguageChange(e.target.value)}
-            className="bg-slate-900 text-slate-200 border border-slate-700 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
+            className="bg-[#111115] text-slate-200 border border-white/10 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium"
           >
             {LANGUAGES.map((lang) => (
               <option key={lang.id} value={lang.id}>
@@ -272,7 +272,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
           >
             {isRunning ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-300" />
             ) : (
               <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
             )}
@@ -284,14 +284,14 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             title="Get a code review"
             className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
           >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>Code Review</span>
           </button>
 
           <button
             onClick={handleSubmitCode}
             disabled={isRunning || isSubmitting}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+            className="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/10 transition-all flex items-center gap-1.5 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -323,7 +323,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               onClick={() => setActiveTab('testcases')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition flex items-center gap-1.5 ${
                 activeTab === 'testcases'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -335,13 +335,13 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               onClick={() => setActiveTab('custom')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition flex items-center gap-1.5 ${
                 activeTab === 'custom'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <span>Custom Input</span>
               {useCustomInput && (
-                <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
               )}
             </button>
 
@@ -349,7 +349,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               onClick={() => setActiveTab('results')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition flex items-center gap-1.5 ${
                 activeTab === 'results'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -393,7 +393,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                     onClick={() => setSelectedTestCaseIndex(idx)}
                     className={`px-3 py-1 text-xs rounded-md border transition ${
                       selectedTestCaseIndex === idx
-                        ? 'bg-slate-800 border-cyan-500/50 text-cyan-300'
+                        ? 'bg-[#17171b] border-amber-400/50 text-amber-300'
                         : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
                     }`}
                   >
@@ -434,7 +434,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                     type="checkbox"
                     checked={useCustomInput}
                     onChange={(e) => setUseCustomInput(e.target.checked)}
-                    className="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500"
+                    className="rounded border-white/10 bg-[#17171b] text-amber-400 focus:ring-amber-400"
                   />
                   <span>Enable Custom Input for Execution</span>
                 </label>
@@ -449,7 +449,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 }}
                 placeholder="Enter custom input standard input (stdin)..."
                 rows={4}
-                className="w-full flex-1 p-2.5 bg-slate-900 border border-slate-800 rounded-md text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-none font-mono text-xs"
+                className="w-full flex-1 p-2.5 bg-[#111115] border border-white/10 rounded-md text-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-400 resize-none font-mono text-xs"
               />
             </div>
           )}
@@ -459,7 +459,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <div className="space-y-3">
               {isRunning || isSubmitting ? (
                 <div className="flex flex-col items-center justify-center py-8 text-slate-400 gap-2">
-                  <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-amber-300" />
                   <span className="text-xs font-sans">
                     {isSubmitting ? 'Evaluating against all test cases...' : 'Executing code...'}
                   </span>
@@ -492,21 +492,21 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
                     <div className="flex items-center gap-4 text-slate-400 text-xs">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                        <Clock className="w-3.5 h-3.5 text-amber-300" />
                         <span>{submissionResult.executionTime}s</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                        <Cpu className="w-3.5 h-3.5 text-stone-400" />
                         <span>{submissionResult.memory} MB</span>
                       </div>
                     </div>
                   </div>
 
                   {submissionResult.learning && (
-                    <div className="flex items-start gap-2 p-3 bg-cyan-950/25 border border-cyan-800/50 rounded-lg">
-                      <Brain className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
-                      <div className="text-[11px] text-cyan-100/85 font-sans">
-                        <span className="font-bold text-cyan-300">Revision Deck updated.</span>{' '}
+                    <div className="flex items-start gap-2 p-3 bg-amber-400/5 border border-amber-400/20 rounded-lg">
+                      <Brain className="w-4 h-4 text-amber-300 mt-0.5 shrink-0" />
+                      <div className="text-[11px] text-amber-100/80 font-sans">
+                        <span className="font-bold text-amber-300">Revision Deck updated.</span>{' '}
                         This {submissionResult.learning.pattern} mistake is due for review now and will be shown with the failing case.
                       </div>
                     </div>
@@ -566,11 +566,11 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
                     <div className="flex items-center gap-4 text-slate-400 text-xs">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                        <Clock className="w-3.5 h-3.5 text-amber-300" />
                         <span>{executeResult.executionTime}s</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                        <Cpu className="w-3.5 h-3.5 text-stone-400" />
                         <span>{executeResult.memory} MB</span>
                       </div>
                     </div>
