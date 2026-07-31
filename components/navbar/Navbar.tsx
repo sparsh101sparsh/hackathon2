@@ -63,15 +63,15 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-5 sm:px-10 h-[76px] flex items-center justify-between font-sans">
+    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-8 h-16 flex items-center justify-between font-sans">
       {/* Left Brand Emblem & Nav Links */}
-      <div className="flex items-center gap-6 lg:gap-8">
+      <div className="flex items-center gap-5 lg:gap-7">
         {/* Glowing Logo Emblem */}
-        <Link href="/" className="flex items-center gap-3 text-white font-extrabold text-xl tracking-tight group">
-          <div className="p-2.5 rounded-lg bg-cyan-200 text-[#08080a] group-hover:bg-cyan-100 transition duration-200">
-            <Code2 className="w-6 h-6" aria-hidden="true" />
+        <Link href="/" className="flex items-center gap-2.5 text-white font-extrabold text-lg tracking-tight group">
+          <div className="p-2 rounded-lg bg-cyan-200 text-[#08080a] group-hover:bg-cyan-100 transition duration-200">
+            <Code2 className="w-5 h-5" aria-hidden="true" />
           </div>
-          <span className="text-xl font-black tracking-tight">
+          <span className="text-lg font-black tracking-tight">
             CodeForge<span className="text-cyan-200">_</span>
           </span>
         </Link>
@@ -84,7 +84,7 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3.5 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 ${
+                className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-[#17171b] text-cyan-100 border border-cyan-300/25'
                     : 'text-slate-400 hover:text-white hover:bg-[#111115]'
@@ -104,7 +104,7 @@ export const Navbar: React.FC = () => {
           href="https://github.com/sparsh101sparsh/hackathon2"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-3 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
+          className="px-4 py-2.5 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
         >
           <Github className="w-4 h-4 text-cyan-200" />
           <span>GitHub</span>
@@ -120,10 +120,10 @@ export const Navbar: React.FC = () => {
               <Image
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                 alt={user.name}
-                width={36}
-                height={36}
+                width={32}
+                height={32}
                 unoptimized
-                className="w-9 h-9 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-cyan-300 transition"
+                className="w-8 h-8 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-cyan-300 transition"
               />
               <div className="text-left leading-none">
                 <div className="text-sm font-bold text-slate-100 group-hover:text-cyan-100 transition">{user.name}</div>
@@ -143,14 +143,14 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="px-4 py-3 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
             >
               <LogIn className="w-3.5 h-3.5 text-cyan-200" />
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="px-5 py-3 rounded-lg bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-sm transition-all flex items-center gap-2"
+              className="px-5 py-2.5 rounded-lg bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-sm transition-all flex items-center gap-2"
             >
               <UserPlus className="w-3.5 h-3.5 text-slate-950" />
               <span>Sign Up</span>
@@ -168,9 +168,9 @@ export const Navbar: React.FC = () => {
           aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-navigation-menu"
-          className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
+          className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
         >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
@@ -184,7 +184,7 @@ export const Navbar: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="absolute top-[76px] left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
+            className="absolute top-16 left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
           >
             <div className="space-y-1">
               {navLinks.map((link) => {
