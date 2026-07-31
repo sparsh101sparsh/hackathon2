@@ -8,6 +8,8 @@ const files = [
   'app/dashboard/page.tsx',
   'components/dashboard/TeachingStyleSelector.tsx',
   'components/dashboard/WeeklyInsights.tsx',
+  'app/problems/page.tsx',
+  'app/problems/[id]/page.tsx',
 ];
 
 const forbidden = [

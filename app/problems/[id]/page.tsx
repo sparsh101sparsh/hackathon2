@@ -110,7 +110,7 @@ export default function ProblemDetailPage() {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm text-slate-400 font-medium">Loading problem workspace...</span>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function ProblemDetailPage() {
           <p className="text-sm text-slate-400">{error || 'The requested problem could not be loaded.'}</p>
           <Link
             href="/problems"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-semibold rounded-lg border border-slate-700 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#17171b] hover:bg-[#202024] text-amber-300 text-xs font-semibold rounded-lg border border-white/10 transition"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Back to Problems</span>
@@ -180,7 +180,7 @@ export default function ProblemDetailPage() {
               onClick={() => setActiveLeftTab('description')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition ${
                 activeLeftTab === 'description'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -192,7 +192,7 @@ export default function ProblemDetailPage() {
               onClick={() => setActiveLeftTab('hints')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition ${
                 activeLeftTab === 'hints'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -204,7 +204,7 @@ export default function ProblemDetailPage() {
               onClick={() => setActiveLeftTab('submissions')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition ${
                 activeLeftTab === 'submissions'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -216,7 +216,7 @@ export default function ProblemDetailPage() {
               onClick={() => setActiveLeftTab('editorial')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition ${
                 activeLeftTab === 'editorial'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -228,11 +228,11 @@ export default function ProblemDetailPage() {
               onClick={() => setActiveLeftTab('visualizer')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition ${
                 activeLeftTab === 'visualizer'
-                  ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-950/20'
+                  ? 'text-amber-300 border-b-2 border-amber-400 bg-amber-400/5'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               <span>Visualizer</span>
             </button>
           </div>
@@ -253,7 +253,7 @@ export default function ProblemDetailPage() {
                 {/* Input & Output Format */}
                 <div className="grid grid-cols-1 gap-4 pt-2">
                   <div className="p-3.5 bg-slate-900/80 rounded-lg border border-slate-800 space-y-1">
-                    <div className="text-xs font-bold text-cyan-400 font-sans uppercase">
+                    <div className="text-xs font-bold text-amber-300 font-sans uppercase">
                       Input Format
                     </div>
                     <div className="text-xs text-slate-300 font-mono">
@@ -293,7 +293,7 @@ export default function ProblemDetailPage() {
                         className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-3 shadow-md"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-cyan-400 font-sans">
+                          <span className="text-xs font-bold text-amber-300 font-sans">
                             Example {idx + 1}
                           </span>
                           <button
@@ -363,7 +363,7 @@ export default function ProblemDetailPage() {
                   </h3>
                   <button
                     onClick={() => void fetchSubmissions()}
-                    className="text-xs text-cyan-400 hover:underline font-semibold"
+                    className="text-xs text-amber-300 hover:underline font-semibold"
                   >
                     Refresh
                   </button>
@@ -402,13 +402,13 @@ export default function ProblemDetailPage() {
                         <div className="flex items-center gap-3 text-slate-400">
                           {sub.executionTime !== null && sub.executionTime !== undefined && (
                             <div className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                              <Clock className="w-3.5 h-3.5 text-amber-300" />
                               <span>{sub.executionTime}s</span>
                             </div>
                           )}
                           {sub.memory !== null && sub.memory !== undefined && (
                             <div className="flex items-center gap-1">
-                              <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                              <Cpu className="w-3.5 h-3.5 text-stone-400" />
                               <span>{sub.memory} MB</span>
                             </div>
                           )}
