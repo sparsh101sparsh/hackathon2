@@ -52,6 +52,13 @@ const COMPANY_LIST = [
   { name: 'Flipkart', logo: '/companies/flipkart.png', description: 'Leading E-Commerce Platform' },
 ];
 
+function repairCppTemplate(code: string): string {
+  return code.replace(
+    /(\b(?:int|bool|void|double|float|long\s+long|std::string|std::vector\s*<[^;{}()]+>)\s+)(\d[A-Za-z0-9_]*)\s*(?=\()/g,
+    '$1solve$2',
+  );
+}
+
 function getTopicTagsForIndex(index: number): string[] {
   if (index <= 50) return ['Arrays', 'Hash Table', 'Two Pointers'];
   if (index <= 100) return ['Backtracking', 'String', 'Dynamic Programming'];
@@ -119,9 +126,10 @@ export async function loadProblems(): Promise<ProblemSeedItem[]> {
           const offlineItem = offlineMap.get(frontendId);
 
           const fnNameParts = slug.split('-').filter(Boolean);
-          const functionName = fnNameParts.length > 0
+          const rawFunctionName = fnNameParts.length > 0
             ? fnNameParts[0] + fnNameParts.slice(1).map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join('')
             : 'solve';
+          const functionName = /^[A-Za-z_]/.test(rawFunctionName) ? rawFunctionName : `solve${rawFunctionName}`;
 
           problems.push({
             frontendId,
@@ -142,13 +150,15 @@ export async function loadProblems(): Promise<ProblemSeedItem[]> {
               { input: '3 2 4\n6', expectedOutput: '1 2', isSample: true },
               { input: '3 3\n6', expectedOutput: '0 1', isSample: false },
             ],
-            codeTemplates: offlineItem?.codeTemplates || {
+            codeTemplates: offlineItem?.codeTemplates
+              ? { ...offlineItem.codeTemplates, cpp: repairCppTemplate(offlineItem.codeTemplates.cpp) }
+              : {
               python: `class Solution:\n    def ${functionName}(self, nums: list[int]) -> int:\n        # Write your solution here\n        pass\n`,
               cpp: `#include <iostream>\n#include <vector>\n\nclass Solution {\npublic:\n    int ${functionName}(std::vector<int>& nums) {\n        // Write your solution here\n        return 0;\n    }\n};\n`,
               javascript: `/**\n * @param {number[]} nums\n * @return {number}\n */\nfunction ${functionName}(nums) {\n  // Write your solution here\n}\n`,
               java: `import java.util.*;\n\nclass Solution {\n    public int ${functionName}(int[] nums) {\n        // Write your solution here\n        return 0;\n    }\n}\n`,
               go: `package main\n\nfunc ${functionName}(nums []int) int {\n    // Write your solution here\n    return 0\n}\n`,
-            },
+              },
           });
         }
       }
@@ -173,7 +183,10 @@ export async function loadProblems(): Promise<ProblemSeedItem[]> {
     }
   }
 
-  return uniqueProblems;
+  return uniqueProblems.map((problem) => ({
+    ...problem,
+    codeTemplates: { ...problem.codeTemplates, cpp: repairCppTemplate(problem.codeTemplates.cpp) },
+  }));
 }
 
 export async function seedRealProblems() {

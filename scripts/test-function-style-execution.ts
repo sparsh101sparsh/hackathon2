@@ -43,6 +43,11 @@ std::vector<int> spiralOrder(std::vector<std::vector<int>>& matrix) {
 }
 };`;
 
+const charMatrixFunction = `#include <vector>
+class Solution { public:
+bool validSudoku(std::vector<std::vector<char>>& board) { return board.size() == 2 && board[0][0] == '5'; }
+};`;
+
 async function main() {
   const result = await executeCode('cpp', sameTreeFunction, '1 2 3\n1 2 3\n', 'same-tree');
 
@@ -53,6 +58,7 @@ async function main() {
     { code: twoSumFunction, input: '2 7 11 15\n9\n', output: '0 1' },
     { code: stringFunction, input: 's = "abcabcbb"\n', output: '3' },
     { code: matrixFunction, input: '3 3\n1 2 3\n4 5 6\n7 8 9\n', output: '1 2 3 4 5 6 7 8 9' },
+    { code: charMatrixFunction, input: 'board = [["5","3"],[".","7"]]\n', output: 'true' },
   ];
   for (const testCase of cases) {
     const testResult = await executeCode('cpp', testCase.code, testCase.input, 'catalog-regression');

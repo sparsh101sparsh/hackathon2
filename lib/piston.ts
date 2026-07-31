@@ -373,6 +373,7 @@ function cppTypeKind(type: string): string {
   if (/^(TreeNode|ListNode)\*$/.test(normalized)) return normalized;
   if (/^vector\s*<\s*vector\s*<\s*int\s*>\s*>$/.test(normalized)) return 'matrix-int';
   if (/^vector\s*<\s*vector\s*<\s*string\s*>\s*>$/.test(normalized)) return 'matrix-string';
+  if (/^vector\s*<\s*vector\s*<\s*char\s*>\s*>$/.test(normalized)) return 'matrix-char';
   if (/^vector\s*<\s*int\s*>$/.test(normalized)) return 'vector-int';
   if (/^vector\s*<\s*string\s*>$/.test(normalized)) return 'vector-string';
   if (/^(string|void)$/.test(normalized)) return normalized;
@@ -395,6 +396,7 @@ function cppParserExpression(type: string, index: number): string {
   if (kind === 'vector-string') return `__cf_string_vector(${value})`;
   if (kind === 'matrix-int') return `__cf_int_matrix(${value})`;
   if (kind === 'matrix-string') return `__cf_string_matrix(${value})`;
+  if (kind === 'matrix-char') return `__cf_char_matrix(${value})`;
   if (kind === 'string') return `__cf_string(${value})`;
   if (kind === 'bool') return `__cf_bool(${value})`;
   if (kind === 'long-long') return `__cf_long_long(${value})`;
@@ -412,6 +414,7 @@ function cppArgumentDeclaration(type: string, index: number): string {
   if (kind === 'vector-string') return `std::vector<std::string> __cf_arg${index} = ${expression}`;
   if (kind === 'matrix-int') return `std::vector<std::vector<int>> __cf_arg${index} = ${expression}`;
   if (kind === 'matrix-string') return `std::vector<std::vector<std::string>> __cf_arg${index} = ${expression}`;
+  if (kind === 'matrix-char') return `std::vector<std::vector<char>> __cf_arg${index} = ${expression}`;
   if (kind === 'string') return `std::string __cf_arg${index} = ${expression}`;
   if (kind === 'bool') return `bool __cf_arg${index} = ${expression}`;
   if (kind === 'long-long') return `long long __cf_arg${index} = ${expression}`;
@@ -428,6 +431,7 @@ function cppOutputStatement(type: string): string {
   if (kind === 'bool') return '    std::cout << (__cf_result ? "true" : "false");';
   if (kind === 'vector-int' || kind === 'vector-string') return '    __cf_print_vector(__cf_result);';
   if (kind === 'matrix-int' || kind === 'matrix-string') return '    __cf_print_matrix(__cf_result);';
+  if (kind === 'matrix-char') return '    __cf_print_matrix(__cf_result);';
   if (kind === 'TreeNode*') return '    __cf_print_tree(__cf_result);';
   if (kind === 'ListNode*') return '    __cf_print_list(__cf_result);';
   if (kind === 'string' || kind === 'int' || kind === 'long-long' || kind === 'double' || kind === 'float') return '    std::cout << __cf_result;';
@@ -498,6 +502,7 @@ static std::vector<std::vector<int>> __cf_int_matrix(const std::string& raw) {
     return rows;
 }
 static std::vector<std::vector<std::string>> __cf_string_matrix(const std::string& raw) { std::vector<std::vector<std::string>> out; std::regex row("\\[[^\\]]*\\]"); for (std::sregex_iterator it(raw.begin(), raw.end(), row), end; it != end; ++it) out.push_back(__cf_string_vector(it->str())); return out; }
+static std::vector<std::vector<char>> __cf_char_matrix(const std::string& raw) { std::vector<std::vector<char>> out; std::regex row("\\[[^\\]]*\\]"); std::regex item("\\\"([^\\\"]*)\\\""); for (std::sregex_iterator rowIt(raw.begin(), raw.end(), row), end; rowIt != end; ++rowIt) { std::string rowText = rowIt->str(); std::vector<char> values; for (std::sregex_iterator it(rowText.begin(), rowText.end(), item), rowEnd; it != rowEnd; ++it) if (!(*it)[1].str().empty()) values.push_back((*it)[1].str()[0]); out.push_back(values); } return out; }
 template <typename T> static void __cf_print_vector(const T& values) { for (size_t i = 0; i < values.size(); i++) { if (i) std::cout << ' '; std::cout << values[i]; } }
 template <typename T> static void __cf_print_matrix(const T& values) { for (size_t i = 0; i < values.size(); i++) { if (i) std::cout << '\n'; __cf_print_vector(values[i]); } }
 `;
