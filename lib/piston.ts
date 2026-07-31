@@ -436,9 +436,9 @@ function cppOutputStatement(type: string): string {
 
 const CPP_HARNESS_HELPERS = String.raw`
 static std::string __cf_trim(std::string value) {
-    const auto first = value.find_first_not_of(" \\t\\r\\n");
+    const auto first = value.find_first_not_of(" \t\r\n");
     if (first == std::string::npos) return "";
-    const auto last = value.find_last_not_of(" \\t\\r\\n");
+    const auto last = value.find_last_not_of(" \t\r\n");
     return value.substr(first, last - first + 1);
 }
 static std::vector<std::string> __cf_extract_values(const std::string& raw) {
@@ -469,7 +469,7 @@ static std::vector<std::string> __cf_extract_values(const std::string& raw) {
             end = raw.find('"', start + 1);
             end = end == std::string::npos ? raw.size() : end + 1;
         } else {
-            while (end < raw.size() && raw[end] != ',' && raw[end] != '\\n') end++;
+            while (end < raw.size() && raw[end] != ',' && raw[end] != '\n') end++;
         }
         values.push_back(__cf_trim(raw.substr(start, end - start)));
         i = end + 1;
@@ -499,7 +499,7 @@ static std::vector<std::vector<int>> __cf_int_matrix(const std::string& raw) {
 }
 static std::vector<std::vector<std::string>> __cf_string_matrix(const std::string& raw) { std::vector<std::vector<std::string>> out; std::regex row("\\[[^\\]]*\\]"); for (std::sregex_iterator it(raw.begin(), raw.end(), row), end; it != end; ++it) out.push_back(__cf_string_vector(it->str())); return out; }
 template <typename T> static void __cf_print_vector(const T& values) { for (size_t i = 0; i < values.size(); i++) { if (i) std::cout << ' '; std::cout << values[i]; } }
-template <typename T> static void __cf_print_matrix(const T& values) { for (size_t i = 0; i < values.size(); i++) { if (i) std::cout << '\\n'; __cf_print_vector(values[i]); } }
+template <typename T> static void __cf_print_matrix(const T& values) { for (size_t i = 0; i < values.size(); i++) { if (i) std::cout << '\n'; __cf_print_vector(values[i]); } }
 `;
 
 const CPP_TREE_HELPERS = String.raw`
