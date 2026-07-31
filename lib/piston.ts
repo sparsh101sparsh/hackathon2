@@ -268,47 +268,259 @@ function wrapCodeForExecution(language: string, code: string, problemSlug = ''):
 function wrapCppFunction(code: string, problemSlug: string): string {
   if (/\bmain\s*\(/.test(code)) return code;
 
-  // The catalog uses function-style snippets. Same Tree is represented as two
-  // integer vectors in its samples, so give it a real executable adapter.
-  if (problemSlug === 'same-tree' && /isSameTree\s*\(/.test(code)) {
-    const call = /\bclass\s+Solution\b/.test(code)
-      ? '    Solution solution;\n    const bool answer = solution.isSameTree(p, q);'
-      : '    const bool answer = isSameTree(p, q);';
-    const source = `${code}
+  const callable = findCppCallable(code);
+  if (!callable) return `${code}\n\nint main() { return 0; }`;
+
+  const args = callable.parameters.map((parameter, index) =>
+    cppArgumentExpression(parameter.type, index),
+  );
+  if (args.some((argument) => !argument)) return `${code}\n\nint main() { return 0; }`;
+
+  const invocation = cppTypeKind(callable.returnType) === 'void'
+    ? (/\bclass\s+Solution\b/.test(code)
+      ? `    Solution __cf_solution;\n    __cf_solution.${callable.name}(${args.join(', ')});`
+      : `    ${callable.name}(${args.join(', ')});`)
+    : (/\bclass\s+Solution\b/.test(code)
+      ? `    Solution __cf_solution;\n    auto __cf_result = __cf_solution.${callable.name}(${args.join(', ')});`
+      : `    auto __cf_result = ${callable.name}(${args.join(', ')});`);
+  const output = cppOutputStatement(callable.returnType);
+  if (!output) return `${code}\n\nint main() { return 0; }`;
+
+  return addCppHeaders(`${code}
+
+${CPP_HARNESS_HELPERS}
+${code.includes('TreeNode') ? CPP_TREE_HELPERS : ''}
+${code.includes('ListNode') ? CPP_LIST_HELPERS : ''}
 
 int main() {
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
-    std::vector<int> p, q;
-    int value;
-    std::string line;
-    if (std::getline(std::cin, line)) {
-        std::stringstream input(line);
-        while (input >> value) p.push_back(value);
-    }
-    if (std::getline(std::cin, line)) {
-        std::stringstream input(line);
-        while (input >> value) q.push_back(value);
-    }
-${call}
-    std::cout << (answer ? "true" : "false");
-}`;
-    return addCppHeaders(source);
-  }
-
-  // Preserve compilation for custom function snippets. Problem-aware adapters
-  // can execute supported shapes; this entry point prevents linker failures.
-  return `${code}\n\nint main() { return 0; }`;
+    std::string __cf_raw((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
+    auto __cf_values = __cf_extract_values(__cf_raw);
+${callable.parameters.map((parameter, index) => `    ${cppArgumentDeclaration(parameter.type, index)};`).join('\n')}
+${invocation}
+${output}
+}`);
 }
 
 function addCppHeaders(source: string): string {
   const headers = [
+    !source.includes('#include <bits/stdc++.h>') ? '#include <bits/stdc++.h>' : '',
     !source.includes('#include <iostream>') ? '#include <iostream>' : '',
     !source.includes('#include <sstream>') ? '#include <sstream>' : '',
     !source.includes('#include <string>') ? '#include <string>' : '',
   ].filter(Boolean);
   return headers.length > 0 ? `${headers.join('\n')}\n${source}` : source;
 }
+
+interface CppCallable {
+  returnType: string;
+  name: string;
+  parameters: Array<{ type: string; name: string }>;
+}
+
+function findCppCallable(code: string): CppCallable | null {
+  const callablePattern = /(?:^|\n|[;{}])\s*(?:(?:public|private|protected):\s*)?((?:const\s+)?(?:(?:std::)?(?:vector|list|deque|set|unordered_set|map|unordered_map)\s*<[^;{}()]+>|(?:std::)?(?:string|int|long\s+long|double|float|bool|void|TreeNode\s*\*|ListNode\s*\*)))\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^()]*)\)\s*\{/g;
+  let match: RegExpExecArray | null;
+  while ((match = callablePattern.exec(code))) {
+    const name = match[2];
+    if (name === 'main' || name === 'if' || name === 'while' || name === 'for') continue;
+    const parameters = splitCppParameters(match[3]).map((parameter) => parseCppParameter(parameter));
+    if (parameters.some((parameter) => !parameter)) continue;
+    return { returnType: normalizeCppType(match[1]), name, parameters: parameters as Array<{ type: string; name: string }> };
+  }
+  return null;
+}
+
+function splitCppParameters(parameters: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let depth = 0;
+  for (const character of parameters) {
+    if (character === '<' || character === '(' || character === '[') depth += 1;
+    if (character === '>' || character === ')' || character === ']') depth -= 1;
+    if (character === ',' && depth === 0) {
+      if (current.trim()) result.push(current.trim());
+      current = '';
+    } else {
+      current += character;
+    }
+  }
+  if (current.trim()) result.push(current.trim());
+  return result;
+}
+
+function parseCppParameter(parameter: string): { type: string; name: string } | null {
+  const cleaned = parameter.replace(/=.+$/, '').trim();
+  const match = cleaned.match(/^(.+?)\s+([A-Za-z_][A-Za-z0-9_]*)$/);
+  if (!match) return null;
+  return { type: normalizeCppType(match[1]), name: match[2] };
+}
+
+function normalizeCppType(type: string): string {
+  return type
+    .replace(/\bconst\b/g, '')
+    .replace(/\bstatic\b/g, '')
+    .replace(/\bmutable\b/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*&\s*$/, '')
+    .replace(/\s*([*])\s*/g, '$1')
+    .trim();
+}
+
+function cppTypeKind(type: string): string {
+  const normalized = normalizeCppType(type).replace(/std::/g, '');
+  if (/^(TreeNode|ListNode)\*$/.test(normalized)) return normalized;
+  if (/^vector\s*<\s*vector\s*<\s*int\s*>\s*>$/.test(normalized)) return 'matrix-int';
+  if (/^vector\s*<\s*vector\s*<\s*string\s*>\s*>$/.test(normalized)) return 'matrix-string';
+  if (/^vector\s*<\s*int\s*>$/.test(normalized)) return 'vector-int';
+  if (/^vector\s*<\s*string\s*>$/.test(normalized)) return 'vector-string';
+  if (/^(string|void)$/.test(normalized)) return normalized;
+  if (/^bool$/.test(normalized)) return 'bool';
+  if (/^long long$/.test(normalized)) return 'long-long';
+  if (/^(int|double|float)$/.test(normalized)) return normalized;
+  return '';
+}
+
+function cppArgumentExpression(type: string, index: number): string {
+  return cppTypeKind(type) ? `__cf_arg${index}` : '';
+}
+
+function cppParserExpression(type: string, index: number): string {
+  const kind = cppTypeKind(type);
+  const value = kind === 'matrix-int' || kind === 'matrix-string'
+    ? '__cf_raw'
+    : `__cf_values.size() > ${index} ? __cf_values[${index}] : std::string()`;
+  if (kind === 'vector-int') return `__cf_int_vector(${value})`;
+  if (kind === 'vector-string') return `__cf_string_vector(${value})`;
+  if (kind === 'matrix-int') return `__cf_int_matrix(${value})`;
+  if (kind === 'matrix-string') return `__cf_string_matrix(${value})`;
+  if (kind === 'string') return `__cf_string(${value})`;
+  if (kind === 'bool') return `__cf_bool(${value})`;
+  if (kind === 'long-long') return `__cf_long_long(${value})`;
+  if (kind === 'int') return `__cf_int(${value})`;
+  if (kind === 'double' || kind === 'float') return `__cf_double(${value})`;
+  if (kind === 'TreeNode*') return `__cf_tree(${value})`;
+  if (kind === 'ListNode*') return `__cf_list(${value})`;
+  return '';
+}
+
+function cppArgumentDeclaration(type: string, index: number): string {
+  const kind = cppTypeKind(type);
+  const expression = cppParserExpression(type, index);
+  if (kind === 'vector-int') return `std::vector<int> __cf_arg${index} = ${expression}`;
+  if (kind === 'vector-string') return `std::vector<std::string> __cf_arg${index} = ${expression}`;
+  if (kind === 'matrix-int') return `std::vector<std::vector<int>> __cf_arg${index} = ${expression}`;
+  if (kind === 'matrix-string') return `std::vector<std::vector<std::string>> __cf_arg${index} = ${expression}`;
+  if (kind === 'string') return `std::string __cf_arg${index} = ${expression}`;
+  if (kind === 'bool') return `bool __cf_arg${index} = ${expression}`;
+  if (kind === 'long-long') return `long long __cf_arg${index} = ${expression}`;
+  if (kind === 'int') return `int __cf_arg${index} = ${expression}`;
+  if (kind === 'double' || kind === 'float') return `double __cf_arg${index} = ${expression}`;
+  if (kind === 'TreeNode*') return `TreeNode* __cf_arg${index} = ${expression}`;
+  if (kind === 'ListNode*') return `ListNode* __cf_arg${index} = ${expression}`;
+  return `int __cf_arg${index} = 0`;
+}
+
+function cppOutputStatement(type: string): string {
+  const kind = cppTypeKind(type);
+  if (kind === 'void') return '';
+  if (kind === 'bool') return '    std::cout << (__cf_result ? "true" : "false");';
+  if (kind === 'vector-int' || kind === 'vector-string') return '    __cf_print_vector(__cf_result);';
+  if (kind === 'matrix-int' || kind === 'matrix-string') return '    __cf_print_matrix(__cf_result);';
+  if (kind === 'TreeNode*') return '    __cf_print_tree(__cf_result);';
+  if (kind === 'ListNode*') return '    __cf_print_list(__cf_result);';
+  if (kind === 'string' || kind === 'int' || kind === 'long-long' || kind === 'double' || kind === 'float') return '    std::cout << __cf_result;';
+  return '';
+}
+
+const CPP_HARNESS_HELPERS = String.raw`
+static std::string __cf_trim(std::string value) {
+    const auto first = value.find_first_not_of(" \\t\\r\\n");
+    if (first == std::string::npos) return "";
+    const auto last = value.find_last_not_of(" \\t\\r\\n");
+    return value.substr(first, last - first + 1);
+}
+static std::vector<std::string> __cf_extract_values(const std::string& raw) {
+    std::vector<std::string> values;
+    const bool named = raw.find('=') != std::string::npos;
+    if (!named) {
+        std::stringstream lines(raw);
+        std::string line;
+        while (std::getline(lines, line)) if (!__cf_trim(line).empty()) values.push_back(__cf_trim(line));
+        if (values.empty()) values.push_back(__cf_trim(raw));
+        return values;
+    }
+    for (size_t i = 0; i < raw.size();) {
+        const auto equals = raw.find('=', i);
+        if (equals == std::string::npos) break;
+        size_t start = equals + 1;
+        while (start < raw.size() && std::isspace(static_cast<unsigned char>(raw[start]))) start++;
+        size_t end = start;
+        if (start < raw.size() && (raw[start] == '[' || raw[start] == '{')) {
+            const char opening = raw[start], closing = opening == '[' ? ']' : '}';
+            int depth = 0; bool quoted = false;
+            for (; end < raw.size(); end++) {
+                if (raw[end] == '"' && (end == 0 || raw[end - 1] != '\\')) quoted = !quoted;
+                if (!quoted && raw[end] == opening) depth++;
+                if (!quoted && raw[end] == closing && --depth == 0) { end++; break; }
+            }
+        } else if (start < raw.size() && raw[start] == '"') {
+            end = raw.find('"', start + 1);
+            end = end == std::string::npos ? raw.size() : end + 1;
+        } else {
+            while (end < raw.size() && raw[end] != ',' && raw[end] != '\\n') end++;
+        }
+        values.push_back(__cf_trim(raw.substr(start, end - start)));
+        i = end + 1;
+    }
+    return values;
+}
+static std::vector<int> __cf_ints(const std::string& raw) {
+    std::vector<int> result; std::regex number("-?[0-9]+");
+    for (std::sregex_iterator it(raw.begin(), raw.end(), number), end; it != end; ++it) result.push_back(std::stoi(it->str()));
+    return result;
+}
+static int __cf_int(const std::string& raw) { auto values = __cf_ints(raw); return values.empty() ? 0 : values[0]; }
+static long long __cf_long_long(const std::string& raw) { auto values = __cf_ints(raw); return values.empty() ? 0 : values[0]; }
+static double __cf_double(const std::string& raw) { try { return std::stod(raw); } catch (...) { return 0; } }
+static bool __cf_bool(const std::string& raw) { return raw == "true" || raw == "1"; }
+static std::string __cf_string(std::string raw) { raw = __cf_trim(raw); if (raw.size() >= 2 && raw.front() == '"' && raw.back() == '"') return raw.substr(1, raw.size() - 2); return raw; }
+static std::vector<int> __cf_int_vector(const std::string& raw) { return __cf_ints(raw); }
+static std::vector<std::string> __cf_string_vector(const std::string& raw) { std::vector<std::string> out; std::regex item("\\\"([^\\\"]*)\\\""); for (std::sregex_iterator it(raw.begin(), raw.end(), item), end; it != end; ++it) out.push_back((*it)[1]); return out; }
+static std::vector<std::vector<int>> __cf_int_matrix(const std::string& raw) {
+    std::vector<std::vector<int>> out; std::regex row("\\[[^\\]]*\\]");
+    for (std::sregex_iterator it(raw.begin(), raw.end(), row), end; it != end; ++it) out.push_back(__cf_ints(it->str()));
+    if (!out.empty()) return out;
+    std::stringstream lines(raw); std::string line; std::vector<std::vector<int>> rows;
+    while (std::getline(lines, line)) if (!__cf_trim(line).empty()) rows.push_back(__cf_ints(line));
+    if (rows.size() > 1 && rows[0].size() == 2 && rows[0][0] == static_cast<int>(rows.size() - 1)) rows.erase(rows.begin());
+    return rows;
+}
+static std::vector<std::vector<std::string>> __cf_string_matrix(const std::string& raw) { std::vector<std::vector<std::string>> out; std::regex row("\\[[^\\]]*\\]"); for (std::sregex_iterator it(raw.begin(), raw.end(), row), end; it != end; ++it) out.push_back(__cf_string_vector(it->str())); return out; }
+template <typename T> static void __cf_print_vector(const T& values) { for (size_t i = 0; i < values.size(); i++) { if (i) std::cout << ' '; std::cout << values[i]; } }
+template <typename T> static void __cf_print_matrix(const T& values) { for (size_t i = 0; i < values.size(); i++) { if (i) std::cout << '\\n'; __cf_print_vector(values[i]); } }
+`;
+
+const CPP_TREE_HELPERS = String.raw`
+static TreeNode* __cf_tree(const std::string& raw) {
+    std::vector<std::string> tokens; std::regex token("-?[0-9]+|null");
+    for (std::sregex_iterator it(raw.begin(), raw.end(), token), end; it != end; ++it) tokens.push_back(it->str());
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    TreeNode* root = new TreeNode(std::stoi(tokens[0])); std::queue<TreeNode*> queue; queue.push(root); size_t i = 1;
+    while (!queue.empty() && i < tokens.size()) { TreeNode* node = queue.front(); queue.pop();
+        if (i < tokens.size() && tokens[i] != "null") { node->left = new TreeNode(std::stoi(tokens[i])); queue.push(node->left); } i++;
+        if (i < tokens.size() && tokens[i] != "null") { node->right = new TreeNode(std::stoi(tokens[i])); queue.push(node->right); } i++;
+    }
+    return root;
+}
+static void __cf_print_tree(TreeNode*) {}
+`;
+
+const CPP_LIST_HELPERS = String.raw`
+static ListNode* __cf_list(const std::string& raw) { auto values = __cf_ints(raw); ListNode* head = nullptr; ListNode* tail = nullptr; for (int value : values) { auto* node = new ListNode(value); if (!head) head = node; else tail->next = node; tail = node; } return head; }
+static void __cf_print_list(ListNode*) {}
+`;
 
 const PYTHON_SOLUTION_HARNESS = `
 import sys, json, ast

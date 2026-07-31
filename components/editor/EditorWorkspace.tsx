@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CodeEditor from './CodeEditor';
 import {
   Play,
@@ -72,18 +72,26 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   const [executeResult, setExecuteResult] = useState<ExecuteApiResponse | null>(null);
   const [submissionResult, setSubmissionResult] = useState<SubmissionApiResponse | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
+  const codeRef = useRef<string>('');
+  const appliedTemplateRef = useRef<{ language: string; code: string } | null>(null);
 
-  // Initialize code when language or templates change
+  // Load a template when entering a language, but never overwrite edits when
+  // the parent refreshes problem data and creates a new templates array.
   useEffect(() => {
     const tmpl = codeTemplates.find(
       (t) => t.language.toLowerCase() === selectedLanguage.toLowerCase()
     );
-    if (tmpl) {
-      setCode(tmpl.code);
-    } else {
-      const langConfig = LANGUAGES.find((l) => l.id === selectedLanguage);
-      setCode(langConfig ? langConfig.defaultCode : '');
+    const nextCode = tmpl?.code || LANGUAGES.find((l) => l.id === selectedLanguage)?.defaultCode || '';
+    const previous = appliedTemplateRef.current;
+    const enteredLanguage = previous?.language !== selectedLanguage;
+    const templateChanged = previous?.language === selectedLanguage && previous.code !== nextCode;
+    const editorIsUntouched = codeRef.current === '' || codeRef.current === previous?.code;
+
+    if (enteredLanguage || (templateChanged && editorIsUntouched)) {
+      codeRef.current = nextCode;
+      setCode(nextCode);
     }
+    appliedTemplateRef.current = { language: selectedLanguage, code: nextCode };
   }, [selectedLanguage, codeTemplates]);
 
   // Set default custom input from sample test case
@@ -101,12 +109,9 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     const tmpl = codeTemplates.find(
       (t) => t.language.toLowerCase() === selectedLanguage.toLowerCase()
     );
-    if (tmpl) {
-      setCode(tmpl.code);
-    } else {
-      const langConfig = LANGUAGES.find((l) => l.id === selectedLanguage);
-      setCode(langConfig ? langConfig.defaultCode : '');
-    }
+    const nextCode = tmpl?.code || LANGUAGES.find((l) => l.id === selectedLanguage)?.defaultCode || '';
+    codeRef.current = nextCode;
+    setCode(nextCode);
   };
 
   const handleRunCode = async () => {
@@ -308,7 +313,10 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         <CodeEditor
           language={selectedLanguage}
           value={code}
-          onChange={(val) => setCode(val)}
+          onChange={(val) => {
+            codeRef.current = val;
+            setCode(val);
+          }}
           onRun={handleRunCode}
           onSubmit={handleSubmitCode}
         />
