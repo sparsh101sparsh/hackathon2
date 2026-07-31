@@ -12,7 +12,7 @@ async function loadProfile(id: string) {
   if (!user && id !== 'guest') return null;
   const displayUser = user || { id: 'guest', name: 'Guest Coder', createdAt: new Date(0) };
 
-  const [progress, submissions, accepted] = await prisma.$transaction([
+  const [progress, submissions, totalSubmissionCount, acceptedSubmissionCount, accepted] = await prisma.$transaction([
     prisma.userProgress.findUnique({ where: { userId: id }, select: { streak: true, lastActiveDate: true } }),
     prisma.submission.findMany({
       where: { userId: id },
@@ -20,6 +20,8 @@ async function loadProfile(id: string) {
       orderBy: { createdAt: 'desc' },
       take: 200,
     }),
+    prisma.submission.count({ where: { userId: id } }),
+    prisma.submission.count({ where: { userId: id, status: 'Accepted' } }),
     prisma.submission.findMany({
       where: { userId: id, status: 'Accepted' },
       distinct: ['problemId'],
@@ -27,8 +29,7 @@ async function loadProfile(id: string) {
     }),
   ]);
 
-  const acceptedCount = submissions.filter((item) => item.status === 'Accepted').length;
-  const accuracy = submissions.length ? Math.round((acceptedCount / submissions.length) * 1000) / 10 : 0;
+  const accuracy = totalSubmissionCount ? Math.round((acceptedSubmissionCount / totalSubmissionCount) * 1000) / 10 : 0;
   const solved = { easy: 0, medium: 0, hard: 0, total: accepted.length };
   accepted.forEach(({ problem }) => {
     if (problem.difficulty === 'EASY') solved.easy += 1;

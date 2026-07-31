@@ -19,6 +19,7 @@ export interface LeaderboardUser {
     total: number;
   };
   accuracy: number;
+  consistency: number;
   country: string;
   joinedAt: string;
   streak: number;
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
           orderBy: { timestamp: 'desc' },
         }),
         prisma.user.findMany({
-          select: { id: true, name: true },
+          select: { id: true, name: true, createdAt: true },
         }),
       ]),
     );
@@ -96,11 +97,13 @@ export async function GET(req: NextRequest) {
       ...allProgress.map((p) => p.userId || 'guest'),
       ...Array.from(countsByUser.keys()),
       ...allUserRatings.map((rating) => rating.userId || 'guest'),
+      ...dbUsers.map((user) => user.id),
     ]);
 
     // Fetch DB Users for public display names only. Account emails are private
     // and must not be included in the public leaderboard response.
     const dbUserMap = new Map(dbUsers.map((u) => [u.id, u]));
+    const progressMap = new Map(allProgress.map((progress) => [progress.userId || 'guest', progress]));
 
     const leaderboard: LeaderboardUser[] = [];
 
@@ -118,9 +121,10 @@ export async function GET(req: NextRequest) {
           ? Math.round((counts.accepted / counts.total) * 1000) / 10
           : 0;
 
-        const progressRec = allProgress.find((p) => (p.userId || 'guest') === userId);
+        const progressRec = progressMap.get(userId);
         const rating = userRatingMap.get(userId) || 0; // Default 0 for unrated users
         const dbUser = dbUserMap.get(userId);
+        const streak = progressRec?.streak || 0;
 
         leaderboard.push({
           rank: 0,
@@ -136,11 +140,14 @@ export async function GET(req: NextRequest) {
             total: totalCount,
           },
           accuracy,
+          consistency: Math.min(100, Math.round(streak * 10 + Math.min(totalCount, 40))),
           country: 'Global',
-          joinedAt: progressRec?.lastActiveDate
-            ? new Date(progressRec.lastActiveDate).toISOString().split('T')[0]
-            : new Date().toISOString().split('T')[0],
-          streak: progressRec?.streak || 0,
+          joinedAt: dbUser?.createdAt
+            ? new Date(dbUser.createdAt).toISOString().split('T')[0]
+            : progressRec?.lastActiveDate
+              ? new Date(progressRec.lastActiveDate).toISOString().split('T')[0]
+              : new Date().toISOString().split('T')[0],
+          streak,
         });
       }
     });

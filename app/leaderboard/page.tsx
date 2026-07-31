@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { LeaderboardUser } from '@/app/api/leaderboard/route';
 import { Trophy, Search, Loader2, Medal } from 'lucide-react';
@@ -68,7 +69,7 @@ export default function LeaderboardPage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto font-sans"
+      className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto font-sans"
     >
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
@@ -113,13 +114,15 @@ export default function LeaderboardPage() {
                   <th className="py-3.5 px-4 font-semibold">Rating / Badge</th>
                   <th className="py-3.5 px-4 font-semibold text-center">Solved (E/M/H)</th>
                   <th className="py-3.5 px-4 font-semibold text-center">Accuracy</th>
+                  <th className="py-3.5 px-4 font-semibold text-center">Streak</th>
+                  <th className="py-3.5 px-4 font-semibold text-center">Consistency</th>
                   <th className="py-3.5 px-4 font-semibold">Country / Joined</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-400">
+                    <td colSpan={8} className="py-12 text-center text-slate-400">
                       No leaderboard entries found. Submit code solutions to earn your rank on the global leaderboard!
                     </td>
                   </tr>
@@ -147,9 +150,9 @@ export default function LeaderboardPage() {
                             className="w-9 h-9 rounded-full border border-slate-700 bg-slate-800 shrink-0"
                           />
                           <div>
-                            <a href={`/leaderboard/${u.id}`} className="font-bold text-white group-hover:text-cyan-400 transition-colors hover:underline">
+                            <Link href={`/leaderboard/${u.id}`} className="font-bold text-white group-hover:text-amber-300 transition-colors hover:underline">
                               {u.name}
-                            </a>
+                            </Link>
                             <div className="text-[11px] text-slate-400">{u.ratingTier.badge}</div>
                           </div>
                         </div>
@@ -182,7 +185,15 @@ export default function LeaderboardPage() {
                       </td>
 
                       <td className="py-3.5 px-4 text-center">
-                        <span className="font-bold text-cyan-400 text-sm">{u.accuracy}%</span>
+                        <span className="font-bold text-amber-300 text-sm">{u.accuracy}%</span>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="font-bold text-amber-400 text-sm">{u.streak}d</span>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="font-bold text-slate-200 text-sm">{u.consistency}%</span>
                       </td>
 
                       <td className="py-3.5 px-4">

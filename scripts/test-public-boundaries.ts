@@ -30,6 +30,12 @@ async function runTest() {
       ),
       'Public leaderboard does not expose account email addresses',
     );
+    assert(
+      (leaderboard.leaderboard || []).every((entry: { streak?: unknown; consistency?: unknown }) =>
+        typeof entry.streak === 'number' && typeof entry.consistency === 'number',
+      ),
+      'Public leaderboard exposes measurable streak and consistency signals',
+    );
     const firstProfileId = leaderboard.leaderboard?.[0]?.id;
     if (firstProfileId) {
       const profileResponse = await profileHandler(
@@ -39,6 +45,7 @@ async function runTest() {
       const profile = await profileResponse.json();
       assert(profileResponse.status === 200 && profile.profile?.id === firstProfileId, 'Public profile loads from a leaderboard entry');
       assert(!Object.prototype.hasOwnProperty.call(profile.profile || {}, 'email'), 'Public profile does not expose account email addresses');
+      assert(typeof profile.profile?.accuracy === 'number' && typeof profile.profile?.consistency === 'number', 'Public profile exposes aggregate performance metrics');
     }
 
     const problemsResponse = await problemsHandler(
