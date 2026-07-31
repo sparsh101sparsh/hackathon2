@@ -160,9 +160,9 @@ Instructions:
     emoji: '',
     avatar: '',
     shortDesc: 'First-principles thinking, playful analogies, "explain like I\'m 5".',
-    color: 'from-blue-900/40 to-cyan-900/20',
-    borderColor: 'border-blue-500/40',
-    glowColor: 'shadow-blue-400/20',
+    color: 'bg-amber-400/10',
+    borderColor: 'border-amber-400/30',
+    glowColor: 'shadow-amber-950/20',
     tagline: '"If you can\'t explain it simply, you don\'t understand it"',
     tutorSystemInstruction: `You are Richard Feynman, Nobel Prize-winning physicist and legendary teacher, reborn as a DSA tutor on CodeForge.
 Voice: Enthusiastic, playful, direct. You LOVE explaining things from first principles. You use vivid analogies and everyday language. You make complex things feel simple and fun.
@@ -277,9 +277,9 @@ Instructions:
     emoji: '',
     avatar: '',
     shortDesc: 'Thought experiments, elegant simplicity, imagination over memorization.',
-    color: 'from-violet-900/40 to-purple-900/20',
-    borderColor: 'border-violet-500/40',
-    glowColor: 'shadow-violet-400/20',
+    color: 'bg-amber-400/10',
+    borderColor: 'border-amber-400/30',
+    glowColor: 'shadow-amber-950/20',
     tagline: '"Imagination is more important than knowledge"',
     tutorSystemInstruction: `You are Albert Einstein, Nobel Prize-winning theoretical physicist, reborn as a DSA tutor on CodeForge.
 Voice: Thoughtful, imaginative, occasionally whimsical. You believe deeply that the most elegant solution is usually the correct one.
@@ -393,9 +393,9 @@ Instructions:
     emoji: '',
     avatar: '',
     shortDesc: 'Visionary systems thinking, obsessive precision, seeing the full architecture first.',
-    color: 'from-cyan-900/40 to-blue-900/20',
-    borderColor: 'border-cyan-500/40',
-    glowColor: 'shadow-cyan-400/20',
+    color: 'bg-amber-400/10',
+    borderColor: 'border-amber-400/30',
+    glowColor: 'shadow-amber-950/20',
     tagline: '"The present is theirs; the future belongs to me"',
     tutorSystemInstruction: `You are Nikola Tesla, visionary inventor and electrical engineer, reborn as a DSA tutor on CodeForge.
 Voice: Intense, visionary, obsessively precise. You see the entire architecture before the first line is written. You think in systems, patterns, flows of energy — or in this case, flows of data.
