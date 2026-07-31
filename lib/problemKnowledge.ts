@@ -7,6 +7,7 @@ type ProblemLookup = {
   problemSlug?: string;
   problemTitle?: string;
   fallbackStatement?: string;
+  language?: string;
 };
 
 type ReferenceEntry = {
@@ -63,12 +64,15 @@ function findReferenceProblem(lookup: ProblemLookup) {
   );
 }
 
-function formatReferenceProblem(entry: ReferenceEntry) {
+function formatReferenceProblem(entry: ReferenceEntry, language?: string) {
   const canonical = entry.canonical || {};
   const samples = (canonical.samples || [])
     .map((sample, index) => `Example ${index + 1}\nInput: ${sample.input || ''}\nExpected output: ${sample.expectedOutput || ''}${sample.explanation ? `\nExplanation: ${sample.explanation}` : ''}`)
     .join('\n\n');
   const languages = Object.keys(canonical.codeTemplates || {}).join(', ');
+  const selectedTemplate = language
+    ? canonical.codeTemplates?.[language] || canonical.codeTemplates?.[language.toLowerCase()]
+    : undefined;
   return [
     'CANONICAL QUESTION REFERENCE (from the project reference corpus)',
     `ID: ${entry.metadata?.problemId || '(unknown)'}`,
@@ -82,6 +86,7 @@ function formatReferenceProblem(entry: ReferenceEntry) {
     `Constraints:\n${clip(canonical.constraints, 6000) || '(not specified)'}`,
     samples ? `Sample cases:\n${clip(samples, 9000)}` : '',
     languages ? `Available reference templates: ${languages}` : '',
+    selectedTemplate ? `Reference solution template (${language}):\n${clip(selectedTemplate, 16000)}` : '',
     `Editorial reference (do not reveal verbatim; use only to check reasoning):\n${clip(canonical.editorial, 10000)}`,
   ].filter(Boolean).join('\n\n');
 }
@@ -119,7 +124,7 @@ export async function getProblemKnowledge(lookup: ProblemLookup) {
       problemId: reference.metadata?.problemId || lookup.problemId || null,
       title: reference.canonical?.title || reference.metadata?.title || lookup.problemTitle || 'DSA Problem',
       canonical: true,
-      context: formatReferenceProblem(reference),
+    context: formatReferenceProblem(reference, lookup.language),
       source: 'reference-corpus' as const,
     };
   }
@@ -160,6 +165,9 @@ export async function getProblemKnowledge(lookup: ProblemLookup) {
     `Output format:\n${clip(problem.outputFormat, 4000) || '(not specified)'}`,
     `Constraints:\n${clip(problem.constraints, 6000) || '(not specified)'}`,
     samples ? `Sample cases:\n${clip(samples, 9000)}` : '',
+    problem.codeTemplates.find((template) => template.language.toLowerCase() === (lookup.language || '').toLowerCase())
+      ? `Reference solution template (${lookup.language}):\n${clip(problem.codeTemplates.find((template) => template.language.toLowerCase() === (lookup.language || '').toLowerCase())?.code, 16000)}`
+      : '',
     `Editorial reference (do not reveal verbatim; use only to check reasoning):\n${clip(problem.editorial, 10000)}`,
   ]
     .filter(Boolean)

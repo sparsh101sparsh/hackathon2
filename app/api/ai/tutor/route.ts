@@ -3,6 +3,7 @@ import { callFreeModelText, MODELS, FreeModelMessage } from '@/lib/freemodel';
 import { getProblemKnowledge } from '@/lib/problemKnowledge';
 import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
 import { rateLimitResponse } from '@/lib/rateLimit';
+import { buildTutorFallbackReply } from '@/lib/tutorFallback';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
       problemSlug,
       problemTitle,
       fallbackStatement: problemStatement,
+      language,
     });
 
     const personality = getTeachingStyle(personalityId);
@@ -83,16 +85,14 @@ ${userCode || '(Empty)'}
       }
     }
 
-    // Get last user query for fallback context
-    const lastUserMsg = messages.length > 0 ? messages[messages.length - 1].content : '';
-    let fallbackReply = `Great question! When tackling ${knowledge.title}, think about your current data structures and algorithm steps. `;
-    if (lastUserMsg.toLowerCase().includes('error') || lastUserMsg.toLowerCase().includes('bug')) {
-      fallbackReply += `Check your loop bounds, index lookups, and null/empty input checks. What happens when your input array has size 0 or 1?`;
-    } else if (lastUserMsg.toLowerCase().includes('time') || lastUserMsg.toLowerCase().includes('complexity') || lastUserMsg.toLowerCase().includes('optimize')) {
-      fallbackReply += `Can we trade space for time here? For instance, using a Hash Map or Frequency Array can drop nested iteration from O(N^2) down to O(N).`;
-    } else {
-      fallbackReply += `What step in your current code is taking the most operations? Try tracing it with a small sample input like [2, 7, 11, 15]!`;
-    }
+    const lastUserMsg = [...messages].reverse().find((message: { role?: string; content?: string }) => message.role === 'user')?.content || '';
+    const fallbackReply = buildTutorFallbackReply({
+      title: knowledge.title,
+      language,
+      userCode,
+      userMessage: lastUserMsg,
+      context: knowledge.context,
+    });
 
     const reply = await callFreeModelText({
       model: MODELS.FAST,
