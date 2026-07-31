@@ -53,5 +53,8 @@ jobs:
       - name: Prepare database schema
         run: npx prisma db push
 
+      - name: Seed database
+        run: npm run prisma:seed
+
       - name: Run quality gate
         run: npm run verify:quality
