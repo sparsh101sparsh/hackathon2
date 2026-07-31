@@ -48,7 +48,7 @@ async function loadProfile(id: string) {
     id: displayUser.id,
     name: displayUser.name,
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayUser.name)}`,
-    joinedAt: displayUser.createdAt.toISOString().split('T')[0],
+    joinedAt: (user?.createdAt || progress?.lastActiveDate || new Date()).toISOString().split('T')[0],
     rating,
     ratingTier: getRatingTier(rating),
     solved,
