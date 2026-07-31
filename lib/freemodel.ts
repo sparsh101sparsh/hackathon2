@@ -1,5 +1,6 @@
 export const FREEMODEL_BASE_URL = process.env.FREEMODEL_BASE_URL || 'https://api.freemodel.dev/v1';
 export const FREEMODEL_API_KEY = process.env.FREEMODEL_API_KEY || '';
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 function getFreeModelApiKeys(): string[] {
   return [
@@ -9,8 +10,19 @@ function getFreeModelApiKeys(): string[] {
   ].filter((key, index, keys): key is string => Boolean(key?.trim()) && keys.indexOf(key) === index);
 }
 
+function getGeminiApiKeys(): string[] {
+  return [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+  ].filter((key, index, keys): key is string => Boolean(key?.trim()) && keys.indexOf(key) === index);
+}
+
 export function hasFreeModelProvider(): boolean {
   return getFreeModelApiKeys().length > 0;
+}
+
+export function hasGeminiProvider(): boolean {
+  return getGeminiApiKeys().length > 0;
 }
 
 export const MODELS = {
@@ -66,11 +78,6 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
   }
 
   const apiKeys = getFreeModelApiKeys();
-  if (apiKeys.length === 0) {
-    if (fallbackString !== undefined) return fallbackString;
-    throw new Error('FREEMODEL_API_KEY is not configured');
-  }
-
   let lastError: Error | null = null;
   const requestDeadline = options.timeoutMs === undefined
     ? null
@@ -120,10 +127,80 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
     }
   }
 
+  try {
+    const geminiText = await callGeminiText(messages, {
+      temperature,
+      maxTokens: max_tokens,
+      timeoutMs: requestDeadline === null ? 10_000 : Math.max(1, requestDeadline - Date.now()),
+    });
+    if (geminiText) return geminiText;
+  } catch (error: unknown) {
+    lastError = error instanceof Error ? error : new Error('Gemini provider request failed.');
+    console.warn('[Gemini provider unavailable] trying deterministic fallback.');
+  }
+
   if (fallbackString !== undefined) {
     return fallbackString;
   }
-  throw lastError || new Error('All configured FreeModel providers failed.');
+  if (apiKeys.length === 0 && !hasGeminiProvider()) {
+    throw new Error('FREEMODEL_API_KEY is not configured');
+  }
+  throw lastError || new Error('All configured FreeModel and Gemini providers failed.');
+}
+
+async function callGeminiText(
+  messages: FreeModelMessage[],
+  options: { temperature: number; maxTokens: number; timeoutMs: number },
+): Promise<string> {
+  const apiKeys = getGeminiApiKeys();
+  if (apiKeys.length === 0) return '';
+
+  const systemMessage = messages.find((message) => message.role === 'system');
+  const contents = messages
+    .filter((message) => message.role !== 'system')
+    .map((message) => ({
+      role: message.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: message.content }],
+    }));
+  let lastError: Error | null = null;
+  const deadline = Date.now() + Math.max(1, options.timeoutMs);
+
+  for (const [index, apiKey] of apiKeys.entries()) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) break;
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(remaining),
+        body: JSON.stringify({
+          ...(systemMessage ? { systemInstruction: { parts: [{ text: systemMessage.content }] } } : {}),
+          contents,
+          generationConfig: {
+            temperature: options.temperature,
+            maxOutputTokens: options.maxTokens,
+          },
+        }),
+      });
+      if (!response.ok) {
+        lastError = new Error(`Gemini API request failed with status ${response.status}`);
+        console.warn(`[Gemini API Error ${response.status}] provider ${index + 1}/${apiKeys.length}; trying next provider.`);
+        continue;
+      }
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts
+        ?.map((part: { text?: unknown }) => typeof part.text === 'string' ? part.text : '')
+        .join('')
+        .trim();
+      if (text) return text;
+      lastError = new Error('Gemini API returned an empty response.');
+    } catch (error: unknown) {
+      lastError = error instanceof Error ? error : new Error('Gemini provider request failed.');
+      console.warn(`[Gemini API unavailable] provider ${index + 1}/${apiKeys.length}; trying next provider.`);
+    }
+  }
+
+  throw lastError || new Error('All configured Gemini providers failed.');
 }
 
 /**
