@@ -53,12 +53,12 @@ const FAQS: FaqItem[] = [
 ];
 
 const TRUST_STATS = [
-  { icon: <Code2 className="w-5 h-5 text-cyan-400" />, value: '600+', label: 'DSA Problems', sub: 'Arrays → Advanced DP' },
-  { icon: <Brain className="w-5 h-5 text-purple-400" />, value: '6', label: 'Guidance Tools', sub: 'Review · Hints · Tutor · Mock' },
+  { icon: <Code2 className="w-5 h-5 text-amber-400" />, value: '600+', label: 'DSA Problems', sub: 'Arrays → Advanced DP' },
+  { icon: <Brain className="w-5 h-5 text-amber-300" />, value: '6', label: 'Guidance Tools', sub: 'Review · Hints · Tutor · Mock' },
   { icon: <Zap className="w-5 h-5 text-amber-400" />, value: '5', label: 'Languages', sub: 'Python · C++ · JS · Java · Go' },
-  { icon: <Trophy className="w-5 h-5 text-emerald-400" />, value: '8', label: 'Company Preps', sub: 'FAANG + Uber + Flipkart' },
-  { icon: <BarChart3 className="w-5 h-5 text-indigo-400" />, value: 'Elo', label: 'Rating System', sub: '800 – 3500 range' },
-  { icon: <Shield className="w-5 h-5 text-rose-400" />, value: 'CE', label: 'Judge0 Runner', sub: 'Hosted isolated execution' },
+  { icon: <Trophy className="w-5 h-5 text-amber-300" />, value: '8', label: 'Company Preps', sub: 'FAANG + Uber + Flipkart' },
+  { icon: <BarChart3 className="w-5 h-5 text-amber-200" />, value: 'Elo', label: 'Rating System', sub: '800 – 3500 range' },
+  { icon: <Shield className="w-5 h-5 text-slate-300" />, value: 'CE', label: 'Judge0 Runner', sub: 'Hosted isolated execution' },
 ];
 
 export const FaqAndTestimonials: React.FC = () => {
@@ -74,8 +74,8 @@ export const FaqAndTestimonials: React.FC = () => {
       {/* Trust Stats Strip */}
       <div className="space-y-8">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-cyan-300 text-xs font-semibold">
-            <Zap className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111115] border border-white/10 text-amber-300 text-xs font-semibold">
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
             <span>Platform at a Glance</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -114,8 +114,8 @@ export const FaqAndTestimonials: React.FC = () => {
       {/* FAQ Accordion Section */}
       <div className="max-w-3xl mx-auto space-y-8">
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-cyan-300 text-xs font-semibold">
-            <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111115] border border-white/10 text-amber-300 text-xs font-semibold">
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
             <span>FAQ</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
@@ -138,8 +138,8 @@ export const FaqAndTestimonials: React.FC = () => {
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
                 className={`rounded-xl border transition-colors duration-200 overflow-hidden shadow-lg ${
                   isOpen
-                    ? 'border-cyan-500/30 bg-slate-900/80'
-                    : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                    ? 'border-amber-400/30 bg-[#111115]'
+                    : 'border-white/10 bg-[#0f0f12] hover:border-white/20'
                 }`}
               >
                 <button
@@ -151,7 +151,7 @@ export const FaqAndTestimonials: React.FC = () => {
                   </span>
                   <ChevronDown
                     className={`w-5 h-5 text-slate-400 transition-transform duration-200 shrink-0 ${
-                      isOpen ? 'rotate-180 text-cyan-400' : ''
+                    isOpen ? 'rotate-180 text-amber-400' : ''
                     }`}
                   />
                 </button>
@@ -182,7 +182,7 @@ export const FaqAndTestimonials: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900/80 via-cyan-950/20 to-slate-900/80 p-10 text-center backdrop-blur-xl shadow-xl"
+        className="rounded-xl border border-white/10 bg-[#0f0f12] p-10 text-center shadow-xl"
       >
         <div className="text-3xl sm:text-4xl font-black text-white mb-3">
           Ready to level up?
@@ -192,7 +192,7 @@ export const FaqAndTestimonials: React.FC = () => {
         </p>
         <Link
           href="/problems"
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+          className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-amber-400 text-[#08080a] font-bold text-sm shadow-xl shadow-amber-950/30 hover:bg-amber-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
         >
           <Code2 className="w-4 h-4" />
           Start Solving

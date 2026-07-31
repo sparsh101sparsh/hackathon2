@@ -409,7 +409,7 @@ export default function BattleRoomPage() {
           <Link href="/contests" className="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl font-bold">
             Back to Contests
           </Link>
-          <Link href="/login" className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-xs rounded-xl font-bold">
+          <Link href="/login" className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs rounded-xl font-bold">
             Sign In
           </Link>
         </div>
@@ -430,7 +430,7 @@ export default function BattleRoomPage() {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-4">
         <h2 className="text-xl font-bold text-white">Battle Room Not Found</h2>
-        <Link href="/contests" className="px-4 py-2 bg-slate-800 text-cyan-400 text-xs rounded-xl font-bold">
+        <Link href="/contests" className="px-4 py-2 bg-slate-800 text-amber-400 text-xs rounded-xl font-bold">
           Back to Contests
         </Link>
       </div>
@@ -487,7 +487,7 @@ export default function BattleRoomPage() {
             </button>
           </div>
 
-          <div className="px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+          <div className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs font-bold text-amber-400 flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5" />
             <span>{room.participants.length} / {room.maxPlayers} Friends</span>
           </div>
@@ -496,7 +496,7 @@ export default function BattleRoomPage() {
             <button
               onClick={handleStartBattle}
               disabled={room.mode === 'DUEL' && room.participants.length < 2}
-              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 hover:scale-105 transition flex items-center gap-1.5 disabled:opacity-40 disabled:hover:scale-100"
+              className="px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-950/30 hover:scale-105 transition flex items-center gap-1.5 disabled:opacity-40 disabled:hover:scale-100"
             >
               <Flame className="w-4 h-4" /> {room.mode === 'DUEL' && room.participants.length < 2 ? 'Waiting for Opponent' : 'Start Battle'}
             </button>
@@ -531,7 +531,7 @@ export default function BattleRoomPage() {
       </header>
 
       {room.status === 'FINISHED' && (
-        <div className="border-b border-amber-500/30 bg-gradient-to-r from-amber-950/60 via-slate-900 to-cyan-950/40 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="border-b border-amber-500/30 bg-[#111115] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Medal className="w-6 h-6 text-amber-400" />
             <div>
@@ -593,7 +593,7 @@ export default function BattleRoomPage() {
                 {/* Sample Test Case */}
                 {activeProblem.testCases?.[0] && (
                   <div className="space-y-2 pt-2 border-t border-slate-800/60">
-                    <div className="text-xs font-bold text-cyan-400">Sample Test Case</div>
+                    <div className="text-xs font-bold text-amber-400">Sample Test Case</div>
                     <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2 text-xs font-mono">
                       <div>
                         <span className="text-slate-500">Input: </span>
@@ -629,14 +629,14 @@ export default function BattleRoomPage() {
                     <button
                       onClick={handleRunCode}
                       disabled={executing}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-cyan-400 border border-slate-700 transition flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-amber-400 border border-slate-700 transition flex items-center gap-1.5"
                     >
                       <Play className="w-3.5 h-3.5" /> Run Code
                     </button>
                     <button
                       onClick={handleSubmitCode}
                       disabled={executing}
-                      className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-md transition flex items-center gap-1.5"
+                      className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition flex items-center gap-1.5"
                     >
                       {executing ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -728,7 +728,7 @@ export default function BattleRoomPage() {
                   animate={{ opacity: 1, x: 0 }}
                   className={`p-3 rounded-2xl border transition flex items-center justify-between ${
                     isFirst
-                      ? 'bg-gradient-to-r from-amber-950/60 to-slate-900 border-amber-500/60 shadow-lg shadow-amber-950/40'
+                      ? 'bg-amber-400/10 border-amber-500/60 shadow-lg shadow-amber-950/40'
                       : isSecond
                       ? 'bg-slate-900 border-slate-400/40'
                       : isThird
@@ -751,7 +751,7 @@ export default function BattleRoomPage() {
                       </div>
                       <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
                         <span>{p.solved} Solved</span>
-                        <span className={`flex items-center gap-1 ${p.progress === 'SOLVED' ? 'text-emerald-400' : p.progress === 'SUBMITTED' ? 'text-amber-400' : p.progress === 'CODING' ? 'text-cyan-400' : 'text-slate-500'}`}>
+                        <span className={`flex items-center gap-1 ${p.progress === 'SOLVED' ? 'text-emerald-400' : p.progress === 'SUBMITTED' ? 'text-amber-400' : p.progress === 'CODING' ? 'text-amber-400' : 'text-slate-500'}`}>
                           <Radio className="w-3 h-3" /> {p.progress === 'WAITING' ? 'Ready' : p.progress.toLowerCase()}
                         </span>
                       </div>
@@ -771,7 +771,7 @@ export default function BattleRoomPage() {
             <p className="text-[11px] text-slate-400">Invite up to 10 friends with code:</p>
             <button
               onClick={handleCopyCode}
-              className="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-mono font-bold text-cyan-400 flex items-center justify-center gap-2 transition"
+              className="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-mono font-bold text-amber-400 flex items-center justify-center gap-2 transition"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>Copy Invite Code ({roomCode})</span>

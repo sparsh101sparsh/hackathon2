@@ -137,11 +137,11 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Accuracy & Speed
           </span>
-          <Clock className="w-5 h-5 text-indigo-400" />
+          <Clock className="w-5 h-5 text-amber-400" />
         </div>
 
         <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-3xl font-extrabold text-indigo-400 tracking-tight">
+          <span className="text-3xl font-extrabold text-amber-400 tracking-tight">
             {accuracy}%
           </span>
           <span className="text-xs text-slate-400">AC Rate</span>

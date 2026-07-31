@@ -24,7 +24,7 @@ export function evaluatePasswordStrength(password: string = '') {
 
   if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-rose-500', textColor: 'text-rose-400' };
   if (score === 2) return { score: 2, label: 'Fair', color: 'bg-amber-500', textColor: 'text-amber-400' };
-  if (score === 3) return { score: 3, label: 'Strong', color: 'bg-cyan-500', textColor: 'text-cyan-400' };
+  if (score === 3) return { score: 3, label: 'Strong', color: 'bg-amber-500', textColor: 'text-amber-400' };
   return { score: 4, label: 'Excellent', color: 'bg-emerald-500', textColor: 'text-emerald-400' };
 }
 

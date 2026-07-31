@@ -164,7 +164,7 @@ export default function NewProblemPage() {
   if (authLoading || user?.role !== 'ADMIN') {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
-        <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
       </div>
     );
   }
@@ -198,7 +198,7 @@ export default function NewProblemPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Section 1: Basic Information */}
         <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-5 shadow-xl">
-          <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
             <FileCode className="w-4 h-4" />
             <span>1. Basic Metadata</span>
           </h2>
@@ -213,7 +213,7 @@ export default function NewProblemPage() {
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="e.g. Two Sum"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
 
@@ -226,7 +226,7 @@ export default function NewProblemPage() {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="two-sum"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function NewProblemPage() {
                 aria-label="Problem difficulty"
                 value={difficulty}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
                 <option value="EASY">EASY</option>
                 <option value="MEDIUM">MEDIUM</option>
@@ -256,7 +256,7 @@ export default function NewProblemPage() {
                 max="10"
                 value={timeLimit}
                 onChange={(e) => setTimeLimit(parseFloat(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
 
@@ -267,7 +267,7 @@ export default function NewProblemPage() {
                 aria-label="Memory limit in megabytes"
                 value={memoryLimit}
                 onChange={(e) => setMemoryLimit(parseInt(e.target.value, 10))}
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function NewProblemPage() {
                 value={topicTagsStr}
                 onChange={(e) => setTopicTagsStr(e.target.value)}
                 placeholder="Arrays, Hash Table, Dynamic Programming"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
 
@@ -293,7 +293,7 @@ export default function NewProblemPage() {
                 value={companyTagsStr}
                 onChange={(e) => setCompanyTagsStr(e.target.value)}
                 placeholder="Google, Amazon, Meta"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function NewProblemPage() {
 
         {/* Section 2: Statement, Format & Editorial */}
         <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-5 shadow-xl">
-          <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
             <Code2 className="w-4 h-4" />
             <span>2. Problem Description & Editorial</span>
           </h2>
@@ -315,7 +315,7 @@ export default function NewProblemPage() {
               value={statement}
               onChange={(e) => setStatement(e.target.value)}
               placeholder="Detailed problem description..."
-              className="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              className="w-full p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
 
@@ -329,7 +329,7 @@ export default function NewProblemPage() {
               value={inputFormat}
                 onChange={(e) => setInputFormat(e.target.value)}
                 placeholder="The first line contains..."
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
 
@@ -342,7 +342,7 @@ export default function NewProblemPage() {
                 value={outputFormat}
                 onChange={(e) => setOutputFormat(e.target.value)}
                 placeholder="Print the result..."
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
           </div>
@@ -356,7 +356,7 @@ export default function NewProblemPage() {
               value={constraints}
               onChange={(e) => setConstraints(e.target.value)}
               placeholder="1 <= N <= 10^5"
-              className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
 
@@ -368,7 +368,7 @@ export default function NewProblemPage() {
               value={editorial}
               onChange={(e) => setEditorial(e.target.value)}
               placeholder="Explain optimal solution approach and time complexity..."
-              className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
         </div>
@@ -376,13 +376,13 @@ export default function NewProblemPage() {
         {/* Section 3: Test Cases */}
         <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-6 shadow-xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
+            <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider">
               3. Sample Test Cases
             </h2>
             <button
               type="button"
               onClick={handleAddSampleTC}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg text-xs font-bold flex items-center gap-1 border border-slate-700 transition"
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg text-xs font-bold flex items-center gap-1 border border-slate-700 transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Sample Case</span>
@@ -459,13 +459,13 @@ export default function NewProblemPage() {
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <h2 className="text-sm font-bold text-purple-400 uppercase tracking-wider">
+            <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider">
               Hidden Evaluation Test Cases
             </h2>
             <button
               type="button"
               onClick={handleAddHiddenTC}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-purple-400 rounded-lg text-xs font-bold flex items-center gap-1 border border-slate-700 transition"
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg text-xs font-bold flex items-center gap-1 border border-slate-700 transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Hidden Case</span>
@@ -527,7 +527,7 @@ export default function NewProblemPage() {
 
         {/* Section 4: Starter Code Templates */}
         <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-5 shadow-xl">
-          <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             <span>4. Starter Code Templates</span>
           </h2>
@@ -548,7 +548,7 @@ export default function NewProblemPage() {
                       prev.map((item, i) => (i === idx ? { ...item, code: val } : item))
                     );
                   }}
-                  className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                 />
               </div>
             ))}
@@ -567,7 +567,7 @@ export default function NewProblemPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-950/50 transition flex items-center gap-2 disabled:opacity-50"
+            className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-950/50 transition flex items-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

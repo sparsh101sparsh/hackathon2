@@ -81,7 +81,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
           className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden"
         >
           {/* Top accent */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-cyan-500" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-400" />
 
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -118,7 +118,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                 <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
                   Cancel
                 </button>
-                <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-xs font-bold text-center transition">
+                <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold text-center transition">
                   Sign In
                 </Link>
               </div>
@@ -161,7 +161,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                         key={value}
                         type="button"
                         onClick={() => setMode(value)}
-                        className={`py-2.5 rounded-xl text-[11px] font-bold border transition ${mode === value ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'}`}
+                        className={`py-2.5 rounded-xl text-[11px] font-bold border transition ${mode === value ? 'bg-amber-500/20 border-amber-500 text-amber-400' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'}`}
                       >
                         <span className="inline-flex items-center gap-1.5">{value === 'DUEL' ? <Swords className="w-3.5 h-3.5" aria-hidden="true" /> : <Users className="w-3.5 h-3.5" aria-hidden="true" />} {value === 'DUEL' ? '1v1 Duel' : 'Squad Race'}</span>
                       </button>
@@ -205,7 +205,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                           onClick={() => setProblemCount(cnt)}
                           className={`py-2 rounded-xl text-xs font-bold border transition ${
                             problemCount === cnt
-                              ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-400'
                               : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                           }`}
                         >
@@ -229,7 +229,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                         onClick={() => setDurationSeconds(secs)}
                         className={`py-2 rounded-xl text-[11px] font-bold border transition ${
                           durationSeconds === secs
-                            ? 'bg-purple-500/20 border-purple-500 text-purple-400'
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-400'
                             : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                         }`}
                       >
@@ -242,7 +242,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                 {/* Player Limit Note */}
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1.5 font-medium">
-                    <Users className="w-4 h-4 text-cyan-400" /> Max Players
+                    <Users className="w-4 h-4 text-amber-400" /> Max Players
                   </span>
                   <span className="font-bold text-amber-400 font-mono">10 Friends</span>
                 </div>
@@ -251,7 +251,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-bold text-xs shadow-xl shadow-amber-500/20 hover:scale-[1.01] transition flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-xl shadow-amber-950/30 hover:scale-[1.01] transition flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>

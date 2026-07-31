@@ -21,6 +21,22 @@ const files = [
   'app/leaderboard/page.tsx',
   'components/dashboard/BadgesGrid.tsx',
   'components/dashboard/RatingHistoryChart.tsx',
+  'app/page.tsx',
+  'components/landing/FaqAndTestimonials.tsx',
+  'components/landing/MonacoPreviewDemo.tsx',
+  'components/problems/VisualizerTutor.tsx',
+  'components/guidance/RecommendationsWidget.tsx',
+  'components/guidance/CodeReviewModal.tsx',
+  'components/contests/JudgeScorecardModal.tsx',
+  'components/contests/OnDemandContestModal.tsx',
+  'components/contests/CreateRoomModal.tsx',
+  'components/contests/JoinRoomModal.tsx',
+  'components/contests/LiveCommentator.tsx',
+  'app/contests/room/[code]/page.tsx',
+  'app/company/system-design/page.tsx',
+  'app/admin/page.tsx',
+  'app/admin/problems/new/page.tsx',
+  'app/admin/problems/[id]/edit/page.tsx',
 ];
 
 const forbidden = [

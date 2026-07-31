@@ -221,7 +221,7 @@ export const Navbar: React.FC = () => {
                       width={32}
                       height={32}
                       unoptimized
-                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-cyan-400 transition"
+                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-amber-400 transition"
                     />
                     <div>
                       <div className="text-xs font-bold text-white group-hover:text-amber-300 transition">{user.name}</div>

@@ -57,7 +57,9 @@ Answer directly, matching your configured personality. Keep it to 2-3 short para
 
     const aiResponse = await callFreeModelText({
       systemInstruction,
-      userInstruction: userMessage
+      userInstruction: userMessage,
+      timeoutMs: 12_000,
+      fallbackText: `At step ${step + 1}, focus on the highlighted state and the invariant in the commentary: ${currentFrame?.commentary || 'track how the current state changes before moving to the next frame.'}`,
     });
 
     return NextResponse.json({ reply: aiResponse });

@@ -106,7 +106,7 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return 'text-emerald-400 border-emerald-500/50 bg-emerald-950/30';
-    if (score >= 70) return 'text-cyan-400 border-cyan-500/50 bg-cyan-950/30';
+    if (score >= 70) return 'text-amber-400 border-amber-500/50 bg-amber-950/30';
     if (score >= 50) return 'text-amber-400 border-amber-500/50 bg-amber-950/30';
     return 'text-rose-400 border-rose-500/50 bg-rose-950/30';
   };
@@ -125,13 +125,13 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-950/80 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-cyan-500/30">
-              <Sparkles className="w-5 h-5 text-cyan-400" />
+            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30">
+              <Sparkles className="w-5 h-5 text-amber-400" />
             </div>
             <div>
               <h2 id="code-review-title" className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
                 Deep Code Review
-                <span className="px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">
+                <span className="px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-amber-950 text-amber-400 border border-amber-800">
                   FreeModel
                 </span>
               </h2>
@@ -154,8 +154,8 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3" role="status" aria-live="polite">
               <div className="relative w-12 h-12">
-                <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20 border-t-cyan-400 animate-spin"></div>
-                <Sparkles className="w-6 h-6 text-cyan-400 absolute inset-0 m-auto" />
+                <div className="absolute inset-0 rounded-full border-4 border-amber-500/20 border-t-amber-400 animate-spin"></div>
+                <Sparkles className="w-6 h-6 text-amber-400 absolute inset-0 m-auto" />
               </div>
               <span className="text-sm text-slate-300 font-medium animate-pulse">
                 Analyzing time complexity, edge cases, and code quality...
@@ -168,7 +168,7 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
               <p className="text-xs text-slate-400">{error}</p>
               <button
                 onClick={fetchCodeReview}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-400 rounded-lg border border-slate-700 transition"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-amber-400 rounded-lg border border-slate-700 transition"
               >
                 Retry Analysis
               </button>
@@ -189,7 +189,7 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       />
                       <path
-                        className="text-cyan-400"
+                        className="text-amber-400"
                         strokeDasharray={`${review.codeQualityScore}, 100`}
                         strokeWidth="3.5"
                         strokeLinecap="round"
@@ -212,14 +212,14 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
 
                 {/* Time Complexity Badge */}
                 <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">
+                  <div className="p-2.5 rounded-lg bg-amber-950/80 text-amber-400 border border-amber-800/60">
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-400 uppercase font-sans">
                       Time Complexity
                     </div>
-                    <div className="text-base font-extrabold text-cyan-400 font-mono">
+                    <div className="text-base font-extrabold text-amber-400 font-mono">
                       {review.timeComplexity}
                     </div>
                   </div>
@@ -227,14 +227,14 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
 
                 {/* Space Complexity Badge */}
                 <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-purple-950/80 text-purple-400 border border-purple-800/60">
+                  <div className="p-2.5 rounded-lg bg-amber-950/80 text-amber-400 border border-amber-800/60">
                     <Cpu className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-400 uppercase font-sans">
                       Space Complexity
                     </div>
-                    <div className="text-base font-extrabold text-purple-400 font-mono">
+                    <div className="text-base font-extrabold text-amber-400 font-mono">
                       {review.spaceComplexity}
                     </div>
                   </div>
@@ -247,7 +247,7 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
                   onClick={() => setActiveTab('overview')}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition ${
                     activeTab === 'overview'
-                      ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                      ? 'bg-slate-800 text-amber-400 border border-slate-700'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -258,7 +258,7 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
                   onClick={() => setActiveTab('refactor')}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition ${
                     activeTab === 'refactor'
-                      ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                      ? 'bg-slate-800 text-amber-400 border border-slate-700'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -269,7 +269,7 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
                   onClick={() => setActiveTab('edgecases')}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition ${
                     activeTab === 'edgecases'
-                      ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                      ? 'bg-slate-800 text-amber-400 border border-slate-700'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -336,7 +336,7 @@ export const CodeReviewModal: React.FC<CodeReviewModalProps> = ({
                     </span>
                     <button
                       onClick={copyRefactoredCode}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg border border-slate-700 transition"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg border border-slate-700 transition"
                     >
                       {copiedRefactor ? (
                         <>

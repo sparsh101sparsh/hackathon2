@@ -44,7 +44,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />;
       case 'info':
       default:
-        return <Info className="w-5 h-5 text-cyan-400 shrink-0" />;
+        return <Info className="w-5 h-5 text-amber-400 shrink-0" />;
     }
   };
 
@@ -58,7 +58,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return 'border-amber-500/40 bg-slate-900/90 shadow-amber-950/40';
       case 'info':
       default:
-        return 'border-cyan-500/40 bg-slate-900/90 shadow-cyan-950/40';
+        return 'border-amber-500/40 bg-slate-900/90 shadow-amber-950/40';
     }
   };
 

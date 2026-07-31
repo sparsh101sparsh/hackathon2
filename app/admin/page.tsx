@@ -214,7 +214,7 @@ export default function AdminDashboardPage() {
   if (authLoading || user?.role !== 'ADMIN') {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
-        <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
       </div>
     );
   }
@@ -230,7 +230,7 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="p-2.5 rounded-xl bg-purple-950/80 border border-purple-800/80 text-purple-400 shadow-lg shadow-purple-950/40">
+            <div className="p-2.5 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400 shadow-lg shadow-amber-950/30">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Control Panel</h1>
@@ -243,7 +243,7 @@ export default function AdminDashboardPage() {
         {/* Create Problem Button */}
         <Link
           href="/admin/problems/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-400 hover:to-cyan-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-purple-950/40 transition hover:scale-105"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-950/40 transition hover:scale-105"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>Add New Problem</span>
@@ -256,7 +256,7 @@ export default function AdminDashboardPage() {
           onClick={() => setActiveTab('overview')}
           className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
             activeTab === 'overview'
-              ? 'bg-slate-800 text-purple-400 border border-slate-700 shadow'
+              ? 'bg-slate-800 text-amber-400 border border-slate-700 shadow'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -268,7 +268,7 @@ export default function AdminDashboardPage() {
           onClick={() => setActiveTab('problems')}
           className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
             activeTab === 'problems'
-              ? 'bg-slate-800 text-purple-400 border border-slate-700 shadow'
+              ? 'bg-slate-800 text-amber-400 border border-slate-700 shadow'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -280,7 +280,7 @@ export default function AdminDashboardPage() {
           onClick={() => setActiveTab('users')}
           className={`flex-1 py-2.5 px-4 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
             activeTab === 'users'
-              ? 'bg-slate-800 text-purple-400 border border-slate-700 shadow'
+              ? 'bg-slate-800 text-amber-400 border border-slate-700 shadow'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -295,12 +295,12 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Users Card */}
             <motion.div whileHover={{ y: -3 }} className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 text-cyan-500/20 group-hover:text-cyan-500/30 transition">
+              <div className="absolute top-0 right-0 p-4 text-amber-500/20 group-hover:text-amber-500/30 transition">
                 <Users className="w-12 h-12" />
               </div>
               <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Users</div>
               <div className="text-3xl font-extrabold text-white mt-2">
-                {isLoadingStats ? <Loader2 className="w-6 h-6 animate-spin text-cyan-400" /> : stats?.totalUsers ?? 0}
+                {isLoadingStats ? <Loader2 className="w-6 h-6 animate-spin text-amber-400" /> : stats?.totalUsers ?? 0}
               </div>
               <div className="text-[11px] text-slate-500 mt-2">Registered platform accounts</div>
             </motion.div>
@@ -331,12 +331,12 @@ export default function AdminDashboardPage() {
 
             {/* Contests Card */}
             <motion.div whileHover={{ y: -3 }} className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl shadow-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 text-purple-500/20 group-hover:text-purple-500/30 transition">
+              <div className="absolute top-0 right-0 p-4 text-amber-500/20 group-hover:text-amber-500/30 transition">
                 <Trophy className="w-12 h-12" />
               </div>
               <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Contests</div>
               <div className="text-3xl font-extrabold text-white mt-2">
-                {isLoadingStats ? <Loader2 className="w-6 h-6 animate-spin text-purple-400" /> : stats?.totalContests ?? 0}
+                {isLoadingStats ? <Loader2 className="w-6 h-6 animate-spin text-amber-400" /> : stats?.totalContests ?? 0}
               </div>
               <div className="text-[11px] text-slate-500 mt-2">Scheduled rated contests</div>
             </motion.div>
@@ -351,21 +351,21 @@ export default function AdminDashboardPage() {
                 className="p-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-200"
               >
                 <span>Create New DSA Problem</span>
-                <ChevronRight className="w-4 h-4 text-purple-400" />
+                <ChevronRight className="w-4 h-4 text-amber-400" />
               </Link>
               <button
                 onClick={() => setActiveTab('problems')}
                 className="p-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-200 text-left"
               >
                 <span>Inspect Problem Bank</span>
-                <ChevronRight className="w-4 h-4 text-purple-400" />
+                <ChevronRight className="w-4 h-4 text-amber-400" />
               </button>
               <button
                 onClick={() => setActiveTab('users')}
                 className="p-4 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition flex items-center justify-between text-xs font-semibold text-slate-200 text-left"
               >
                 <span>Manage User Roles</span>
-                <ChevronRight className="w-4 h-4 text-purple-400" />
+                <ChevronRight className="w-4 h-4 text-amber-400" />
               </button>
             </div>
           </div>
@@ -385,7 +385,7 @@ export default function AdminDashboardPage() {
                 placeholder="Search problem title or slug..."
                 value={problemSearch}
                 onChange={(e) => setProblemSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
 
@@ -394,7 +394,7 @@ export default function AdminDashboardPage() {
                 aria-label="Filter admin problems by difficulty"
                 value={difficultyFilter}
                 onChange={(e) => setDifficultyFilter(e.target.value)}
-                className="bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                className="bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
                 <option value="ALL">All Difficulties</option>
                 <option value="EASY">Easy</option>
@@ -416,7 +416,7 @@ export default function AdminDashboardPage() {
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             {isLoadingProblems ? (
               <div className="py-16 text-center text-slate-500 text-xs flex flex-col items-center gap-2">
-                <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
                 <span>Loading problem set...</span>
               </div>
             ) : filteredProblems.length === 0 ? (
@@ -467,7 +467,7 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center justify-end gap-2">
                             <Link
                               href={`/admin/problems/${prob.id}/edit`}
-                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 transition"
+                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 transition"
                               title="Edit Problem"
                             >
                               <Edit className="w-3.5 h-3.5" />
@@ -504,7 +504,7 @@ export default function AdminDashboardPage() {
                 placeholder="Search user name or email..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
 
@@ -520,7 +520,7 @@ export default function AdminDashboardPage() {
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             {isLoadingUsers ? (
               <div className="py-16 text-center text-slate-500 text-xs flex flex-col items-center gap-2">
-                <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
                 <span>Loading users...</span>
               </div>
             ) : filteredUsers.length === 0 ? (
@@ -553,9 +553,9 @@ export default function AdminDashboardPage() {
                           <span
                             className={`px-2 py-0.5 text-[10px] font-bold rounded ${
                               u.role === 'ADMIN'
-                                ? 'bg-purple-950/80 text-purple-400 border border-purple-800/60'
+                                ? 'bg-amber-950/80 text-amber-400 border border-amber-800/60'
                                 : u.role === 'REGISTERED'
-                                ? 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/60'
+                                ? 'bg-amber-950/80 text-amber-400 border border-amber-800/60'
                                 : 'bg-slate-800 text-slate-400 border border-slate-700'
                             }`}
                           >
@@ -572,7 +572,7 @@ export default function AdminDashboardPage() {
                             value={u.role}
                             disabled={roleUpdatingId === u.id}
                             onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                            className="bg-slate-950 text-slate-200 border border-slate-700 text-[11px] rounded-lg px-2.5 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500 font-semibold"
+                            className="bg-slate-950 text-slate-200 border border-slate-700 text-[11px] rounded-lg px-2.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-semibold"
                           >
                             <option value="GUEST">GUEST</option>
                             <option value="REGISTERED">REGISTERED</option>

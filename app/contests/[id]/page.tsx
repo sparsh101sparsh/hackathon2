@@ -163,7 +163,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
           <p className="text-sm">Connecting to Contest Arena...</p>
         </div>
       </div>
@@ -175,7 +175,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
         <div className="text-center bg-slate-900 border border-slate-800 rounded-xl p-8 max-w-md">
           <h2 className="text-lg font-bold text-rose-400">Contest Not Found</h2>
-          <Link href="/contests" className="mt-4 inline-block text-xs font-bold text-indigo-400 hover:underline">
+          <Link href="/contests" className="mt-4 inline-block text-xs font-bold text-amber-400 hover:underline">
             Back to Contests
           </Link>
         </div>
@@ -188,13 +188,13 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
       {/* Contest Top Banner */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-sm">
         <div>
-          <Link href="/contests" className="text-xs text-indigo-400 flex items-center gap-1 mb-2 hover:underline">
+          <Link href="/contests" className="text-xs text-amber-400 flex items-center gap-1 mb-2 hover:underline">
             <ChevronLeft className="w-4 h-4" />
             Back to Contests List
           </Link>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-white">{contest.title}</h1>
-            <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
+            <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">
               {contest.status}
             </span>
           </div>
@@ -219,7 +219,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
           onClick={() => setActiveTab('problems')}
           className={`pb-3 text-xs font-bold transition-colors flex items-center gap-2 border-b-2 ${
             activeTab === 'problems'
-              ? 'border-indigo-500 text-indigo-400'
+              ? 'border-amber-500 text-amber-400'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -231,7 +231,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
           onClick={() => setActiveTab('scoreboard')}
           className={`pb-3 text-xs font-bold transition-colors flex items-center gap-2 border-b-2 ${
             activeTab === 'scoreboard'
-              ? 'border-indigo-500 text-indigo-400'
+              ? 'border-amber-500 text-amber-400'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -243,7 +243,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
           onClick={() => setActiveTab('submissions')}
           className={`pb-3 text-xs font-bold transition-colors flex items-center gap-2 border-b-2 ${
             activeTab === 'submissions'
-              ? 'border-indigo-500 text-indigo-400'
+              ? 'border-amber-500 text-amber-400'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -270,7 +270,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
                   onClick={() => setSelectedProblem(p)}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-indigo-950/40 border-indigo-500/80 shadow-md'
+                      ? 'bg-amber-950/40 border-amber-500/80 shadow-md'
                       : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
                   }`}
                 >
@@ -287,7 +287,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
                     <span className="capitalize">{p.difficulty.toLowerCase()}</span>
                     <Link
                       href={`/problems/${p.slug}`}
-                      className="text-indigo-400 font-semibold hover:underline"
+                      className="text-amber-400 font-semibold hover:underline"
                     >
                       Solve in Workspace →
                     </Link>
@@ -304,13 +304,13 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <div>
                     <h2 className="text-lg font-bold text-white">{selectedProblem.title}</h2>
-                    <span className="text-xs text-indigo-400 font-semibold">
+                    <span className="text-xs text-amber-400 font-semibold">
                       Points: {selectedProblem.points || 250} pts
                     </span>
                   </div>
                   <Link
                     href={`/problems/${selectedProblem.slug}`}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs transition-colors"
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-xs transition-colors"
                   >
                     Open Problem Workspace
                   </Link>
@@ -395,7 +395,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
                         {user.rating} ({user.ratingTier.badge})
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-center font-extrabold text-indigo-400 text-sm">
+                    <td className="py-3 px-4 text-center font-extrabold text-amber-400 text-sm">
                       {user.totalScore}
                     </td>
                     <td className="py-3 px-4 text-center text-slate-400">
@@ -424,7 +424,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4 backdrop-blur-sm">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Code2 className="w-4 h-4 text-indigo-400" />
+              <Code2 className="w-4 h-4 text-amber-400" />
               Submit Solution to Contest
             </h3>
             <button
@@ -442,7 +442,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ id: str
             value={code}
             onChange={(e) => setCode(e.target.value)}
             rows={12}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-200 focus:outline-none focus:border-amber-500"
           />
 
           {submissionVerdict && (

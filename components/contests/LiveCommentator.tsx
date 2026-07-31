@@ -287,21 +287,21 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
           label: 'HIGH HYPE',
           bg: 'bg-rose-500/20 text-rose-400 border-rose-500/40',
           icon: <Flame className="w-3.5 h-3.5 animate-bounce text-rose-400" />,
-          glow: 'from-rose-500/20 via-orange-500/10 to-transparent',
+          glow: 'bg-amber-400/10',
         };
       case 'medium':
         return {
           label: 'MEDIUM HYPE',
           bg: 'bg-amber-500/20 text-amber-400 border-amber-500/40',
           icon: <Zap className="w-3.5 h-3.5 animate-pulse text-amber-400" />,
-          glow: 'from-amber-500/20 via-orange-500/10 to-transparent',
+          glow: 'bg-amber-400/10',
         };
       default:
         return {
           label: 'STEADY HYPE',
-          bg: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40',
-          icon: <Sparkles className="w-3.5 h-3.5 text-cyan-400" />,
-          glow: 'from-cyan-500/20 via-slate-900/10 to-transparent',
+          bg: 'bg-amber-500/20 text-amber-400 border-amber-500/40',
+          icon: <Sparkles className="w-3.5 h-3.5 text-amber-300" />,
+          glow: 'bg-amber-400/10',
         };
     }
   };
@@ -314,13 +314,13 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
     >
       {/* Dynamic Background Glow */}
       <div
-        className={`absolute -right-12 -bottom-12 w-40 h-40 bg-gradient-to-br ${hypeProps.glow} rounded-full blur-3xl pointer-events-none`}
+        className={`absolute -right-12 -bottom-12 w-40 h-40 ${hypeProps.glow} rounded-full blur-3xl pointer-events-none`}
       />
 
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-400/10 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
             <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
             <span>Live Shoutcaster</span>
           </div>
@@ -356,7 +356,7 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
             title={isMuted ? 'Unmute Voice Commentary' : 'Mute Voice Commentary'}
             className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition border flex items-center gap-1.5 ${
               !isMuted
-                ? 'bg-gradient-to-r from-amber-500/30 to-orange-500/30 border-amber-400 text-amber-300 shadow-md shadow-amber-500/10'
+                ? 'bg-amber-400/10 border-amber-400 text-amber-300 shadow-md shadow-amber-950/20'
                 : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
             }`}
           >

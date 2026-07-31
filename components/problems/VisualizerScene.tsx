@@ -43,7 +43,7 @@ export const SCENE_THEME = {
   },
   text: {
     slate100: '#f8fafc',
-    cyan300: '#fcd34d',
+    amber300: '#fcd34d',
     emerald300: '#d6d3d1',
     muted: '#a8a29e',
   },
@@ -55,7 +55,7 @@ const muted = SCENE_THEME.text.muted;
 const line = SCENE_THEME.default.stroke;
 const accent = SCENE_THEME.active.stroke;
 const accentSoft = SCENE_THEME.active.fillGradient;
-const cyan = SCENE_THEME.visited.stroke;
+const amber = SCENE_THEME.visited.stroke;
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const cellTransition = { duration: 0.42, ease };
@@ -101,7 +101,7 @@ function ArrayScene({ frame }: SceneProps) {
             <motion.g key={`${value}-${index}`} animate={{ x: 0, y: yOffset }} transition={cellTransition} style={{ transformOrigin: `${x + boxSize / 2}px 145px` }}>
               <motion.rect x={x} y={100 + 4} width={boxSize} height={boxSize} rx="8" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} animate={{ fill: isActive ? SCENE_THEME.active.fill : 'transparent' }} transition={cellTransition} />
               <motion.rect x={x} y={100} width={boxSize} height={boxSize} rx="8" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x + boxSize / 2} y={100 + boxSize / 2 + 10} textAnchor="middle" fill={isActive ? SCENE_THEME.text.cyan300 : SCENE_THEME.text.slate100} fontSize={28} fontWeight="900" fontFamily="sans-serif">{value}</text>
+              <text x={x + boxSize / 2} y={100 + boxSize / 2 + 10} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={28} fontWeight="900" fontFamily="sans-serif">{value}</text>
               <Label x={x + boxSize / 2} y={100 + boxSize + 22} size={11}>[{index}]</Label>
             </motion.g>
           );
@@ -142,7 +142,7 @@ function MatrixScene({ frame }: SceneProps) {
             <motion.g key={`${rowIndex}-${colIndex}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
               <motion.rect x={x + 3} y={y + 3 + 4} width={boxSize} height={boxSize} rx="6" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} animate={{ fill: isActive ? SCENE_THEME.active.fill : 'transparent' }} transition={cellTransition} />
               <motion.rect x={x + 3} y={y + 3} width={boxSize} height={boxSize} rx="6" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x + 3 + boxSize / 2} y={y + 3 + boxSize / 2 + 5} textAnchor="middle" fill={isActive ? SCENE_THEME.text.cyan300 : SCENE_THEME.text.slate100} fontSize={size > 40 ? 18 : 14} fontWeight="900" fontFamily="sans-serif">{value}</text>
+              <text x={x + 3 + boxSize / 2} y={y + 3 + boxSize / 2 + 5} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={size > 40 ? 18 : 14} fontWeight="900" fontFamily="sans-serif">{value}</text>
             </motion.g>
           );
         }))}
@@ -165,7 +165,7 @@ function StackScene({ frame }: SceneProps) {
             <motion.g key={`${value}-${index}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ...cellTransition, delay: index * 0.04 }}>
               <motion.rect x="270" y={y - 38 + 4} width="140" height="40" rx="8" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} layoutId={`stack-shadow-${index}`} />
               <motion.rect x="270" y={y - 38} width="140" height="40" rx="8" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" layoutId={`stack-${index}`} />
-              <text x={340} y={y - 12} textAnchor="middle" fill={isActive ? SCENE_THEME.text.cyan300 : SCENE_THEME.text.slate100} fontSize={18} fontWeight="900" fontFamily="sans-serif">{value}</text>
+              <text x={340} y={y - 12} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={18} fontWeight="900" fontFamily="sans-serif">{value}</text>
             </motion.g>
           );
         })}
@@ -192,7 +192,7 @@ function NodeScene({ frame }: SceneProps) {
             <motion.g key={`${node}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
               <motion.circle cx={x} cy={150 + 4} r="31" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} transition={cellTransition} />
               <motion.circle cx={x} cy={150} r="31" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x} y={150 + 5} textAnchor="middle" fill={isActive ? SCENE_THEME.text.cyan300 : SCENE_THEME.text.slate100} fontSize={node.length > 5 ? 12 : 18} fontWeight="900" fontFamily="sans-serif">{node}</text>
+              <text x={x} y={150 + 5} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={node.length > 5 ? 12 : 18} fontWeight="900" fontFamily="sans-serif">{node}</text>
             </motion.g>
           );
         })}
@@ -221,7 +221,7 @@ function GraphScene({ frame }: SceneProps) {
             <motion.g key={`${node}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
               <motion.circle cx={x} cy={y + 4} r="32" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} transition={cellTransition} />
               <motion.circle cx={x} cy={y} r="32" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x} y={y + 6} textAnchor="middle" fill={isActive ? SCENE_THEME.text.cyan300 : SCENE_THEME.text.slate100} fontSize={18} fontWeight="900" fontFamily="sans-serif">{node}</text>
+              <text x={x} y={y + 6} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={18} fontWeight="900" fontFamily="sans-serif">{node}</text>
             </motion.g>
           );
         })}
@@ -250,7 +250,7 @@ function BarsScene({ frame }: SceneProps) {
             <motion.g key={`${value}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
               <motion.rect x={x + 3} y={y + 3} width={boxWidth} height={height} rx="4" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} animate={{ y: y + 3, height: height }} transition={cellTransition} />
               <motion.rect x={x} y={y} width={boxWidth} height={height} rx="4" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ y, height, fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x + boxWidth / 2} y={257} textAnchor="middle" fill={isActive ? SCENE_THEME.text.cyan300 : SCENE_THEME.text.slate100} fontSize={12} fontWeight="900" fontFamily="sans-serif">{index}</text>
+              <text x={x + boxWidth / 2} y={257} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={12} fontWeight="900" fontFamily="sans-serif">{index}</text>
             </motion.g>
           );
         })}
@@ -277,7 +277,7 @@ function BitsScene({ frame }: SceneProps) {
             <motion.g key={`${index}-${bit}`} animate={{ x: 0, y: 0 }} transition={cellTransition} style={{ transformOrigin: `${x + boxSize / 2}px 145px` }}>
               <motion.rect x={x} y={100 + 4} width={boxSize} height={boxSize} rx="8" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} animate={{ fill: isActive ? SCENE_THEME.active.fill : 'transparent' }} transition={cellTransition} />
               <motion.rect x={x} y={100} width={boxSize} height={boxSize} rx="8" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x + boxSize / 2} y={100 + boxSize / 2 + 10} textAnchor="middle" fill={isActive ? SCENE_THEME.text.cyan300 : SCENE_THEME.text.slate100} fontSize={24} fontWeight="900" fontFamily="sans-serif">{bit}</text>
+              <text x={x + boxSize / 2} y={100 + boxSize / 2 + 10} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={24} fontWeight="900" fontFamily="sans-serif">{bit}</text>
               <Label x={x + boxSize / 2} y={100 + boxSize + 22} size={11}>{bits.length - index - 1}</Label>
             </motion.g>
           );

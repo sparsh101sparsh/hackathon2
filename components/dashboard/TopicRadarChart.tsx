@@ -59,7 +59,7 @@ export function TopicRadarChart({ topics }: TopicRadarChartProps) {
                   return (
                     <div className="bg-slate-950 border border-slate-700 p-2.5 rounded shadow text-xs">
                       <p className="font-bold text-white">{data.subject}</p>
-                      <p className="text-indigo-400">Mastery: {data.mastery}%</p>
+                      <p className="text-amber-400">Mastery: {data.mastery}%</p>
                       <p className="text-slate-400">
                         Solved: {data.solved} / {data.total}
                       </p>

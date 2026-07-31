@@ -47,7 +47,7 @@ export const JudgeScorecardModal: React.FC<JudgeScorecardModalProps> = ({ isOpen
           className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden space-y-5 my-8"
         >
           {/* Top banner gradient */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-cyan-500 to-amber-500" />
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-amber-400" />
 
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -68,7 +68,7 @@ export const JudgeScorecardModal: React.FC<JudgeScorecardModalProps> = ({ isOpen
           {/* Top Score Banner */}
           <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-slate-950 font-black text-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 rounded-xl bg-amber-400 text-slate-950 font-black text-xl flex items-center justify-center shadow-lg shadow-amber-950/30">
                 {report.overallScore ?? 85}
               </div>
               <div>
@@ -89,16 +89,16 @@ export const JudgeScorecardModal: React.FC<JudgeScorecardModalProps> = ({ isOpen
           <div className="grid grid-cols-3 gap-3">
             <div className="p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-1">
               <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-cyan-400" /> Time Complexity
+                <Clock className="w-3 h-3 text-amber-400" /> Time Complexity
               </div>
-              <div className="text-xs font-black font-mono text-cyan-300">{report.timeComplexity || 'O(N)'}</div>
+              <div className="text-xs font-black font-mono text-amber-300">{report.timeComplexity || 'O(N)'}</div>
             </div>
 
             <div className="p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-1">
               <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                <Cpu className="w-3 h-3 text-purple-400" /> Space Complexity
+                <Cpu className="w-3 h-3 text-amber-400" /> Space Complexity
               </div>
-              <div className="text-xs font-black font-mono text-purple-300">{report.spaceComplexity || 'O(1)'}</div>
+              <div className="text-xs font-black font-mono text-amber-300">{report.spaceComplexity || 'O(1)'}</div>
             </div>
 
             <div className="p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-1">
@@ -147,9 +147,9 @@ export const JudgeScorecardModal: React.FC<JudgeScorecardModalProps> = ({ isOpen
           {report.optimizedSnippet && (
             <div>
               <h4 className="text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Code className="w-4 h-4 text-cyan-400" /> Suggested Optimization Pattern
+                <Code className="w-4 h-4 text-amber-400" /> Suggested Optimization Pattern
               </h4>
-              <pre className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] font-mono text-cyan-200 overflow-x-auto">
+              <pre className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] font-mono text-amber-200 overflow-x-auto">
                 {report.optimizedSnippet}
               </pre>
             </div>

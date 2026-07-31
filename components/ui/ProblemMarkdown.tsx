@@ -8,7 +8,7 @@ function inlineParts(value: string) {
       return <strong key={`${part}-${index}`} className="font-bold text-slate-100">{part.slice(2, -2)}</strong>;
     }
     if (part.startsWith('`') && part.endsWith('`')) {
-      return <code key={`${part}-${index}`} className="rounded bg-slate-950 px-1.5 py-0.5 font-mono text-cyan-300">{part.slice(1, -1)}</code>;
+      return <code key={`${part}-${index}`} className="rounded bg-slate-950 px-1.5 py-0.5 font-mono text-amber-300">{part.slice(1, -1)}</code>;
     }
     if (part.startsWith('*') && part.endsWith('*')) {
       return <em key={`${part}-${index}`} className="italic text-slate-100">{part.slice(1, -1)}</em>;

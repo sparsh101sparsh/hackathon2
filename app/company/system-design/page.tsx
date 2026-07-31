@@ -131,8 +131,8 @@ export default function SystemDesignPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-purple-950/40 via-slate-900/90 to-indigo-950/40 border border-purple-800/40 rounded-xl p-6 shadow-xl backdrop-blur-sm space-y-3">
-        <Link href="/company" className="text-xs text-indigo-400 flex items-center gap-1 hover:underline">
+      <div className="bg-[#0f0f12] border border-white/10 rounded-xl p-6 shadow-xl space-y-3">
+        <Link href="/company" className="text-xs text-amber-400 flex items-center gap-1 hover:underline">
           <ChevronLeft className="w-4 h-4" />
           Back to Tech Companies
         </Link>
@@ -140,7 +140,7 @@ export default function SystemDesignPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">
                 <Server className="w-6 h-6" />
               </div>
               <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -152,7 +152,7 @@ export default function SystemDesignPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-purple-300 bg-purple-950/60 border border-purple-700/60 px-3 py-1.5 rounded-lg shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-amber-300 bg-amber-950/60 border border-amber-700/60 px-3 py-1.5 rounded-lg shrink-0">
             <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
             <span>Guidance provider: FreeModel</span>
           </div>
@@ -171,11 +171,11 @@ export default function SystemDesignPage() {
               onClick={() => handleSelectScenario(scen)}
               className={`p-3.5 rounded-xl border text-left transition-all ${
                 selectedScenario.topic === scen.topic
-                  ? 'bg-purple-950/40 border-purple-500 text-white shadow-md'
+                  ? 'bg-amber-950/40 border-amber-500 text-white shadow-md'
                   : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
               }`}
             >
-              <span className="text-[10px] font-bold text-purple-400 uppercase">
+              <span className="text-[10px] font-bold text-amber-400 uppercase">
                 {scen.company}
               </span>
               <h4 className="text-xs font-bold mt-0.5 line-clamp-1">{scen.topic}</h4>
@@ -201,7 +201,7 @@ export default function SystemDesignPage() {
               value={architectureDoc}
               onChange={(e) => setArchitectureDoc(e.target.value)}
               rows={16}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-200 focus:outline-none focus:border-purple-500 leading-relaxed"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-200 focus:outline-none focus:border-amber-500 leading-relaxed"
               placeholder="Detail your system design: components, database choices, QPS estimations, caching strategy..."
             />
           </div>
@@ -210,7 +210,7 @@ export default function SystemDesignPage() {
             <button
               onClick={handleEvaluate}
               disabled={evaluating || !architectureDoc.trim()}
-              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-lg text-xs transition-all shadow-lg shadow-purple-600/30 flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold rounded-lg text-xs transition-all shadow-lg shadow-amber-950/30 flex items-center gap-2 disabled:opacity-50"
             >
               {evaluating ? (
                 <Loader2 className="w-4 h-4 animate-spin text-white" />
@@ -226,11 +226,11 @@ export default function SystemDesignPage() {
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4 backdrop-blur-sm">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Award className="w-4 h-4 text-purple-400" />
+              <Award className="w-4 h-4 text-amber-400" />
               Principal Architect Review & Score
             </h3>
             {result && (
-              <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-purple-950 text-purple-300 border border-purple-700">
+              <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-950 text-amber-300 border border-amber-700">
                 Score: {result.score} / 100
               </span>
             )}
@@ -238,7 +238,7 @@ export default function SystemDesignPage() {
 
           {evaluating && (
             <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400" role="status" aria-live="polite">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+              <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
               <p className="text-xs">Analyzing distributed scalability, bottlenecks, & trade-offs...</p>
             </div>
           )}
@@ -251,7 +251,7 @@ export default function SystemDesignPage() {
 
           {!result && !evaluating && !error && (
             <div className="py-20 text-center text-slate-500 text-xs">
-              Click <strong className="text-purple-400">Evaluate Architecture</strong> to analyze your system proposal.
+              Click <strong className="text-amber-400">Evaluate Architecture</strong> to analyze your system proposal.
             </div>
           )}
 
@@ -259,7 +259,7 @@ export default function SystemDesignPage() {
             <div className="space-y-4 text-xs">
               {/* Scalability Analysis */}
               <div className="bg-slate-950 border border-slate-800 rounded-lg p-3.5 space-y-1">
-                <span className="font-bold text-purple-400 uppercase tracking-wider text-[10px]">
+                <span className="font-bold text-amber-400 uppercase tracking-wider text-[10px]">
                   Scalability & Fault-Tolerance Analysis
                 </span>
                 <p className="text-slate-300 leading-relaxed">{result.scalabilityAnalysis}</p>
@@ -280,7 +280,7 @@ export default function SystemDesignPage() {
 
               {/* Recommendations */}
               <div className="bg-slate-950 border border-slate-800 rounded-lg p-3.5 space-y-2">
-                <span className="font-bold text-indigo-400 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                <span className="font-bold text-amber-400 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
                   <Lightbulb className="w-3.5 h-3.5" />
                   Engineering Recommendations
                 </span>

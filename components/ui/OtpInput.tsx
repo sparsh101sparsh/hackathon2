@@ -108,7 +108,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
           className={`w-11 h-13 sm:w-13 sm:h-15 text-center text-xl font-bold font-mono rounded-xl bg-slate-950/90 border transition-all duration-200 focus:outline-none ${
             digits[idx]
               ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10 shadow-lg shadow-emerald-500/10'
-              : 'border-slate-800 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500'
+              : 'border-slate-800 text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         />
       ))}

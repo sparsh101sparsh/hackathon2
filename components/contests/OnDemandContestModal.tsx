@@ -88,11 +88,11 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
           className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden"
         >
           {/* Top banner accent */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 via-amber-500 to-cyan-500" />
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-amber-400" />
 
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/30">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30">
                 <Bot className="w-6 h-6" />
               </div>
               <div>
@@ -107,7 +107,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
 
           {!user ? (
             <div className="py-8 text-center space-y-4">
-              <div className="inline-flex p-3 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400">
+              <div className="inline-flex p-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400">
                 <Lock className="w-6 h-6" />
               </div>
               <div>
@@ -118,7 +118,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                 <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">
                   Cancel
                 </button>
-                <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-amber-500 text-slate-950 text-xs font-bold text-center">
+                <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold text-center">
                   Sign In
                 </Link>
               </div>
@@ -134,11 +134,11 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                     onClick={() => setFormat('AI_BOT_DUEL')}
                     className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between ${
                       format === 'AI_BOT_DUEL'
-                        ? 'bg-purple-500/10 border-purple-500 text-purple-300 shadow-md'
+                        ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-md'
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
-                    <Bot className="w-5 h-5 mb-2 text-purple-400" />
+                    <Bot className="w-5 h-5 mb-2 text-amber-400" />
                     <div>
                       <div className="text-xs font-black text-white">1v1 Bot Duel</div>
                       <div className="text-[10px] text-slate-400 mt-0.5">Vs Grandmaster</div>
@@ -166,11 +166,11 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                     onClick={() => setFormat('MASTER_CHALLENGE')}
                     className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between ${
                       format === 'MASTER_CHALLENGE'
-                        ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 shadow-md'
+                        ? 'bg-amber-500/10 border-amber-500 text-amber-300 shadow-md'
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
-                    <Trophy className="w-5 h-5 mb-2 text-cyan-400" />
+                    <Trophy className="w-5 h-5 mb-2 text-amber-400" />
                     <div>
                       <div className="text-xs font-black text-white">30m Master</div>
                       <div className="text-[10px] text-slate-400 mt-0.5">Full automatic evaluation</div>
@@ -206,7 +206,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
               <button
                 onClick={handleLaunch}
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 via-amber-500 to-cyan-500 text-slate-950 font-black text-xs shadow-xl hover:scale-[1.01] transition flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-xl shadow-amber-950/30 hover:scale-[1.01] transition flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

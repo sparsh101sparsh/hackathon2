@@ -79,12 +79,12 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ isOpen, onClose })
           className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden"
         >
           {/* Top accent */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-400" />
 
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30">
                 <KeyRound className="w-6 h-6" />
               </div>
               <div>
@@ -105,7 +105,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ isOpen, onClose })
           {/* Auth gate */}
           {!user ? (
             <div className="py-8 text-center space-y-4">
-              <div className="inline-flex p-3 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+              <div className="inline-flex p-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400">
                 <Lock className="w-6 h-6" />
               </div>
               <div>
@@ -116,7 +116,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ isOpen, onClose })
                 <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
                   Cancel
                 </button>
-                <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 text-xs font-bold text-center transition">
+                <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold text-center transition">
                   Sign In
                 </Link>
               </div>
@@ -148,7 +148,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ isOpen, onClose })
                     placeholder="e.g. BATTLE-7X9K"
                     value={roomCode}
                     onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold tracking-widest text-cyan-400 uppercase placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-mono font-bold tracking-widest text-amber-400 uppercase placeholder-slate-600 focus:outline-none focus:border-amber-500 transition"
                     maxLength={12}
                   />
                   <p className="text-[10px] text-slate-500 mt-1">Format: BATTLE-XXXX (shared by your friend)</p>
@@ -158,7 +158,7 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ isOpen, onClose })
                 <button
                   type="submit"
                   disabled={loading || !roomCode.trim()}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-slate-950 font-bold text-xs shadow-xl shadow-cyan-500/20 hover:scale-[1.01] transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-xl shadow-amber-950/30 hover:scale-[1.01] transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {loading ? (
                     <>
