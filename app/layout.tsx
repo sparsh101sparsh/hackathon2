@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     description: 'DSA and competitive programming platform',
     type: 'website',
   },
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
