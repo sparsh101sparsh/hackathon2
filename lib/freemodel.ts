@@ -1,6 +1,8 @@
 export const FREEMODEL_BASE_URL = process.env.FREEMODEL_BASE_URL || 'https://api.freemodel.dev/v1';
 export const FREEMODEL_API_KEY = process.env.FREEMODEL_API_KEY || '';
-export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+export const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+export const GEMINI_THINKING_LEVEL = process.env.GEMINI_THINKING_LEVEL || 'minimal';
+export const GEMINI_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 30_000);
 
 function getFreeModelApiKeys(): string[] {
   return [
@@ -131,7 +133,7 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
     const geminiText = await callGeminiText(messages, {
       temperature,
       maxTokens: max_tokens,
-      timeoutMs: requestDeadline === null ? 10_000 : Math.max(1, requestDeadline - Date.now()),
+      timeoutMs: requestDeadline === null ? GEMINI_TIMEOUT_MS : Math.max(1, requestDeadline - Date.now()),
     });
     if (geminiText) return geminiText;
   } catch (error: unknown) {
@@ -179,6 +181,7 @@ async function callGeminiText(
           generationConfig: {
             temperature: options.temperature,
             maxOutputTokens: options.maxTokens,
+            thinkingConfig: { thinkingLevel: GEMINI_THINKING_LEVEL },
           },
         }),
       });
