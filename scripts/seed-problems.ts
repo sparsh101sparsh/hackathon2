@@ -49,14 +49,14 @@ export async function seedDatabase() {
   // 3. Seed Companies
   console.log('🏢 Seeding Companies...');
   const companyList = [
-    { name: 'Google', logo: '/companies/google.png', description: 'Search, Cloud & Tech Giant' },
-    { name: 'Amazon', logo: '/companies/amazon.png', description: 'E-Commerce & Cloud Infrastructure' },
-    { name: 'Microsoft', logo: '/companies/microsoft.png', description: 'Software, OS, Azure & Gaming' },
-    { name: 'Meta', logo: '/companies/meta.png', description: 'Social Networks & Metaverse' },
-    { name: 'Apple', logo: '/companies/apple.png', description: 'Consumer Electronics & Ecosystem' },
-    { name: 'Netflix', logo: '/companies/netflix.png', description: 'Streaming Media & Content' },
-    { name: 'Uber', logo: '/companies/uber.png', description: 'Ridesharing & Logistics' },
-    { name: 'Flipkart', logo: '/companies/flipkart.png', description: 'Leading E-Commerce Platform' },
+    { name: 'Google', logo: '/companies/google.svg', description: 'Search, Cloud & Tech Giant' },
+    { name: 'Amazon', logo: '/companies/amazon.svg', description: 'E-Commerce & Cloud Infrastructure' },
+    { name: 'Microsoft', logo: '/companies/microsoft.svg', description: 'Software, OS, Azure & Gaming' },
+    { name: 'Meta', logo: '/companies/meta.svg', description: 'Social Networks & Metaverse' },
+    { name: 'Apple', logo: '/companies/apple.svg', description: 'Consumer Electronics & Ecosystem' },
+    { name: 'Netflix', logo: '/companies/netflix.svg', description: 'Streaming Media & Content' },
+    { name: 'Uber', logo: '/companies/uber.svg', description: 'Ridesharing & Logistics' },
+    { name: 'Flipkart', logo: '/companies/flipkart.svg', description: 'Leading E-Commerce Platform' },
   ];
 
   const companyMap = new Map<string, string>();

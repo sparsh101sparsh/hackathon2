@@ -119,7 +119,7 @@ export async function GET(
           id: dbCompany?.id || slugName,
           name: dbCompany?.name || companyName,
           slug: slugName,
-          logo: dbCompany?.logo || '/companies/google.png',
+          logo: `/companies/${slugName}.svg`,
           description: dbCompany?.description || `${companyName} Top Interview Questions & System Design Prep`,
           problemCount: problemList.length,
         },

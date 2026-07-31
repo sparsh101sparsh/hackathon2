@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CompanyProblemItem } from '@/app/api/company/[slug]/route';
-import { Building2, ChevronLeft, Search, ExternalLink, Loader2, Zap } from 'lucide-react';
+import { ChevronLeft, Search, ExternalLink, Loader2, Zap } from 'lucide-react';
 
 interface CompanyDetailData {
   company: {
@@ -134,8 +135,8 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ slug: 
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="text-4xl p-3 rounded-lg bg-[#08080a] border border-white/10 shrink-0">
-              <Building2 className="w-8 h-8 text-amber-400" aria-hidden="true" />
+            <span className="text-4xl p-3 rounded-lg bg-[#08080a] border border-white/10 shrink-0 flex items-center justify-center">
+              <Image src={data.company.logo} alt={`${data.company.name} logo`} width={44} height={44} unoptimized className="w-11 h-11 object-contain" />
             </span>
             <div>
               <h1 className="text-2xl font-bold text-white tracking-tight">

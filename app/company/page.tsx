@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { CompanySummary } from '@/app/api/company/route';
-import { ArrowRight, Search, ShoppingBag, Monitor, Network, Smartphone, Clapperboard, Car, Store, Cloud } from 'lucide-react';
+import { ArrowRight, Search, Network } from 'lucide-react';
 import { CardSkeleton } from '@/components/ui/Skeletons';
 
 export default function CompanyDirectoryPage() {
@@ -37,8 +38,6 @@ export default function CompanyDirectoryPage() {
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const companyIcons = [Search, ShoppingBag, Monitor, Network, Smartphone, Clapperboard, Car, Store, Cloud];
 
   return (
     <motion.div
@@ -100,8 +99,8 @@ export default function CompanyDirectoryPage() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="p-2.5 rounded-md bg-[#08080a] border border-white/10 shrink-0">
-                      {React.createElement(companyIcons[idx % companyIcons.length], { className: 'w-5 h-5 text-amber-400', 'aria-hidden': true })}
+                    <span className="p-2.5 rounded-md bg-[#08080a] border border-white/10 shrink-0 flex items-center justify-center">
+                      <Image src={comp.logo || '/companies/google.svg'} alt={`${comp.name} logo`} width={28} height={28} unoptimized className="w-7 h-7 object-contain" />
                     </span>
                     <span className="px-2 py-1 rounded-md text-[10px] font-mono text-amber-300 border border-amber-400/20">
                       {comp.problemCount} Problems

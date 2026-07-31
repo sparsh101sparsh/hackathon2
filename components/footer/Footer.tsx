@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Code2, Github } from 'lucide-react';
+import Image from 'next/image';
+import { Code2 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
@@ -106,7 +107,7 @@ export const Footer: React.FC = () => {
               aria-label="GitHub"
               className="p-2 rounded-lg bg-[#111115] border border-white/10 text-slate-400 hover:text-white hover:border-amber-400/40 transition"
             >
-              <Github className="w-4 h-4" />
+              <Image src="/companies/github.svg" alt="" width={16} height={16} unoptimized className="w-4 h-4 invert opacity-90" aria-hidden="true" />
             </a>
           </div>
           <p className="text-[11px] text-slate-500 pt-2">
