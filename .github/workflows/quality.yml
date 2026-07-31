@@ -56,5 +56,8 @@ jobs:
       - name: Seed database
         run: npm run prisma:seed
 
+      - name: Sync visualizer catalog to CI problem IDs
+        run: npx tsx scripts/sync-visualizer-catalog.ts
+
       - name: Run quality gate
         run: npm run verify:quality
