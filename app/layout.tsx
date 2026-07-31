@@ -40,8 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
       <body
-        className="bg-[#020817] text-slate-100 min-h-screen antialiased flex flex-col"
-        style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}
+        className="bg-[#020817] text-slate-100 min-h-screen antialiased flex flex-col font-sans"
       >
         <AuthProvider>
           <ToastProvider>

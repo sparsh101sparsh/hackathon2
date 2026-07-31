@@ -137,11 +137,11 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           memory: 0,
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setExecuteResult({
         verdict: 'Runtime Error',
         stdout: '',
-        stderr: err.message || 'Execution error',
+        stderr: err instanceof Error ? err.message : 'Execution error',
         executionTime: 0,
         memory: 0,
       });
@@ -208,7 +208,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           },
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSubmissionResult({
         verdict: 'Runtime Error',
         passedCount: 0,
@@ -220,7 +220,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           input: '',
           expectedOutput: '',
           actualOutput: '',
-          error: err.message || 'Submission error',
+          error: err instanceof Error ? err.message : 'Submission error',
         },
       });
     } finally {
@@ -258,7 +258,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           <button
             onClick={handleResetCode}
             title="Reset code to default template"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 rounded-md transition"
+            className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset</span>
@@ -267,7 +267,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           <button
             onClick={handleRunCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-md shadow transition disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
           >
             {isRunning ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
@@ -280,7 +280,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           <button
             onClick={() => setIsReviewModalOpen(true)}
             title="Get AI Code Review with gpt-5.6-sol"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-cyan-300 bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800 rounded-md transition shadow"
+            className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
             <span>AI Review</span>
@@ -289,7 +289,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           <button
             onClick={handleSubmitCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-1.5 px-5 py-1.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 rounded-md shadow-lg shadow-emerald-950/40 transition disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />

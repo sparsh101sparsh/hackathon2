@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/ui/Toast';
+import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 import {
   Users,
   Code2,
@@ -150,8 +151,8 @@ export default function AdminDashboardPage() {
         const err = await res.json();
         showToast(err.error || 'Failed to delete problem', 'error');
       }
-    } catch (err: any) {
-      showToast(err.message || 'Error deleting problem', 'error');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Error deleting problem', 'error');
     } finally {
       setIsDeleting(false);
     }
@@ -175,8 +176,8 @@ export default function AdminDashboardPage() {
         const err = await res.json();
         showToast(err.error || 'Failed to update user role', 'error');
       }
-    } catch (err: any) {
-      showToast(err.message || 'Error updating user role', 'error');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Error updating user role', 'error');
     } finally {
       setRoleUpdatingId(null);
     }
@@ -423,17 +424,7 @@ export default function AdminDashboardPage() {
                           <div className="text-[11px] text-slate-500 font-mono">{prob.slug}</div>
                         </td>
                         <td className="py-3.5 px-4">
-                          <span
-                            className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                              prob.difficulty === 'EASY'
-                                ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
-                                : prob.difficulty === 'MEDIUM'
-                                ? 'bg-amber-950/80 text-amber-400 border border-amber-800/60'
-                                : 'bg-rose-950/80 text-rose-400 border border-rose-800/60'
-                            }`}
-                          >
-                            {prob.difficulty}
-                          </span>
+                          <DifficultyBadge difficulty={prob.difficulty} />
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex flex-wrap gap-1">

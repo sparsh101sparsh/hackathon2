@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       solvedProblemIds = new Set(acceptedSubmissions.map((s) => s.problemId));
     }
 
-    const whereClause: any = {};
+    const whereClause: Prisma.ProblemWhereInput = {};
 
     if (difficulty && ['EASY', 'MEDIUM', 'HARD'].includes(difficulty)) {
       whereClause.difficulty = difficulty;
@@ -122,10 +123,11 @@ export async function GET(request: NextRequest) {
       limit,
       totalPages,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching problems:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch problems' },
+      { error: message || 'Failed to fetch problems' },
       { status: 500 }
     );
   }

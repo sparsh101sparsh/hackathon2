@@ -3,13 +3,20 @@ import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 
 export const dynamic = 'force-dynamic';
 
+export interface TestResultItem {
+  passed?: boolean;
+  verdict?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
 export interface AIJudgeRequestBody {
   code?: string;
   language?: string;
   problemTitle?: string;
   problemDescription?: string;
   problemStatement?: string;
-  testResults?: any;
+  testResults?: TestResultItem[] | { passedCount?: number; totalCount?: number; verdict?: string; [key: string]: unknown };
   executionTime?: number;
   memoryUsed?: number;
 }
@@ -46,7 +53,7 @@ function evaluateAlgorithmicCode(body: AIJudgeRequestBody): AIJudgeReport {
   if (testResults) {
     if (typeof testResults === 'object') {
       if (Array.isArray(testResults)) {
-        const passed = testResults.filter((t: any) => t.passed || t.verdict === 'Accepted' || t.status === 'PASSED').length;
+        const passed = testResults.filter((t) => t.passed || t.verdict === 'Accepted' || t.status === 'PASSED').length;
         const total = testResults.length || 1;
         correctnessScore = Math.round((passed / total) * 100);
       } else if (testResults.passedCount !== undefined && testResults.totalCount !== undefined) {
@@ -237,8 +244,9 @@ export async function POST(req: NextRequest) {
             recommendations: aiResult.recommendations?.length ? aiResult.recommendations : fallbackReport.recommendations,
           };
         }
-      } catch (aiErr) {
-        console.warn('[AI Judge API] FreeModel call failed, utilizing native evaluator:', aiErr);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.warn('[AI Judge API] FreeModel call failed, utilizing native evaluator:', error);
       }
     }
 
@@ -247,7 +255,8 @@ export async function POST(req: NextRequest) {
       report,
       ...report,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in AI Judge API route:', error);
     const fallback = evaluateAlgorithmicCode({});
     return NextResponse.json(
@@ -255,7 +264,7 @@ export async function POST(req: NextRequest) {
         success: false,
         report: fallback,
         ...fallback,
-        error: error.message || 'AI evaluation error',
+        error: message || 'AI evaluation error',
       },
       { status: 500 }
     );

@@ -88,8 +88,8 @@ export async function sendVerificationEmail(
         console.warn('[Resend API Warning]:', errText);
         // Fall through to dev fallback — return devCode so the API can surface it
       }
-    } catch (err: any) {
-      console.warn('[Email Transport Notice]: Error sending email via Resend:', err.message);
+    } catch (err: unknown) {
+      console.warn('[Email Transport Notice]: Error sending email via Resend:', err instanceof Error ? err.message : err);
     }
   }
 

@@ -131,10 +131,11 @@ export async function GET(
         problems,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/contests/[id]:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch contest detail' },
+      { error: message || 'Failed to fetch contest detail' },
       { status: 500 }
     );
   }

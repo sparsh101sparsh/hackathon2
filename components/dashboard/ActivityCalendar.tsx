@@ -45,7 +45,7 @@ export function ActivityCalendar({ matrix, streak }: ActivityCalendarProps) {
   };
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg backdrop-blur-sm">
+    <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">

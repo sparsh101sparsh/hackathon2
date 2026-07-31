@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Sparkles, ArrowRight, RefreshCw, Zap, Target, BookOpen } from 'lucide-react';
 import { DailyRecommendation } from '@/app/api/ai/recommendations/route';
 import { PERSONALITY_STORAGE_KEY } from '@/lib/aiPersonalities';
+import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 
 export const DailyRecommendationsWidget: React.FC = () => {
   const [recommendations, setRecommendations] = useState<DailyRecommendation[]>([]);
@@ -24,8 +25,8 @@ export const DailyRecommendationsWidget: React.FC = () => {
       } else {
         setError('Failed to fetch recommendations');
       }
-    } catch (err: any) {
-      setError(err.message || 'Error loading recommendations');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load recommendations');
     } finally {
       setIsLoading(false);
     }
@@ -36,28 +37,7 @@ export const DailyRecommendationsWidget: React.FC = () => {
   }, []);
 
   const getDifficultyBadge = (difficulty: string) => {
-    switch (difficulty.toUpperCase()) {
-      case 'EASY':
-        return (
-          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
-            Easy
-          </span>
-        );
-      case 'MEDIUM':
-        return (
-          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-950/80 text-amber-400 border border-amber-800/60">
-            Medium
-          </span>
-        );
-      case 'HARD':
-        return (
-          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-950/80 text-rose-400 border border-rose-800/60">
-            Hard
-          </span>
-        );
-      default:
-        return null;
-    }
+    return <DifficultyBadge difficulty={difficulty} />;
   };
 
   return (

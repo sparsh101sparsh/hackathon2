@@ -328,8 +328,8 @@ function codeFor(pattern: string, lessonPath?: string) {
 }
 
 function pointerColor(name: string) {
-  const palette: Record<string, string> = { L: 'text-orange-300', R: 'text-cyan-300', lo: 'text-orange-300', hi: 'text-cyan-300', mid: 'text-yellow-200', left: 'text-orange-300', right: 'text-cyan-300' };
-  return palette[name] || 'text-orange-300';
+  const palette: Record<string, string> = { L: 'text-cyan-300', R: 'text-emerald-300', lo: 'text-cyan-300', hi: 'text-emerald-300', mid: 'text-purple-300', left: 'text-cyan-300', right: 'text-emerald-300' };
+  return palette[name] || 'text-cyan-300';
 }
 
 export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId, problemTitle, topicTags, verified = false }) => {
@@ -370,6 +370,42 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
 
   useEffect(() => { setStep(0); setPlaying(false); }, [problemId, pattern]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable ||
+          target instanceof HTMLInputElement ||
+          target instanceof HTMLTextAreaElement)
+      ) {
+        return;
+      }
+
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        setPlaying((value) => !value);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setPlaying(false);
+        setStep((value) => Math.min(frames.length - 1, value + 1));
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setPlaying(false);
+        setStep((value) => Math.max(0, value - 1));
+      } else if (e.key === 'r' || e.key === 'R' || e.code === 'KeyR') {
+        e.preventDefault();
+        setPlaying(false);
+        setStep(0);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [frames.length]);
+
   const copyCode = async () => {
     const text = code.join('\n');
     try {
@@ -394,62 +430,104 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
   };
 
   return (
-    <div className="min-h-[640px] bg-[#1d2021] text-[#ebdbb2] border border-[#928374] rounded overflow-hidden font-mono">
+    <div tabIndex={0} className="min-h-[640px] bg-slate-950/90 text-slate-200 border border-slate-800/80 hover:border-cyan-500/30 transition-all rounded-2xl overflow-hidden font-mono shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50">
       <div className="grid lg:grid-cols-[220px_minmax(0,1fr)_320px] min-h-[640px]">
-        <aside className="hidden lg:flex flex-col border-r border-[#4b483e] bg-[#11110f] p-4 gap-6">
+        <aside className="hidden lg:flex flex-col border-r border-slate-800/80 bg-slate-900/90 p-4 gap-6">
           <div>
-            <div className="text-[11px] text-[#8b877a] mb-2">PATTERN</div>
-            <div className="text-xl font-bold font-sans text-[#f7f3ea]">{patternNames[pattern] || 'DSA Visual'}</div>
-            <div className="text-[11px] text-[#969184] mt-2 leading-relaxed">step-by-step pattern animations</div>
+            <div className="text-[11px] text-slate-400 mb-2 font-bold uppercase tracking-wider">PATTERN</div>
+            <div className="text-xl font-bold font-sans text-slate-100">{patternNames[pattern] || 'DSA Visual'}</div>
+            <div className="text-[11px] text-slate-400 mt-2 leading-relaxed">step-by-step pattern animations</div>
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 border border-[#5d594d] rounded-lg text-xs text-[#aaa496]">
+          <div className="flex items-center gap-2 px-3 py-2 border border-slate-800 rounded-xl text-xs text-slate-400">
             <Search className="w-3.5 h-3.5" /> Search lessons
           </div>
           <div className="space-y-2 overflow-hidden">
-            <div className="text-[10px] tracking-[0.18em] text-[#8b877a]">CURRENT LESSON</div>
-            <div className="border-l-2 border-[#e98b5b] pl-3 text-sm text-[#f2eee4] leading-relaxed">{problemTitle}</div>
-            <div className="text-[11px] text-[#8b877a]">{isVerified ? 'verified lesson' : 'pattern lesson'}</div>
+            <div className="text-[10px] tracking-[0.18em] text-slate-400 font-bold uppercase">CURRENT LESSON</div>
+            <div className="border-l-2 border-cyan-400 pl-3 text-sm text-slate-100 font-semibold leading-relaxed">{problemTitle}</div>
+            <div className="text-[11px] text-slate-400">{isVerified ? 'verified lesson' : 'pattern lesson'}</div>
           </div>
         </aside>
 
-        <section className="flex flex-col min-w-0">
-          <header className="px-5 sm:px-8 pt-5 pb-3 flex items-start justify-between gap-4">
+        <section className="flex flex-col min-w-0 bg-slate-950/90">
+          <header className="px-5 sm:px-8 pt-5 pb-3 flex items-start justify-between gap-4 border-b border-slate-800/60 bg-slate-900/40">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.24em] text-[#aaa496]">{mode}</div>
-              <h2 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight mt-1">{problemTitle}</h2>
-              <div className="inline-flex items-center gap-2 mt-3 border border-[#5d594d] rounded-lg px-3 py-2 text-xs text-[#d0cabd]">{patternNames[pattern] || 'Algorithm'} <span className="text-[#e98b5b]">{isVerified ? 'verified' : 'live'}</span></div>
+              <div className="text-[10px] uppercase tracking-[0.24em] text-slate-400 font-bold">{mode}</div>
+              <h2 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">{problemTitle}</h2>
+              <div className="inline-flex items-center gap-2 mt-3 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300">{patternNames[pattern] || 'Algorithm'} <span className="text-cyan-400 font-semibold">{isVerified ? 'verified' : 'live'}</span></div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <button type="button" onClick={() => setMode('concept')} className={`px-3 py-2 rounded-lg text-xs border transition ${mode === 'concept' ? 'bg-[#f0e6d5] text-[#24211c] border-[#f0e6d5]' : 'border-[#5d594d] text-[#b4afa3]'}`}>Concept</button>
-              <button type="button" onClick={() => setMode('practice')} className={`px-3 py-2 rounded-lg text-xs border transition ${mode === 'practice' ? 'bg-[#e98b5b] text-[#241812] border-[#e98b5b]' : 'border-[#5d594d] text-[#b4afa3]'}`}>Practice</button>
+              <button type="button" onClick={() => setMode('concept')} className={mode === 'concept' ? 'px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all' : 'px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all'}>Concept</button>
+              <button type="button" onClick={() => setMode('practice')} className={mode === 'practice' ? 'px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all' : 'px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all'}>Practice</button>
             </div>
           </header>
 
-          <div className="px-5 sm:px-8 flex items-center justify-between text-[11px] text-[#a39d8f] mb-3"><span>{patternNames[pattern] || 'Algorithm'} walk</span><span>step {step + 1} / {frames.length}</span></div>
+          <div className="px-5 sm:px-8 flex items-center justify-between text-[11px] text-slate-400 my-3"><span>{patternNames[pattern] || 'Algorithm'} walk</span><span>step {step + 1} / {frames.length}</span></div>
 
           <div className="px-5 sm:px-8 flex-1 grid xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,.75fr)] gap-5 items-center">
-            <div className="min-h-[290px] flex items-center justify-center border-y border-[#39372f] py-8 overflow-hidden">
-              <AnimatePresence mode="wait">
+            <div className="min-h-[290px] flex items-center justify-center border-y border-slate-800/80 py-8 overflow-hidden bg-slate-950/90 rounded-xl">
+              <AnimatePresence mode="popLayout">
                 <VisualizerScene frame={current} step={step} />
               </AnimatePresence>
             </div>
 
             <div className="space-y-4">
-              <div className="border border-[#5d594d] rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-[#4b483e]"><span className="font-sans font-bold text-lg">{mode === 'concept' ? 'Concept' : 'Practice'}</span><button type="button" onClick={copyCode} title="Copy pseudocode" className="px-2.5 py-1.5 border border-[#5d594d] rounded-md text-xs text-[#c7c0b2] flex items-center gap-1.5 hover:border-[#e98b5b]"><Copy className="w-3.5 h-3.5" /> {copied ? 'copied' : 'copy'}</button></div>
-                <div className="p-4 space-y-2 text-xs leading-relaxed bg-[#1a1915]">{code.map((line, index) => <div key={line} className={`flex gap-3 px-2 py-1 rounded ${current.codeLine === index + 1 ? 'bg-[#493126] text-[#ffc199]' : 'text-[#938d80]'}`}><span className="w-4 text-right text-[#716b60]">{index + 1}</span><code>{line}</code></div>)}</div>
+              <div className="border border-slate-800/80 rounded-xl overflow-hidden bg-slate-950/90 shadow-inner">
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/80"><span className="font-sans font-bold text-xs uppercase tracking-wider text-slate-200">{mode === 'concept' ? 'Concept Pseudocode' : 'Practice Pseudocode'}</span><button type="button" onClick={copyCode} title="Copy pseudocode" className="px-2.5 py-1 border border-slate-700/60 rounded-lg bg-slate-800 text-xs text-slate-200 flex items-center gap-1.5 hover:border-cyan-400/50 hover:text-cyan-300 transition-all"><Copy className="w-3.5 h-3.5" /> {copied ? 'copied' : 'copy'}</button></div>
+                <div className="p-3.5 space-y-1.5 text-xs leading-relaxed bg-slate-950/90">{code.map((line, index) => <div key={line} className={`flex gap-3 px-2.5 py-1 rounded-md transition-all ${current.codeLine === index + 1 ? 'bg-cyan-500/15 border-l-2 border-cyan-400 text-cyan-200 font-medium' : 'text-slate-400'}`}><span className="w-5 text-right text-slate-500 shrink-0 select-none">{index + 1}</span><code className="font-mono">{line}</code></div>)}</div>
               </div>
-              <div className="border border-[#5d594d] rounded-xl p-4 grid grid-cols-2 gap-3">{current.state.map((item) => <div key={item.label}><div className="text-[10px] uppercase tracking-[0.16em] text-[#817b6c]">{item.label}</div><div className="font-sans font-bold text-sm text-[#e8e0d3] mt-1 break-words">{item.value}</div></div>)}</div>
+              <div className="border border-slate-800/80 rounded-xl p-3.5 grid grid-cols-2 gap-2.5 bg-slate-900/70 min-h-[80px]">
+                {current.state.map((item, idx) => (
+                  <div key={item.label} className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800/60">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400 font-bold">{item.label}</span>
+                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${idx % 2 === 0 ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>active</span>
+                    </div>
+                    <div className="font-mono font-semibold text-sm text-cyan-300 mt-1 break-words">{item.value}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="px-5 sm:px-8 mt-6"><div className="border border-[#5d594d] rounded-xl p-4 flex gap-3 items-start"><Sparkles className="w-4 h-4 text-[#e98b5b] mt-0.5 shrink-0" /><p className="font-sans text-sm leading-relaxed text-[#e8e0d3]">{current.commentary}</p></div></div>
+          <div className="px-5 sm:px-8 mt-6">
+            <div className="border border-slate-800/80 rounded-xl p-4 bg-slate-900/70 min-h-[88px] flex flex-col justify-between gap-2.5 transition-all">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI Commentary</span>
+                </div>
+                <span className="text-[10px] font-mono font-medium tracking-wider px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300">
+                  AI Commentary • Step {step + 1} of {frames.length}
+                </span>
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={step}
+                  initial={{ opacity: 0, y: 3 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -3 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  className="font-sans text-sm leading-relaxed text-slate-200"
+                >
+                  {current.commentary}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+          </div>
 
-          <footer className="px-5 sm:px-8 py-5 mt-4 flex flex-wrap items-center gap-3 border-t border-[#39372f]"><button type="button" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2 border border-[#5d594d] rounded-lg hover:border-[#e98b5b]"><RotateCcw className="w-4 h-4" /></button><button type="button" title="Previous step" disabled={step === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2 border border-[#5d594d] rounded-lg disabled:opacity-40 hover:border-[#e98b5b]"><ChevronLeft className="w-4 h-4" /></button><button type="button" onClick={() => setPlaying((value) => !value)} className="px-4 py-2 rounded-lg bg-[#f0e6d5] text-[#24211c] font-sans font-bold text-xs flex items-center gap-2 hover:bg-white">{playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />} {playing ? 'Pause' : 'Play'}</button><button type="button" title="Next step" disabled={step === frames.length - 1} onClick={() => { setPlaying(false); setStep((value) => Math.min(frames.length - 1, value + 1)); }} className="p-2 border border-[#5d594d] rounded-lg disabled:opacity-40 hover:border-[#e98b5b]"><ChevronRight className="w-4 h-4" /></button><input aria-label="Lesson progress" type="range" min="0" max={frames.length - 1} value={step} onChange={(event) => { setPlaying(false); setStep(Number(event.target.value)); }} className="flex-1 min-w-[120px] accent-[#e98b5b]" /><select aria-label="Playback speed" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="bg-[#1b1a16] border border-[#5d594d] rounded-lg px-2 py-2 text-xs"><option value="1800">0.5x</option><option value="1200">1x</option><option value="700">2x</option></select><span className="text-[10px] text-[#8b877a] w-10 text-right">{Math.round(progress)}%</span></footer>
+          <footer className="px-5 sm:px-8 py-4 mt-4 flex flex-wrap items-center gap-3 border-t border-slate-800/80 bg-slate-900/60 font-sans">
+            <button type="button" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-sm hover:shadow-cyan-500/20 transition-all"><RotateCcw className="w-4 h-4" /></button>
+            <button type="button" title="Previous step" disabled={step === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronLeft className="w-4 h-4" /></button>
+            <button type="button" onClick={() => setPlaying((value) => !value)} className={`px-5 py-2.5 rounded-xl font-sans font-bold text-xs flex items-center gap-2 transition-all ${playing ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/30 ring-2 ring-cyan-400/50' : 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 shadow-lg hover:shadow-cyan-500/30'}`}>{playing ? <Pause className="w-4 h-4 fill-slate-950" /> : <Play className="w-4 h-4 fill-slate-950" />} {playing ? 'Pause' : 'Play'}</button>
+            <button type="button" title="Next step" disabled={step === frames.length - 1} onClick={() => { setPlaying(false); setStep((value) => Math.min(frames.length - 1, value + 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronRight className="w-4 h-4" /></button>
+            <input aria-label="Lesson progress" type="range" min="0" max={frames.length - 1} value={step} onChange={(event) => { setPlaying(false); setStep(Number(event.target.value)); }} className="flex-1 min-w-[120px] accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer" />
+            <select aria-label="Playback speed" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="bg-slate-800 border border-slate-700/60 rounded-xl px-3 py-2 text-xs text-slate-200 hover:border-cyan-400/50 transition-all"><option value="1800">0.5x</option><option value="1200">1x</option><option value="700">2x</option></select>
+            <span className="text-[10px] text-slate-400 w-10 text-right font-mono">{Math.round(progress)}%</span>
+          </footer>
         </section>
 
         {/* AI Chatbot Sidebar */}
-        <aside className="hidden lg:block border-l border-[#4b483e]">
+        <aside className="hidden lg:block border-l border-slate-800/80">
           <VisualizerChatbot currentFrame={current} problemTitle={problemTitle} step={step} />
         </aside>
       </div>

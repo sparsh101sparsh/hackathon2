@@ -68,8 +68,9 @@ export async function POST(req: NextRequest) {
       participantUserId: userId,
       room: updatedRoom,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error joining custom room:', error);
-    return NextResponse.json({ error: error.message || 'Failed to join battle room' }, { status: 500 });
+    return NextResponse.json({ error: message || 'Failed to join battle room' }, { status: 500 });
   }
 }

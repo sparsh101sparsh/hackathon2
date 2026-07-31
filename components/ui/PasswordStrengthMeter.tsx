@@ -8,7 +8,7 @@ interface PasswordStrengthMeterProps {
 
 export function evaluatePasswordStrength(password: string = '') {
   let score = 0;
-  if (!password) return { score: 0, label: '', color: 'bg-slate-800' };
+  if (!password) return { score: 0, label: '', color: 'bg-slate-800', textColor: 'text-slate-500' };
 
   const hasLength = password.length >= 8;
   const hasUpper = /[A-Z]/.test(password);

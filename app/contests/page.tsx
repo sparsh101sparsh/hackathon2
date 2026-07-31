@@ -106,7 +106,7 @@ export default function ContestsPage() {
       </div>
 
       {/* Friend Battle Arena Card */}
-      <div className="bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-purple-950/40 border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 sm:p-8 relative overflow-hidden">
         <div className="absolute -top-12 -right-12 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
@@ -125,21 +125,21 @@ export default function ContestsPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               onClick={() => setIsOnDemandModalOpen(true)}
-              className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-amber-500 to-cyan-500 text-slate-950 font-black text-xs shadow-xl shadow-purple-500/20 hover:scale-105 transition flex items-center justify-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
             >
               <Zap className="w-4 h-4" />
-              <span>⚡ Instant AI Duel / Blitz Challenge</span>
+              <span>⚡ Instant AI Duel / Blitz</span>
             </button>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/20 hover:scale-105 transition flex items-center justify-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>Create Private Room</span>
             </button>
             <button
               onClick={() => setIsJoinModalOpen(true)}
-              className="px-5 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 hover:border-cyan-500 text-cyan-400 font-bold text-xs hover:bg-slate-900 transition flex items-center justify-center gap-2"
+              className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center justify-center gap-2"
             >
               <KeyRound className="w-4 h-4" />
               <span>Join Room</span>
@@ -170,7 +170,7 @@ export default function ContestsPage() {
                   <motion.div
                     key={contest.id}
                     whileHover={{ scale: 1.01 }}
-                    className="bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-slate-900/90 border border-emerald-500/40 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-xl"
+                    className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export default function ContestsPage() {
                     <div className="flex items-center gap-3">
                       <Link
                         href={`/contests/${contest.id}`}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 transition flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center gap-2"
                       >
                         <span>Enter Contest</span>
                         <ArrowRight className="w-4 h-4" />
@@ -223,7 +223,7 @@ export default function ContestsPage() {
                 <motion.div
                   key={contest.id}
                   whileHover={{ y: -2 }}
-                  className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col justify-between space-y-4 backdrop-blur-md"
+                  className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -255,11 +255,11 @@ export default function ContestsPage() {
                     <button
                       onClick={() => handleRegister(contest.id)}
                       disabled={contest.isRegistered || registeringId === contest.id}
-                      className={`w-full py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 ${
+                      className={
                         contest.isRegistered
-                          ? 'bg-slate-800 text-emerald-400 border border-slate-700 cursor-default'
-                          : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-md'
-                      }`}
+                          ? 'w-full px-4 py-2 rounded-xl bg-slate-800/80 text-emerald-400 border border-slate-700/60 font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-default'
+                          : 'w-full px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center justify-center gap-2'
+                      }
                     >
                       {registeringId === contest.id ? (
                         <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
@@ -288,7 +288,7 @@ export default function ContestsPage() {
                 {endedContests.map((contest) => (
                   <div
                     key={contest.id}
-                    className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between"
+                    className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 flex items-center justify-between"
                   >
                     <div>
                       <h3 className="text-sm font-bold text-white">{contest.title}</h3>
@@ -298,7 +298,7 @@ export default function ContestsPage() {
                     </div>
                     <Link
                       href={`/contests/${contest.id}`}
-                      className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 font-semibold text-xs border border-slate-700 transition"
+                      className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all"
                     >
                       View Results
                     </Link>

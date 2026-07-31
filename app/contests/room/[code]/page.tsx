@@ -35,7 +35,21 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { AICommentator } from '@/components/contests/AICommentator';
-import { AIJudgeScorecardModal } from '@/components/contests/AIJudgeScorecardModal';
+import { AIJudgeScorecardModal, AIJudgeReportProps } from '@/components/contests/AIJudgeScorecardModal';
+
+interface ExecutionResult {
+  verdict?: string;
+  stdout?: string;
+  stderr?: string;
+  error?: string;
+  testResults?: unknown;
+  results?: unknown;
+  time?: number;
+  executionTime?: number;
+  memory?: number;
+  memoryUsed?: number;
+  [key: string]: unknown;
+}
 
 interface Participant {
   id: string;
@@ -93,11 +107,11 @@ export default function BattleRoomPage() {
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
   const [executing, setExecuting] = useState(false);
-  const [executionResult, setExecutionResult] = useState<any>(null);
+  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
   const [solvedProblems, setSolvedProblems] = useState<Record<string, boolean>>({});
   const [battleUserId, setBattleUserId] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
-  const [aiJudgeReport, setAiJudgeReport] = useState<any>(null);
+  const [aiJudgeReport, setAiJudgeReport] = useState<AIJudgeReportProps | null>(null);
   const [isJudgeModalOpen, setIsJudgeModalOpen] = useState(false);
   const [lastEvent, setLastEvent] = useState<string>('JOIN');
   const prevTopLeaderRef = React.useRef<{ id: string; score: number } | null>(null);
@@ -132,13 +146,14 @@ export default function BattleRoomPage() {
       // Automatically set starter code for active problem
       if (data.problems && data.problems.length > 0) {
         const p = data.problems[activeProblemIdx] || data.problems[0];
-        const template = p.codeTemplates?.find((t: any) => t.language === language);
+        const template = p.codeTemplates?.find((t: { language: string; code: string }) => t.language === language);
         if (template) {
           setCode(template.code);
         }
       }
-    } catch (err: any) {
-      showToast(err.message || 'Error loading battle room', 'error');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error loading battle room';
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -173,7 +188,7 @@ export default function BattleRoomPage() {
     if (problems.length > 0) {
       const p = problems[activeProblemIdx];
       if (p) {
-        const template = p.codeTemplates?.find((t: any) => t.language === language);
+        const template = p.codeTemplates?.find((t: { language: string; code: string }) => t.language === language);
         if (template) {
           setCode(template.code);
         }
@@ -269,7 +284,7 @@ export default function BattleRoomPage() {
       } else {
         setLastEvent('SAMPLE_FAILED');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       showToast('Code execution error', 'error');
       setLastEvent('SAMPLE_FAILED');
     } finally {
@@ -362,7 +377,7 @@ export default function BattleRoomPage() {
         showToast(`Verdict: ${data.verdict || 'Wrong Answer'}`, 'error');
         setLastEvent('SUBMIT_FAILED');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       showToast('Submission error', 'error');
     } finally {
       setExecuting(false);
@@ -664,7 +679,7 @@ export default function BattleRoomPage() {
             language={language}
             codeSnippet={code}
             linesOfCode={code.split('\n').filter((l) => l.trim().length > 0).length}
-            executionResult={executionResult}
+            executionResult={executionResult ?? undefined}
             userName={currentUserName}
             lastEvent={lastEvent}
             eventType={lastEvent}

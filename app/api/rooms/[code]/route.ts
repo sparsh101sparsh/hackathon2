@@ -61,7 +61,8 @@ export async function GET(
       room,
       problems,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching custom room:', error);
     return NextResponse.json({ error: 'Failed to fetch battle room' }, { status: 500 });
   }
@@ -199,7 +200,8 @@ export async function POST(
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error updating battle room:', error);
     return NextResponse.json({ error: 'Failed to update battle room' }, { status: 500 });
   }

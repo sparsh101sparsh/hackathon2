@@ -84,7 +84,7 @@ export const Navbar: React.FC = () => {
           href="https://github.com/sparsh101sparsh/hackathon2"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm mr-2"
+          className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
         >
           <Github className="w-4 h-4 text-cyan-400" />
           <span>GitHub</span>
@@ -119,14 +119,14 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-200 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm"
+              className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
             >
               <LogIn className="w-3.5 h-3.5 text-cyan-400" />
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 shadow-md shadow-cyan-950/30 transition flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center gap-1.5"
             >
               <UserPlus className="w-3.5 h-3.5 text-slate-950" />
               <span>Sign Up</span>

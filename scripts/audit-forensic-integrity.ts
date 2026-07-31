@@ -67,8 +67,22 @@ async function runAudit() {
   // CHECK 3: JSON & JSONL Files Generic Boilerplate
   // ------------------------------------------------------------------
   console.log("\n--- Check 3: JSON / JSONL Generic Boilerplate Strings ---");
+interface LeetCode400Problem {
+  id?: string;
+  frontendId?: number;
+  title: string;
+  slug: string;
+  statement?: string;
+  inputFormat?: string;
+  outputFormat?: string;
+  constraints?: string;
+  difficulty?: string;
+  editorial?: string;
+  [key: string]: unknown;
+}
+
   const leetcode400Raw = fs.readFileSync(LEETCODE400_PATH, 'utf-8');
-  const leetcode400: any[] = JSON.parse(leetcode400Raw);
+  const leetcode400: LeetCode400Problem[] = JSON.parse(leetcode400Raw);
   console.log(`leetcode400.json problem count: ${leetcode400.length}`);
 
   let jsonInputMatches = 0;
@@ -119,7 +133,7 @@ async function runAudit() {
   });
 
   let jsonEmptyFieldCount = 0;
-  leetcode400.forEach((p: any) => {
+  leetcode400.forEach((p) => {
     if (!p.statement?.trim() || !p.inputFormat?.trim() || !p.outputFormat?.trim() || !p.constraints?.trim()) {
       jsonEmptyFieldCount++;
       console.error(`  [leetcode400.json empty field] ${p.slug}: statement=${!!p.statement?.trim()}, inputFormat=${!!p.inputFormat?.trim()}, outputFormat=${!!p.outputFormat?.trim()}, constraints=${!!p.constraints?.trim()}`);
@@ -130,7 +144,7 @@ async function runAudit() {
   freemodelLines.forEach((line, idx) => {
     try {
       const p = JSON.parse(line);
-      const text = p.messages?.find((m: any) => m.role === 'assistant')?.content || p.output || JSON.stringify(p);
+      const text = p.messages?.find((m: { role: string; content?: string }) => m.role === 'assistant')?.content || p.output || JSON.stringify(p);
       // For corpus, let's verify each object has valid statement, inputFormat, outputFormat, constraints or text payload
       if (p.inputFormat !== undefined && (!p.inputFormat?.trim() || !p.outputFormat?.trim() || !p.statement?.trim() || !p.constraints?.trim())) {
         jsonlEmptyFieldCount++;
@@ -165,7 +179,7 @@ async function runAudit() {
   const randomPickDb = await prisma.problem.findFirst({
     where: { OR: [{ slug: "random-pick-with-blacklist" }, { title: { contains: "Random Pick with Blacklist" } }] }
   });
-  const randomPickJson = leetcode400.find((p: any) => p.slug === "random-pick-with-blacklist" || p.title === "Random Pick with Blacklist");
+  const randomPickJson = leetcode400.find((p) => p.slug === "random-pick-with-blacklist" || p.title === "Random Pick with Blacklist");
   
   let randomPickHasLinkedList = false;
   if (randomPickDb) {
@@ -199,7 +213,7 @@ async function runAudit() {
   const minIndexDb = await prisma.problem.findFirst({
     where: { OR: [{ slug: "minimum-index-sum-of-two-lists" }, { title: { contains: "Minimum Index Sum of Two Lists" } }] }
   });
-  const minIndexJson = leetcode400.find((p: any) => p.slug === "minimum-index-sum-of-two-lists" || p.title === "Minimum Index Sum of Two Lists");
+  const minIndexJson = leetcode400.find((p) => p.slug === "minimum-index-sum-of-two-lists" || p.title === "Minimum Index Sum of Two Lists");
 
   console.log("  DB minIndexDb inputFormat:", minIndexDb?.inputFormat);
   console.log("  JSON minIndexJson inputFormat:", minIndexJson?.inputFormat);
@@ -249,7 +263,7 @@ async function runAudit() {
   process.exit(overallPass ? 0 : 1);
 }
 
-runAudit().catch(err => {
+runAudit().catch((err: unknown) => {
   console.error("Audit script failed with error:", err);
   process.exit(1);
 });

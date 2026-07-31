@@ -108,8 +108,8 @@ export default function SystemDesignPage() {
       if (!res.ok) throw new Error('Failed to evaluate system design');
       const data = await res.json();
       setResult(data);
-    } catch (err: any) {
-      setError(err.message || 'Evaluation failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Evaluation failed');
     } finally {
       setEvaluating(false);
     }

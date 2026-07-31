@@ -118,10 +118,11 @@ ${JSON.stringify(
     });
 
     return NextResponse.json({ recommendations });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/recommendations:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate daily recommendations' },
+      { error: message || 'Failed to generate daily recommendations' },
       { status: 500 }
     );
   }

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, User, Send, Sparkles, Loader2 } from 'lucide-react';
 import { getPersonality, PERSONALITY_STORAGE_KEY } from '@/lib/aiPersonalities';
+import type { LessonFrame } from './ProblemVisualizer';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -10,7 +11,7 @@ interface Message {
 }
 
 interface VisualizerChatbotProps {
-  currentFrame: any;
+  currentFrame: LessonFrame | null;
   problemTitle: string;
   step: number;
 }
@@ -19,7 +20,7 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const personality = getPersonality(
     typeof window !== 'undefined' ? localStorage.getItem(PERSONALITY_STORAGE_KEY) : null
@@ -38,7 +39,9 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
   }, []);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -54,12 +57,30 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
     setIsLoading(true);
 
     try {
+      const framePayload = currentFrame
+        ? {
+            visualType: currentFrame.visualType,
+            codeLine: currentFrame.codeLine,
+            commentary: currentFrame.commentary,
+            state: currentFrame.state,
+            active: currentFrame.active,
+            pointers: currentFrame.pointers,
+            values: currentFrame.values,
+            matrix: currentFrame.matrix,
+            stack: currentFrame.stack,
+            nodes: currentFrame.nodes,
+            edges: currentFrame.edges,
+            bars: currentFrame.bars,
+            bits: currentFrame.bits,
+          }
+        : null;
+
       const res = await fetch('/api/ai/visualizer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           problemTitle,
-          currentFrame,
+          currentFrame: framePayload,
           step,
           messages: newMessages,
           personality: personality.id,
@@ -86,29 +107,37 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#11110f] border-l border-[#4b483e]">
-      <div className="px-4 py-3 border-b border-[#4b483e] flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-[#e98b5b]/10 flex items-center justify-center text-lg shrink-0 border border-[#e98b5b]/20">
+    <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800/80 font-sans">
+      <div className="px-4 py-3 border-b border-slate-800/80 flex items-center gap-3 bg-slate-900">
+        <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-lg shrink-0 border border-cyan-400/20">
           {personality.emoji}
         </div>
         <div>
-          <div className="text-sm font-bold text-[#f7f3ea]">{personality.name} Guide</div>
-          <div className="text-[10px] text-[#e98b5b] flex items-center gap-1 uppercase tracking-wider">
-            <Sparkles className="w-3 h-3" /> Visualizer AI
+          <div className="text-sm font-bold text-slate-100">{personality.name} Guide</div>
+          <div className="text-[10px] text-cyan-400 flex items-center gap-1 uppercase tracking-wider font-semibold">
+            <Sparkles className="w-3 h-3 text-cyan-400" /> Visualizer AI
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
-        {currentFrame?.commentary && (
-          <div className="flex gap-3 items-start opacity-70 border-b border-[#39372f] pb-4 mb-4">
-            <div className="w-6 h-6 rounded bg-[#2a2720] flex items-center justify-center text-[10px] shrink-0 border border-[#4b483e]">
-              {step + 1}
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px] bg-slate-950/50">
+        {currentFrame && (
+          <div className="rounded-xl border border-slate-800/80 bg-slate-900/80 p-3 mb-4 space-y-2 shadow-sm">
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-cyan-400 font-semibold">
+              <span>AI Commentary • Step {step + 1}</span>
+              <span className="text-slate-400">Line {currentFrame.codeLine}</span>
             </div>
-            <div className="text-xs text-[#d0cabd] leading-relaxed">
-              <span className="text-[#817b6c] uppercase text-[10px] block mb-1">Current Step Context</span>
-              {currentFrame.commentary}
-            </div>
+            <p className="text-xs text-slate-300 leading-relaxed font-sans">{currentFrame.commentary}</p>
+            {currentFrame.state && currentFrame.state.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-slate-800/60">
+                {currentFrame.state.map((item, idx) => (
+                  <span key={idx} className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800/80 border border-slate-700/60 text-slate-300">
+                    <span className="text-slate-400 uppercase">{item.label}:</span>
+                    <span className="text-cyan-300 font-semibold">{item.value}</span>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -117,17 +146,17 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm ${
                 msg.role === 'user'
-                  ? 'bg-[#39372f] text-[#d0cabd]'
-                  : 'bg-[#e98b5b]/10 text-[#e98b5b] border border-[#e98b5b]/20'
+                  ? 'bg-slate-800 text-cyan-400 border border-cyan-500/30'
+                  : 'bg-cyan-500/10 text-cyan-400 border border-cyan-400/20'
               }`}
             >
-              {msg.role === 'user' ? <User className="w-4 h-4" /> : personality.emoji}
+              {msg.role === 'user' ? <User className="w-4 h-4 text-cyan-400" /> : personality.emoji}
             </div>
             <div
-              className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+              className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-[#39372f] text-[#f7f3ea] rounded-tr-none'
-                  : 'bg-[#1b1a17] text-[#d0cabd] border border-[#39372f] rounded-tl-none'
+                  ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-500/40 shadow-sm shadow-cyan-500/10 rounded-tr-none font-medium'
+                  : 'bg-slate-800/80 text-slate-200 border border-slate-700/60 rounded-tl-none'
               }`}
             >
               {msg.content}
@@ -136,20 +165,19 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
         ))}
         {isLoading && (
           <div className="flex gap-3">
-            <div className="w-7 h-7 rounded-full bg-[#e98b5b]/10 flex items-center justify-center shrink-0 border border-[#e98b5b]/20">
-              <Loader2 className="w-4 h-4 text-[#e98b5b] animate-spin" />
+            <div className="w-7 h-7 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 border border-cyan-400/20">
+              <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
             </div>
-            <div className="bg-[#1b1a17] border border-[#39372f] rounded-2xl rounded-tl-none px-4 py-2 flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#817b6c] animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-1.5 h-1.5 rounded-full bg-[#817b6c] animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-1.5 h-1.5 rounded-full bg-[#817b6c] animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="bg-slate-800/80 border border-slate-700/60 rounded-2xl rounded-tl-none px-4 py-2 flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-3 border-t border-[#4b483e] bg-[#11110f]">
+      <div className="p-3 border-t border-slate-800/80 bg-slate-900">
         <div className="relative flex items-center">
           <input
             type="text"
@@ -159,13 +187,13 @@ export function VisualizerChatbot({ currentFrame, problemTitle, step }: Visualiz
               if (e.key === 'Enter') sendMessage();
             }}
             placeholder="Ask about this step..."
-            className="w-full bg-[#1b1a17] border border-[#4b483e] rounded-full pl-4 pr-10 py-2.5 text-xs text-[#f7f3ea] placeholder-[#817b6c] focus:outline-none focus:border-[#e98b5b] transition"
+            className="w-full bg-slate-800/90 border border-slate-700/80 rounded-full pl-4 pr-10 py-2.5 text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition"
             disabled={isLoading}
           />
           <button
             onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
-            className="absolute right-1.5 p-1.5 rounded-full bg-[#e98b5b] text-[#241812] disabled:opacity-50 disabled:bg-[#4b483e] disabled:text-[#817b6c] transition hover:bg-white"
+            className="absolute right-1.5 p-1.5 rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 disabled:opacity-40 disabled:bg-slate-800 disabled:text-slate-500 transition hover:shadow-cyan-500/20"
           >
             <Send className="w-3.5 h-3.5" />
           </button>

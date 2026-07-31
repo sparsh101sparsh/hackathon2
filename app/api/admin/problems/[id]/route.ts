@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+
+export interface TestCaseInput {
+  input: string;
+  expectedOutput: string;
+  explanation?: string;
+}
+
+export interface CodeTemplateInput {
+  language: string;
+  code: string;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -27,10 +39,11 @@ export async function GET(
       topicTags: safeParseJsonArray(problem.topicTags),
       companyTags: safeParseJsonArray(problem.companyTags),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin problem detail:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch problem detail' },
+      { error: message || 'Failed to fetch problem detail' },
       { status: 500 }
     );
   }
@@ -67,7 +80,7 @@ export async function PUT(
       codeTemplates,
     } = body;
 
-    const updateData: any = {};
+    const updateData: Prisma.ProblemUpdateInput = {};
     if (title !== undefined) updateData.title = title;
     if (slug !== undefined) updateData.slug = slug;
     if (statement !== undefined) updateData.statement = statement;
@@ -106,14 +119,14 @@ export async function PUT(
       await prisma.testCase.deleteMany({ where: { problemId: id } });
 
       const allTestCases = [
-        ...(sampleTestCases || []).map((tc: any) => ({
+        ...(sampleTestCases || []).map((tc: TestCaseInput) => ({
           problemId: id,
           input: tc.input || '',
           expectedOutput: tc.expectedOutput || '',
           isSample: true,
           explanation: tc.explanation || null,
         })),
-        ...(hiddenTestCases || []).map((tc: any) => ({
+        ...(hiddenTestCases || []).map((tc: TestCaseInput) => ({
           problemId: id,
           input: tc.input || '',
           expectedOutput: tc.expectedOutput || '',
@@ -133,7 +146,7 @@ export async function PUT(
     if (codeTemplates !== undefined) {
       await prisma.codeTemplate.deleteMany({ where: { problemId: id } });
 
-      const templatesData = (codeTemplates || []).map((t: any) => ({
+      const templatesData = (codeTemplates || []).map((t: CodeTemplateInput) => ({
         problemId: id,
         language: t.language.toLowerCase(),
         code: t.code,
@@ -159,10 +172,11 @@ export async function PUT(
       topicTags: safeParseJsonArray(updatedProblem?.topicTags || '[]'),
       companyTags: safeParseJsonArray(updatedProblem?.companyTags || '[]'),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error updating problem:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to update problem' },
+      { error: message || 'Failed to update problem' },
       { status: 500 }
     );
   }
@@ -188,10 +202,11 @@ export async function DELETE(
       success: true,
       message: 'Problem deleted successfully',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error deleting problem:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to delete problem' },
+      { error: message || 'Failed to delete problem' },
       { status: 500 }
     );
   }
@@ -201,7 +216,8 @@ function safeParseJsonArray(str: string): string[] {
   try {
     const parsed = JSON.parse(str);
     return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     return [];
   }
 }

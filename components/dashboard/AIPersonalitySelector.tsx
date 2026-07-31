@@ -145,7 +145,7 @@ export function AIPersonalitySelector() {
               <div className="flex items-center gap-2 bg-violet-950/40 border border-violet-800/30 rounded-lg px-3 py-2 mb-3">
                 <Sparkles className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
                 <p className="text-[11px] text-violet-300">
-                  Your AI tutor, hints, code reviews, mock interviews, and recommendations will all speak in this personality's unique voice.
+                  Your AI tutor, hints, code reviews, mock interviews, and recommendations will all speak in this personality&apos;s unique voice.
                 </p>
               </div>
 

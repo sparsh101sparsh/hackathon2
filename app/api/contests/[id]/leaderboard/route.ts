@@ -44,10 +44,11 @@ export async function GET(
     }));
 
     return NextResponse.json({ leaderboard });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching contest leaderboard:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch contest leaderboard' },
+      { error: message || 'Failed to fetch contest leaderboard' },
       { status: 500 }
     );
   }

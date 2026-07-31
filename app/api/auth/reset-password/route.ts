@@ -82,10 +82,11 @@ export async function POST(req: NextRequest) {
     });
 
     return setSessionCookie(response, token);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/auth/reset-password:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to reset password' },
+      { error: message || 'Failed to reset password' },
       { status: 500 }
     );
   }

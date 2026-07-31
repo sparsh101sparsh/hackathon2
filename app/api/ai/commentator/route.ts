@@ -46,7 +46,7 @@ function generateNativeFallback(
   roomCode: string,
   participantCount: number,
   linesOfCode: number = 0,
-  executionResult?: any
+  executionResult?: { verdict?: string; stdout?: string; stderr?: string; failedTestCase?: string }
 ): { text: string; hypeLevel: 'high' | 'medium' | 'low' } {
   const norm = (eventType || 'TICK').toUpperCase();
 
@@ -219,8 +219,9 @@ export async function POST(req: NextRequest) {
             hypeLevel = 'medium';
           }
         }
-      } catch (aiErr) {
-        console.warn('[Commentator API] FreeModel call failed, utilizing native fallback:', aiErr);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.warn('[Commentator API] FreeModel call failed, utilizing native fallback:', error);
       }
     }
 
@@ -231,7 +232,8 @@ export async function POST(req: NextRequest) {
       speaker: 'Shoutcaster',
       success: true,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in AI Commentator route:', error);
     return NextResponse.json(
       {

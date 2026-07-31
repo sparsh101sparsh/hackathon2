@@ -38,7 +38,8 @@ Answer directly, matching your configured personality. Keep it to 2-3 short para
     });
 
     return NextResponse.json({ reply: aiResponse });
-  } catch (error) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Visualizer AI Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

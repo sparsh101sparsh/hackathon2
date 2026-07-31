@@ -37,9 +37,20 @@ export const OtpInput: React.FC<OtpInputProps> = ({
       return;
     }
 
-    const lastDigit = val[val.length - 1];
+    if (val.length > 1) {
+      const newCode = (digits.slice(0, index).join('') + val).slice(0, 6);
+      onChange(newCode);
+      if (newCode.length === 6 && onComplete) {
+        onComplete(newCode);
+      } else {
+        const focusIndex = Math.min(index + val.length, 5);
+        inputsRef.current[focusIndex]?.focus();
+      }
+      return;
+    }
+
     const newDigits = [...digits];
-    newDigits[index] = lastDigit;
+    newDigits[index] = val;
     const newCode = newDigits.join('');
     onChange(newCode);
 

@@ -125,10 +125,11 @@ Active Streak: ${streak} days`;
     });
 
     return NextResponse.json(report);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/dashboard/weekly-report:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate weekly report' },
+      { error: message || 'Failed to generate weekly report' },
       { status: 500 }
     );
   }

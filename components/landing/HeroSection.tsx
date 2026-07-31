@@ -95,7 +95,7 @@ export const HeroSection: React.FC = () => {
       >
         <Link
           href="/problems"
-          className="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 text-slate-950 font-bold text-sm sm:text-base shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <span>Explore Problems</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -103,7 +103,7 @@ export const HeroSection: React.FC = () => {
 
         <Link
           href="/mock-interview"
-          className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 text-slate-100 border border-slate-700/80 font-semibold text-sm sm:text-base backdrop-blur-xl shadow-lg hover:border-cyan-500/40 transition-all duration-200"
+          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all backdrop-blur-xl hover:border-cyan-500/40"
         >
           <Bot className="w-5 h-5 text-cyan-400" />
           <span>Try AI Mock Interview</span>
@@ -117,12 +117,12 @@ export const HeroSection: React.FC = () => {
         transition={{ duration: 0.7, delay: 0.4 }}
         className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl"
       >
-        {stats.map((item, idx) => (
+        {stats.map((item) => (
           <motion.div
             key={item.label}
             whileHover={{ y: -4, scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className={`p-5 rounded-2xl bg-gradient-to-b ${item.color} bg-slate-900/70 border backdrop-blur-xl text-left flex flex-col justify-between shadow-xl`}
+            className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 text-left flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="p-2 rounded-xl bg-slate-950/80 border border-slate-800">{item.icon}</span>

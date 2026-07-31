@@ -15,6 +15,7 @@ function getBaseUrl(req: NextRequest): string {
 }
 
 function getCallbackUrl(req: NextRequest): string {
+  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
   return `${getBaseUrl(req)}/api/auth/google/callback`;
 }
 
@@ -133,7 +134,8 @@ export async function GET(req: NextRequest) {
     const response = NextResponse.redirect(`${baseUrl}/dashboard`);
     response.cookies.delete('codeforge_google_state');
     return setSessionCookie(response, token);
-  } catch (error) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Google OAuth callback failed:', error);
     return failure('google_login_failed');
   }

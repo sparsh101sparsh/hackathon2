@@ -35,7 +35,7 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* 1. Rating & Tier Badge Card */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden backdrop-blur-sm">
+      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Contest Rating
@@ -62,7 +62,7 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
       </div>
 
       {/* 2. Total Solved Progress Card */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden backdrop-blur-sm">
+      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Problems Solved
@@ -107,7 +107,7 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
       </div>
 
       {/* 3. Difficulty Breakdown Card */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden backdrop-blur-sm">
+      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           Difficulty Breakdown
         </span>
@@ -132,7 +132,7 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
       </div>
 
       {/* 4. Accuracy & Efficiency Card */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg relative overflow-hidden backdrop-blur-sm">
+      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Accuracy & Speed

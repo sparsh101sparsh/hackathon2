@@ -13,7 +13,6 @@ interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   sendCode: (email: string, purpose?: 'SIGNUP' | 'LOGIN' | 'RESET_PASSWORD', name?: string, password?: string) => Promise<{ success: boolean; error?: string; message?: string; devCode?: string }>;
   verifyCode: (email: string, code: string, purpose?: 'SIGNUP' | 'LOGIN' | 'RESET_PASSWORD', name?: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
@@ -63,29 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(data.user);
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
-    }
-  };
-
-  const signup = async (name: string, email: string, password: string) => {
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        return { success: false, error: data.error || 'Failed to create account' };
-      }
-
-      setUser(data.user);
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Network error';
+      return { success: false, error: message };
     }
   };
 
@@ -108,8 +87,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       return { success: true, message: data.message, devCode: data.devCode };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Network error';
+      return { success: false, error: message };
     }
   };
 
@@ -135,8 +115,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(data.user);
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Network error';
+      return { success: false, error: message };
     }
   };
 
@@ -156,8 +137,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(data.user);
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Network error';
+      return { success: false, error: message };
     }
   };
 
@@ -174,7 +156,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         login,
-        signup,
         sendCode,
         verifyCode,
         resetPassword,

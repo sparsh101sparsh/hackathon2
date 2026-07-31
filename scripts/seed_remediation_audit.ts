@@ -84,16 +84,43 @@ async function audit() {
   const dbMap = new Map(dbProblems.map(p => [p.slug, p]));
   const corpusMap = new Map<string, CorpusEntry>();
 
-  const emptyCodeFenceErrors: any[] = [];
-  const unboldedExplanationErrors: any[] = [];
-  const boilerplateErrors: any[] = [];
-  const dbSyncErrors: any[] = [];
+interface CodeFenceError {
+  source: string;
+  slug: string;
+  fieldName: string;
+  matches: RegExpMatchArray;
+}
+
+interface UnboldedExplanationError {
+  source: string;
+  slug: string;
+  fieldName: string;
+  matches: RegExpMatchArray;
+}
+
+interface BoilerplateError {
+  source: string;
+  slug: string;
+  fieldName: string;
+  pattern: string;
+}
+
+interface DbSyncError {
+  type: string;
+  slug: string;
+  [key: string]: unknown;
+}
+
+  const emptyCodeFenceErrors: CodeFenceError[] = [];
+  const unboldedExplanationErrors: UnboldedExplanationError[] = [];
+  const boilerplateErrors: BoilerplateError[] = [];
+  const dbSyncErrors: DbSyncError[] = [];
 
   for (let i = 0; i < rawCorpusLines.length; i++) {
     try {
       const entry: CorpusEntry = JSON.parse(rawCorpusLines[i]);
       corpusMap.set(entry.metadata.slug, entry);
-    } catch (e: any) {}
+    } catch {}
   }
 
   for (const [slug, q] of leetcodeMap.entries()) {
@@ -214,7 +241,7 @@ async function audit() {
   await prisma.$disconnect();
 }
 
-audit().catch(err => {
+audit().catch((err: unknown) => {
   console.error(err);
   process.exit(1);
 });

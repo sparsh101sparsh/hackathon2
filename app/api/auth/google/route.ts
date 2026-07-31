@@ -13,6 +13,7 @@ function getBaseUrl(req: NextRequest): string {
 }
 
 function getCallbackUrl(req: NextRequest): string {
+  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
   return `${getBaseUrl(req)}/api/auth/google/callback`;
 }
 

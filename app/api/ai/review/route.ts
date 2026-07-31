@@ -103,10 +103,11 @@ ${userCode}
     });
 
     return NextResponse.json(review);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/review:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate code review' },
+      { error: message || 'Failed to generate code review' },
       { status: 500 }
     );
   }

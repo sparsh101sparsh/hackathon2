@@ -74,8 +74,8 @@ export default function EditProblemPage() {
         setMemoryLimit(data.memoryLimit || 256);
 
         if (Array.isArray(data.testCases)) {
-          const samples = data.testCases.filter((tc: any) => tc.isSample);
-          const hiddens = data.testCases.filter((tc: any) => !tc.isSample);
+          const samples = data.testCases.filter((tc: TestCaseInput) => tc.isSample);
+          const hiddens = data.testCases.filter((tc: TestCaseInput) => !tc.isSample);
           setSampleTestCases(samples);
           setHiddenTestCases(hiddens);
         }
@@ -87,8 +87,8 @@ export default function EditProblemPage() {
         const errData = await res.json();
         setError(errData.error || 'Failed to load problem');
       }
-    } catch (err: any) {
-      setError(err.message || 'Error loading problem detail');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error loading problem detail');
     } finally {
       setIsLoadingProblem(false);
     }
@@ -156,8 +156,8 @@ export default function EditProblemPage() {
       }
 
       router.push('/admin');
-    } catch (err: any) {
-      setError(err.message || 'Error updating problem');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error updating problem');
       setIsSubmitting(false);
     }
   };
@@ -234,7 +234,7 @@ export default function EditProblemPage() {
               <label className="text-xs font-bold text-slate-300">Difficulty</label>
               <select
                 value={difficulty}
-                onChange={(e: any) => setDifficulty(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}
                 className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
               >
                 <option value="EASY">EASY</option>

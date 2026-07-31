@@ -36,7 +36,8 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ user });
-  } catch (error) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     return NextResponse.json({ user: null });
   }
 }

@@ -64,13 +64,13 @@ export default function MockInterviewPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (timerActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => { if (interval !== null) clearInterval(interval); };
   }, [timerActive, timeLeft]);
 
   useEffect(() => {

@@ -61,7 +61,8 @@ export async function GET(
         let tags: string[] = [];
         try {
           tags = JSON.parse(cp.problem.topicTags || '[]');
-        } catch (e) {
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'An unexpected error occurred';
           tags = ['Algorithms'];
         }
 
@@ -83,7 +84,8 @@ export async function GET(
         let tags: string[] = [];
         try {
           tags = JSON.parse(p.topicTags || '[]');
-        } catch (e) {
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'An unexpected error occurred';
           tags = ['Data Structures'];
         }
         return {
@@ -108,7 +110,8 @@ export async function GET(
         let tags: string[] = [];
         try {
           tags = JSON.parse(p.topicTags || '[]');
-        } catch (e) {
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'An unexpected error occurred';
           tags = ['Algorithms'];
         }
         return {
@@ -135,10 +138,11 @@ export async function GET(
       },
       problems: problemList,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/company/[slug]:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch company detail' },
+      { error: message || 'Failed to fetch company detail' },
       { status: 500 }
     );
   }

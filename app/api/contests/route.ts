@@ -94,10 +94,11 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ contests });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/contests:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch contests' },
+      { error: message || 'Failed to fetch contests' },
       { status: 500 }
     );
   }

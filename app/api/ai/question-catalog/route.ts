@@ -11,10 +11,11 @@ export async function GET() {
       count: questions.length,
       questions,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error reading AI question catalog:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to read AI question catalog' },
+      { error: message || 'Failed to read AI question catalog' },
       { status: 500 }
     );
   }

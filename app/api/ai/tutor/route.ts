@@ -85,10 +85,11 @@ ${userCode || '(Empty)'}
     });
 
     return NextResponse.json({ reply });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/tutor:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to get response from AI Tutor' },
+      { error: message || 'Failed to get response from AI Tutor' },
       { status: 500 }
     );
   }

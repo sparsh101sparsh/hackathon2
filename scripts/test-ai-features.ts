@@ -20,14 +20,15 @@ async function runVerificationTests() {
     console.log('  ✅ Test 1 PASSED\n');
     passed++;
   } catch (err: any) {
-    console.error('  ❌ Test 1 FAILED:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('  ❌ Test 1 FAILED:', message);
     failed++;
   }
 
   // Test 2: AI Code Review (gpt-5.6-sol)
   try {
     console.log('Test 2: AI Code Review Engine (gpt-5.6-sol)...');
-    const review = await callFreeModelJSON({
+    const review = await callFreeModelJSON<Record<string, any>>({
       model: MODELS.COMPLEX,
       systemPrompt: 'You are an AI Code Auditor. Respond strictly in JSON.',
       userPrompt: 'Review Two Sum Python code: def twoSum(nums, target): return []',
@@ -57,14 +58,15 @@ async function runVerificationTests() {
       throw new Error('Invalid Code Review JSON structure');
     }
   } catch (err: any) {
-    console.error('  ❌ Test 2 FAILED:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('  ❌ Test 2 FAILED:', message);
     failed++;
   }
 
   // Test 3: Progressive 3-Level Hints (gpt-5.4-mini)
   try {
     console.log('Test 3: Progressive 3-Level Hints Engine (gpt-5.4-mini)...');
-    const hint = await callFreeModelJSON({
+    const hint = await callFreeModelJSON<Record<string, any>>({
       model: MODELS.FAST,
       systemPrompt: 'Socratic DSA hint. Output JSON { "hintLevel": 1, "title": "Intuition", "hint": "Text" }',
       userPrompt: 'Hint Level 1 for Two Sum',
@@ -83,7 +85,8 @@ async function runVerificationTests() {
       throw new Error('Invalid Hint JSON structure');
     }
   } catch (err: any) {
-    console.error('  ❌ Test 3 FAILED:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('  ❌ Test 3 FAILED:', message);
     failed++;
   }
 
@@ -107,14 +110,15 @@ async function runVerificationTests() {
       throw new Error('Invalid Tutor Reply');
     }
   } catch (err: any) {
-    console.error('  ❌ Test 4 FAILED:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('  ❌ Test 4 FAILED:', message);
     failed++;
   }
 
   // Test 5: AI Mock Interview (Start, Message, Evaluate)
   try {
     console.log('Test 5: AI Mock Interview Suite (gpt-5.6-sol)...');
-    const evalResult = await callFreeModelJSON({
+    const evalResult = await callFreeModelJSON<Record<string, any>>({
       model: MODELS.COMPLEX,
       systemPrompt: 'Evaluate candidate interview transcript. Output JSON.',
       userPrompt: 'Candidate answered Two Sum with Hash Map.',
@@ -139,14 +143,15 @@ async function runVerificationTests() {
       throw new Error('Invalid Mock Interview evaluation structure');
     }
   } catch (err: any) {
-    console.error('  ❌ Test 5 FAILED:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('  ❌ Test 5 FAILED:', message);
     failed++;
   }
 
   // Test 6: System Design Evaluator (gpt-5.6-sol)
   try {
     console.log('Test 6: System Design Architecture Evaluator (gpt-5.6-sol)...');
-    const sysEval = await callFreeModelJSON({
+    const sysEval = await callFreeModelJSON<Record<string, any>>({
       model: MODELS.COMPLEX,
       systemPrompt: 'System design evaluation chair. Output JSON.',
       userPrompt: 'Rate Limiter design with Redis and Token Bucket.',
@@ -168,7 +173,8 @@ async function runVerificationTests() {
       throw new Error('Invalid System Design evaluation structure');
     }
   } catch (err: any) {
-    console.error('  ❌ Test 6 FAILED:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('  ❌ Test 6 FAILED:', message);
     failed++;
   }
 

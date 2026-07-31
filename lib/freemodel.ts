@@ -19,7 +19,7 @@ export interface FreeModelOptions {
   temperature?: number;
   maxTokens?: number;
   fallbackText?: string;
-  fallbackJson?: any;
+  fallbackJson?: unknown;
 }
 
 /**
@@ -88,7 +88,7 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
       return fallbackString;
     }
     return content;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.warn('[FreeModel Client Notice]: Network/API connection unavailable, utilizing fallback handling.');
     if (fallbackString !== undefined) {
       return fallbackString;
@@ -100,7 +100,7 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
 /**
  * Call FreeModel API returning parsed JSON object.
  */
-export async function callFreeModelJSON<T = any>(options: FreeModelOptions): Promise<T> {
+export async function callFreeModelJSON<T = unknown>(options: FreeModelOptions): Promise<T> {
   const text = await callFreeModelText(options);
 
   try {
@@ -109,12 +109,13 @@ export async function callFreeModelJSON<T = any>(options: FreeModelOptions): Pro
       clean = clean.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     }
     return JSON.parse(clean) as T;
-  } catch (parseError: any) {
+  } catch (parseError: unknown) {
+    const message = parseError instanceof Error ? parseError.message : String(parseError);
     console.error('[FreeModel JSON Parse Error]:', parseError, 'Raw response text:', text);
     if (options.fallbackJson !== undefined) {
       return options.fallbackJson as T;
     }
-    throw new Error(`Failed to parse FreeModel JSON response: ${parseError.message}`);
+    throw new Error(`Failed to parse FreeModel JSON response: ${message}`);
   }
 }
 

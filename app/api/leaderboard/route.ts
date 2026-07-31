@@ -135,10 +135,11 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ leaderboard });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching leaderboard:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch leaderboard' },
+      { error: message || 'Failed to fetch leaderboard' },
       { status: 500 }
     );
   }

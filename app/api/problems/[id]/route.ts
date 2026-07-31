@@ -77,10 +77,11 @@ export async function GET(
     };
 
     return NextResponse.json(responseData);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching problem details:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch problem' },
+      { error: message || 'Failed to fetch problem' },
       { status: 500 }
     );
   }

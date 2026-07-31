@@ -55,8 +55,8 @@ export const JoinRoomModal: React.FC<JoinRoomModalProps> = ({ isOpen, onClose })
 
       onClose();
       router.push(`/contests/room/${data.roomCode}`);
-    } catch (err: any) {
-      setError(err.message || 'Error joining room');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error joining room');
     } finally {
       setLoading(false);
     }

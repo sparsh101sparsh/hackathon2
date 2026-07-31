@@ -64,8 +64,8 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
 
       onClose();
       router.push(`/contests/room/${data.roomCode}`);
-    } catch (err: any) {
-      setError(err.message || 'Error launching on-demand contest');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error launching on-demand contest');
     } finally {
       setLoading(false);
     }

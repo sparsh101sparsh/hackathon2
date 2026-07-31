@@ -18,10 +18,11 @@ export async function GET(request: NextRequest) {
     ];
 
     return NextResponse.json(defaultUsers);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin users list:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch users' },
+      { error: message || 'Failed to fetch users' },
       { status: 500 }
     );
   }

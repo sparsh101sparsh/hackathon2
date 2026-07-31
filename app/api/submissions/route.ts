@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { executeCode } from '@/lib/piston';
 import { ExecutionVerdict, TestCaseResult } from '@/lib/types';
 import { getSessionFromRequest } from '@/lib/auth';
@@ -200,7 +201,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (existingProgress) {
-          const updateData: any = { lastActiveDate: new Date() };
+          const updateData: Prisma.UserProgressUpdateInput = { lastActiveDate: new Date() };
           if (difficulty === 'EASY') updateData.solvedEasy = existingProgress.solvedEasy + 1;
           if (difficulty === 'MEDIUM') updateData.solvedMedium = existingProgress.solvedMedium + 1;
           if (difficulty === 'HARD') updateData.solvedHard = existingProgress.solvedHard + 1;
@@ -221,8 +222,9 @@ export async function POST(request: NextRequest) {
             },
           });
         }
-      } catch (progressError) {
-        console.error('Error updating user progress:', progressError);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error updating user progress:', error);
       }
 
       // Keep successful problems in the deck while preserving any learned failure history.
@@ -252,8 +254,9 @@ export async function POST(request: NextRequest) {
             keyTakeaway: `Mastered ${problem.title}. Review the learned edge cases and optimal approach.`,
           },
         });
-      } catch (revError) {
-        console.error('Error creating revision flashcard:', revError);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error creating revision flashcard:', error);
       }
     }
 
@@ -311,8 +314,9 @@ export async function POST(request: NextRequest) {
           failureType: revision.failureType,
           pattern: revision.pattern,
         };
-      } catch (revError) {
-        console.error('Error learning from failed submission:', revError);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+        console.error('Error learning from failed submission:', error);
       }
     }
 
@@ -328,10 +332,11 @@ export async function POST(request: NextRequest) {
       testResults,
       createdAt: submission.createdAt,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error processing submission:', error);
     return NextResponse.json(
-      { error: error.message || 'Submission processing error' },
+      { error: message || 'Submission processing error' },
       { status: 500 }
     );
   }
@@ -345,7 +350,7 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '20', 10)));
 
-    const whereClause: any = {};
+    const whereClause: Prisma.SubmissionWhereInput = {};
     if (problemId) whereClause.problemId = problemId;
     whereClause.userId = session?.userId || 'guest';
 
@@ -373,10 +378,11 @@ export async function GET(request: NextRequest) {
       limit,
       totalPages: Math.ceil(total / limit) || 1,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching submissions:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch submissions' },
+      { error: message || 'Failed to fetch submissions' },
       { status: 500 }
     );
   }

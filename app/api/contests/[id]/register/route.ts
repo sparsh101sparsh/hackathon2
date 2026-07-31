@@ -60,10 +60,11 @@ export async function POST(
       participant,
       registered: true,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/contests/[id]/register:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to register for contest' },
+      { error: message || 'Failed to register for contest' },
       { status: 500 }
     );
   }

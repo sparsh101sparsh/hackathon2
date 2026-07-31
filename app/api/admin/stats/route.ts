@@ -18,10 +18,11 @@ export async function GET(request: NextRequest) {
       totalSubmissions,
       totalContests,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin stats:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch admin stats' },
+      { error: message || 'Failed to fetch admin stats' },
       { status: 500 }
     );
   }

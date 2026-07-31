@@ -16,6 +16,16 @@ export const JUDGE0_LANGUAGE_MAP: Record<string, number> = {
 
 const JUDGE0_PRIMARY_ENDPOINT = 'https://ce.judge0.com/submissions?wait=true';
 
+export interface Judge0Response {
+  status?: { id?: number; description?: string };
+  stdout?: string | null;
+  stderr?: string | null;
+  compile_output?: string | null;
+  message?: string | null;
+  time?: string | number | null;
+  memory?: number | null;
+}
+
 /**
  * Robust Code Execution Engine using Judge0 CE Cloud Engine
  * Executes Python, C++, JavaScript, Java, and Go in isolated sandboxes with zero auth/keys required.
@@ -47,11 +57,12 @@ export async function executeCode(
     });
 
     if (response.ok) {
-      const data = await response.json();
+      const data = (await response.json()) as Judge0Response;
       return parseJudge0Response(data);
     }
-  } catch (err: any) {
-    console.error('[Judge Engine] Primary endpoint error:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[Judge Engine] Primary endpoint error:', message);
   }
 
   // Graceful fallback response if execution service is temporarily down
@@ -175,11 +186,11 @@ if (typeof Solution !== 'undefined' || typeof solve !== 'undefined' || typeof ma
 }
 `;
 
-function parseJudge0Response(data: any): PistonResult {
+function parseJudge0Response(data: Judge0Response): PistonResult {
   const statusId = data.status?.id || 3;
   const stdout = (data.stdout || '').trim();
   const stderr = (data.stderr || data.compile_output || data.message || '').trim();
-  const executionTime = data.time ? parseFloat(data.time) : 0.01;
+  const executionTime = data.time ? parseFloat(String(data.time)) : 0.01;
   const memory = data.memory ? Math.round(data.memory / 1024 * 10) / 10 : 4.5;
 
   let verdict: ExecutionVerdict = 'Accepted';

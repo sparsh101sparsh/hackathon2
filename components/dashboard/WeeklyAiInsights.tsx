@@ -24,8 +24,8 @@ export function WeeklyAiInsights() {
       if (!res.ok) throw new Error('Failed to load AI Insights');
       const data = await res.json();
       setReport(data);
-    } catch (err: any) {
-      setError(err.message || 'Error fetching insights');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error fetching insights');
     } finally {
       setLoading(false);
     }
@@ -36,7 +36,7 @@ export function WeeklyAiInsights() {
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-indigo-950/40 via-slate-900/80 to-purple-950/40 border border-indigo-800/40 rounded-xl p-5 shadow-lg backdrop-blur-sm relative overflow-hidden">
+    <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
@@ -79,7 +79,7 @@ export function WeeklyAiInsights() {
         <div className="space-y-4 text-xs">
           {/* Executive Summary */}
           <div className="bg-indigo-950/30 border border-indigo-800/30 rounded-lg p-3 text-indigo-100 leading-relaxed font-medium">
-            "{report.summary}"
+            &quot;{report.summary}&quot;
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

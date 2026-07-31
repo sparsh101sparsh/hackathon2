@@ -162,10 +162,11 @@ export async function POST(request: NextRequest) {
       memory: result.memory,
       testResults: [],
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error executing code:', error);
     return NextResponse.json(
-      { error: error.message || 'Execution error' },
+      { error: message || 'Execution error' },
       { status: 500 }
     );
   }

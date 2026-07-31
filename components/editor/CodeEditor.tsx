@@ -31,7 +31,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onSubmit,
   readOnly = false,
 }) => {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;

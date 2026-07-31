@@ -149,10 +149,11 @@ export async function POST(req: NextRequest) {
 
       return setSessionCookie(response, token);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/auth/verify-code:', error);
     return NextResponse.json(
-      { error: error.message || 'Verification failed' },
+      { error: message || 'Verification failed' },
       { status: 500 }
     );
   }

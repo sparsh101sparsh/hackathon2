@@ -149,8 +149,8 @@ export default function NewProblemPage() {
       }
 
       router.push('/admin');
-    } catch (err: any) {
-      setError(err.message || 'Error submitting form');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error submitting form');
       setIsSubmitting(false);
     }
   };
@@ -220,7 +220,7 @@ export default function NewProblemPage() {
               <label className="text-xs font-bold text-slate-300">Difficulty</label>
               <select
                 value={difficulty}
-                onChange={(e: any) => setDifficulty(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}
                 className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
               >
                 <option value="EASY">EASY</option>

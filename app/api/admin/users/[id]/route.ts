@@ -29,10 +29,11 @@ export async function PATCH(
       },
       message: `User role updated to ${role.toUpperCase()}`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error updating user role:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to update user role' },
+      { error: message || 'Failed to update user role' },
       { status: 500 }
     );
   }

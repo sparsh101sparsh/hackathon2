@@ -18,6 +18,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 
 interface ProblemData {
   id: string;
@@ -66,8 +67,8 @@ export default function RevisionPage() {
       setCards(data.cards || []);
       setDueCards(data.dueCards || []);
       setStats(data.stats || { totalCards: 0, dueTodayCount: 0, masteredCount: 0, learnedMistakeCount: 0 });
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      console.error('Error fetching revision data:', err);
     } finally {
       setLoading(false);
     }
@@ -201,15 +202,7 @@ export default function RevisionPage() {
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 uppercase tracking-wider">
                       Pattern: {currentCard.pattern}
                     </span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
-                      currentCard.problem?.difficulty === 'EASY'
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                        : currentCard.problem?.difficulty === 'MEDIUM'
-                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                        : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                    }`}>
-                      {currentCard.problem?.difficulty}
-                    </span>
+                    <DifficultyBadge difficulty={currentCard.problem?.difficulty || 'EASY'} />
                   </div>
 
                   <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-purple-300 transition">

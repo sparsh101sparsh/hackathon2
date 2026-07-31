@@ -26,8 +26,8 @@ export default function DashboardPage() {
         if (!res.ok) throw new Error('Failed to fetch dashboard data');
         const stats = await res.json();
         setData(stats);
-      } catch (err: any) {
-        setError(err.message || 'Error loading dashboard');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Error loading dashboard');
       } finally {
         setLoading(false);
       }
@@ -93,14 +93,14 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/contests"
-            className="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-cyan-600/20 flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center gap-1.5"
           >
             <Trophy className="w-4 h-4" />
             <span>Enter Contests</span>
           </Link>
           <Link
             href="/company"
-            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold transition-all border border-slate-700 flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
           >
             <LayoutDashboard className="w-4 h-4" />
             <span>Company Prep</span>

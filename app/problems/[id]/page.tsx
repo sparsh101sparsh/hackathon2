@@ -20,6 +20,7 @@ import EditorWorkspace from '@/components/editor/EditorWorkspace';
 import ProgressiveHints from '@/components/ai/ProgressiveHints';
 import AIChatTutorDrawer from '@/components/ai/AIChatTutorDrawer';
 import { ProblemVisualizer } from '@/components/problems/ProblemVisualizer';
+import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 import { Problem, Submission } from '@/lib/types';
 
 export default function ProblemDetailPage() {
@@ -53,8 +54,8 @@ export default function ProblemDetailPage() {
         const errData = await res.json();
         setError(errData.error || 'Failed to load problem');
       }
-    } catch (err: any) {
-      setError(err.message || 'Error loading problem');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error loading problem');
     } finally {
       setIsLoading(false);
     }
@@ -123,28 +124,7 @@ export default function ProblemDetailPage() {
   }
 
   const getDifficultyBadge = (difficulty: string) => {
-    switch (difficulty.toUpperCase()) {
-      case 'EASY':
-        return (
-          <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
-            Easy
-          </span>
-        );
-      case 'MEDIUM':
-        return (
-          <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-amber-950/80 text-amber-400 border border-amber-800/60">
-            Medium
-          </span>
-        );
-      case 'HARD':
-        return (
-          <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-rose-950/80 text-rose-400 border border-rose-800/60">
-            Hard
-          </span>
-        );
-      default:
-        return null;
-    }
+    return <DifficultyBadge difficulty={difficulty} />;
   };
 
   return (
@@ -236,11 +216,11 @@ export default function ProblemDetailPage() {
               onClick={() => setActiveLeftTab('visualizer')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition ${
                 activeLeftTab === 'visualizer'
-                  ? 'bg-purple-900/60 text-purple-300 border border-purple-700/60 shadow-lg shadow-purple-950/40'
+                  ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-950/20'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               <span>Visualizer</span>
             </button>
           </div>

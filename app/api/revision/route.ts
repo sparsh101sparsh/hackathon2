@@ -45,7 +45,8 @@ export async function GET(req: NextRequest) {
         learnedMistakeCount: cards.filter((c) => c.failureCount > 0).length,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching revision cards:', error);
     return NextResponse.json({ error: 'Failed to fetch revision flashcards' }, { status: 500 });
   }
@@ -107,7 +108,8 @@ export async function POST(req: NextRequest) {
       card: updatedCard,
       nextDueDate,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error updating revision card:', error);
     return NextResponse.json({ error: 'Failed to update revision flashcard' }, { status: 500 });
   }

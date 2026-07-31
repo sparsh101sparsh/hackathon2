@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export interface TestCaseInput {
+  input: string;
+  expectedOutput: string;
+  explanation?: string;
+}
+
+export interface CodeTemplateInput {
+  language: string;
+  code: string;
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -23,10 +34,11 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json(formattedProblems);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin problems:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch admin problems' },
+      { error: message || 'Failed to fetch admin problems' },
       { status: 500 }
     );
   }
@@ -91,13 +103,13 @@ export async function POST(request: NextRequest) {
 
     // Combine sample and hidden test cases
     const allTestCases = [
-      ...sampleTestCases.map((tc: any) => ({
+      ...sampleTestCases.map((tc: TestCaseInput) => ({
         input: tc.input || '',
         expectedOutput: tc.expectedOutput || '',
         isSample: true,
         explanation: tc.explanation || null,
       })),
-      ...hiddenTestCases.map((tc: any) => ({
+      ...hiddenTestCases.map((tc: TestCaseInput) => ({
         input: tc.input || '',
         expectedOutput: tc.expectedOutput || '',
         isSample: false,
@@ -107,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     // Format code templates
     const templatesData = Array.isArray(codeTemplates)
-      ? codeTemplates.map((t: any) => ({
+      ? codeTemplates.map((t: CodeTemplateInput) => ({
           language: t.language.toLowerCase(),
           code: t.code,
         }))
@@ -149,10 +161,11 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error creating problem:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to create problem' },
+      { error: message || 'Failed to create problem' },
       { status: 500 }
     );
   }
@@ -162,7 +175,8 @@ function safeParseJsonArray(str: string): string[] {
   try {
     const parsed = JSON.parse(str);
     return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     return [];
   }
 }

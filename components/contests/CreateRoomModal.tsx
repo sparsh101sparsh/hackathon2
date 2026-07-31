@@ -57,8 +57,8 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
 
       onClose();
       router.push(`/contests/room/${data.roomCode}`);
-    } catch (err: any) {
-      setError(err.message || 'Error creating room');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error creating room');
     } finally {
       setLoading(false);
     }

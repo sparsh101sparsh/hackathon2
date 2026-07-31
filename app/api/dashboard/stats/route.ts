@@ -284,10 +284,11 @@ export async function GET(req: NextRequest) {
     };
 
     return NextResponse.json(responseData);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/dashboard/stats:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch dashboard stats' },
+      { error: message || 'Failed to fetch dashboard stats' },
       { status: 500 }
     );
   }

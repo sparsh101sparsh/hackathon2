@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     const finalHostName = payload.name;
 
     // Pick random problems based on difficulty
-    let problemWhere: any = {};
+    let problemWhere: Prisma.ProblemWhereInput = {};
     if (difficulty === 'EASY') problemWhere.difficulty = 'EASY';
     else if (difficulty === 'MEDIUM') problemWhere.difficulty = 'MEDIUM';
     else if (difficulty === 'HARD') problemWhere.difficulty = 'HARD';
@@ -100,8 +101,9 @@ export async function POST(req: NextRequest) {
       participantUserId: userId,
       room,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error creating custom battle room:', error);
-    return NextResponse.json({ error: error.message || 'Failed to create battle room' }, { status: 500 });
+    return NextResponse.json({ error: message || 'Failed to create battle room' }, { status: 500 });
   }
 }

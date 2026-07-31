@@ -74,10 +74,11 @@ ${architectureDoc}`;
     });
 
     return NextResponse.json(evalResult);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/system-design:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to evaluate system design architecture' },
+      { error: message || 'Failed to evaluate system design architecture' },
       { status: 500 }
     );
   }

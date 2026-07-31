@@ -127,7 +127,7 @@ Output MUST be a single raw JSON object matching schema:
 }`;
 
       const transcriptText = messages
-        .map((m: any) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
+        .map((m: { role: string; content: string }) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
         .join('\n\n');
 
       const userPrompt = `Interview Transcript:\n${transcriptText}\n\nFinal Candidate Code:\n\`\`\`\n${code}\n\`\`\``;
@@ -163,10 +163,11 @@ Output MUST be a single raw JSON object matching schema:
     }
 
     return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/mock-interview:', error);
     return NextResponse.json(
-      { error: error.message || 'Mock interview processing error' },
+      { error: message || 'Mock interview processing error' },
       { status: 500 }
     );
   }

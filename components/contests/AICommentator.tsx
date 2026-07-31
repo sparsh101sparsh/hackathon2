@@ -16,6 +16,15 @@ export interface ParticipantInfo {
   progress?: string;
 }
 
+export interface ExecutionResultInfo {
+  verdict?: string;
+  stdout?: string;
+  stderr?: string;
+  time?: number;
+  memory?: number;
+  [key: string]: unknown;
+}
+
 export interface AICommentatorProps {
   roomCode?: string;
   roomName?: string;
@@ -29,7 +38,7 @@ export interface AICommentatorProps {
   language?: string;
   codeSnippet?: string;
   linesOfCode?: number;
-  executionResult?: any;
+  executionResult?: ExecutionResultInfo;
   userName?: string;
   className?: string;
 }

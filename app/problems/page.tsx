@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Problem } from '@/lib/types';
 import { ProblemListSkeleton } from '@/components/ui/Skeletons';
+import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 
 const TOPIC_OPTIONS = [
   'All Topics',
@@ -54,7 +55,7 @@ export default function ProblemsPage() {
   const [visualizedOnly, setVisualizedOnly] = useState<boolean>(false);
 
   // Set of 75 visualizer problem IDs
-  const [visualizerMap, setVisualizerMap] = useState<{ [key: string]: any }>({});
+  const [visualizerMap, setVisualizerMap] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     fetch('/data/visualizers.json')
@@ -119,28 +120,7 @@ export default function ProblemsPage() {
   };
 
   const getDifficultyBadge = (difficulty: string) => {
-    switch (difficulty.toUpperCase()) {
-      case 'EASY':
-        return (
-          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/50">
-            Easy
-          </span>
-        );
-      case 'MEDIUM':
-        return (
-          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-950/60 text-amber-400 border border-amber-800/50">
-            Medium
-          </span>
-        );
-      case 'HARD':
-        return (
-          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-950/60 text-rose-400 border border-rose-800/50">
-            Hard
-          </span>
-        );
-      default:
-        return null;
-    }
+    return <DifficultyBadge difficulty={difficulty} />;
   };
 
   return (

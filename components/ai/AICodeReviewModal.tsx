@@ -72,8 +72,8 @@ export const AICodeReviewModal: React.FC<AICodeReviewModalProps> = ({
         const errData = await res.json();
         setError(errData.error || 'Failed to fetch AI Code Review');
       }
-    } catch (err: any) {
-      setError(err.message || 'Error connecting to AI Review Engine');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error connecting to AI Review Engine');
     } finally {
       setIsLoading(false);
     }
