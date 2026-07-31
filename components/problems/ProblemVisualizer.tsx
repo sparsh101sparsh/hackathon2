@@ -69,6 +69,80 @@ const patternNames: Record<string, string> = {
 
 const defaultValues = [3, 8, 12, 17, 21, 26, 30];
 
+function sampleValues(slug: string, fallback: number[]) {
+  const samples: Record<string, number[]> = {
+    'two-sum': [2, 7, 11, 15],
+    'move-zeroes': [0, 1, 0, 3, 12],
+    'split-array-largest-sum': [7, 2, 5, 10, 8],
+    'jump-game': [2, 3, 1, 1, 4],
+    'valid-palindrome': [1, 0, 1, 0, 1],
+    'climbing-stairs': [1, 1, 2, 3, 5, 8],
+    'decode-ways': [2, 2, 6],
+    'find-k-closest-elements': [1, 2, 3, 4, 5],
+    'valid-triangle-number': [2, 2, 3, 4],
+    'subarray-sum-equals-k': [1, 1, 1],
+    'permutation-in-string': [5, 9, 4, 2, 1, 0, 0, 0],
+    'word-break': [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    'binary-search': [-1, 0, 3, 5, 9, 12],
+    'container-with-most-water': [1, 8, 6, 2, 5, 4, 8, 3, 7],
+    'trapping-rain-water': [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],
+    'jump-game-ii': [2, 3, 1, 1, 4],
+    'sort-colors': [2, 0, 2, 1, 1, 0],
+    'house-robber': [2, 7, 9, 3, 1],
+    'coin-change': [1, 2, 5, 6, 11],
+    'merge-intervals': [1, 3, 2, 6, 8, 10],
+    'insert-interval': [1, 3, 2, 5, 6, 9],
+    'non-overlapping-intervals': [1, 2, 1, 3, 2, 3],
+    'gas-station': [1, 2, 3, 4, 5],
+    'task-scheduler': [3, 3, 2, 1, 1, 1],
+    'longest-increasing-subsequence': [10, 9, 2, 5, 3, 7, 18],
+    'merge-k-sorted-lists': [1, 1, 2, 3, 4, 4],
+    'group-anagrams': [3, 3, 3, 2, 2, 1],
+    'valid-anagram': [1, 3, 1, 7, 1, 13],
+  };
+  return samples[slug] || fallback;
+}
+
+function matrixShape(slug: string) {
+  if (slug === 'maximal-square' || slug === 'number-of-islands') return { rows: 4, cols: 5 };
+  if (slug === 'surrounded-regions' || slug === 'set-matrix-zeroes') return { rows: 4, cols: 4 };
+  if (slug === 'flood-fill' || slug === 'rotate-image' || slug === 'spiral-matrix' || slug === '01-matrix') return { rows: 3, cols: 3 };
+  if (slug === 'edit-distance') return { rows: 4, cols: 4 };
+  if (slug === 'unique-paths') return { rows: 3, cols: 4 };
+  return { rows: 4, cols: 4 };
+}
+
+function graphPayload(slug: string, progress: number) {
+  const graphs: Record<string, { nodes: string[]; edges: [number, number][] }> = {
+    'course-schedule': { nodes: ['0', '1'], edges: [[0, 1]] },
+    'course-schedule-ii': { nodes: ['0', '1', '2', '3'], edges: [[0, 1], [0, 2], [1, 3], [2, 3]] },
+    'redundant-connection': { nodes: ['1', '2', '3'], edges: [[0, 1], [0, 2], [1, 2]] },
+    'network-delay-time': { nodes: ['1', '2', '3', '4'], edges: [[0, 1], [1, 2], [1, 3]] },
+    'n-queens': { nodes: ['r0', 'r1', 'r2', 'r3'], edges: [[0, 1], [1, 2], [2, 3]] },
+    'word-ladder': { nodes: ['hit', 'hot', 'dot', 'dog', 'cog'], edges: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+  };
+  const graph = graphs[slug] || { nodes: ['A', 'B', 'C', 'D', 'E'], edges: [[0, 1], [0, 2], [1, 3], [2, 4]] };
+  const activeCount = Math.min(graph.nodes.length, Math.max(1, Math.ceil(progress * graph.nodes.length)));
+  return { ...graph, active: Array.from({ length: activeCount }, (_, index) => index) };
+}
+
+function stackPayload(slug: string, step: number) {
+  const stacks: Record<string, (string | number)[][]> = {
+    'valid-parentheses': [[], ['('], [], ['['], [], ['{'], [], []],
+    'longest-valid-parentheses': [[-1], [-1, 1], [-1], [-1, 3], [-1, 3, 4], [-1, 3], [-1], [-1]],
+    'daily-temperatures': [[], [0], [], [2], [2, 3], [2], [], []],
+    'min-stack': [[], [-2], [-2, 0], [-2, 0, -3], [-2, 0, -3], [-2, 0], [-2], [-2]],
+    'decode-string': [[], [3], [3, 'a'], [3, 'a', 2], [3, 'acc'], ['accaccacc'], ['accaccacc'], []],
+  };
+  const sequence = stacks[slug];
+  if (sequence) return { stack: sequence[Math.min(step, sequence.length - 1)] };
+
+  const tokens = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+  const progress = step / 7;
+  const depth = step === 0 || step === 7 ? 0 : Math.min(tokens.length, Math.max(1, Math.ceil(progress * tokens.length)));
+  return { stack: tokens.slice(0, depth) };
+}
+
 function parsePattern(topicTags: string | string[] | undefined) {
   if (Array.isArray(topicTags)) return topicTags[0]?.toLowerCase() || 'arrays-hashing';
   if (typeof topicTags === 'string') {
@@ -95,55 +169,57 @@ function frame(
 function scenarioData(type: VisualType, slug: string, base: number[], step: number, totalSteps = 8): Partial<LessonFrame> {
   let hash = 0;
   for (const char of slug) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  const values = sampleValues(slug, base);
   const maxIndex = Math.max(0, base.length - 1);
   const progress = totalSteps <= 1 ? 1 : step / (totalSteps - 1);
-  const cursor = Math.min(maxIndex, Math.round(progress * maxIndex));
-  const pairCursor = Math.min(maxIndex, Math.floor(progress * maxIndex));
+  const valueMaxIndex = Math.max(0, values.length - 1);
+  const cursor = Math.min(valueMaxIndex, Math.round(progress * valueMaxIndex));
+  const pairCursor = Math.min(valueMaxIndex, Math.floor(progress * valueMaxIndex));
   const active = Array.from(new Set([
     Math.max(0, pairCursor - 1),
     pairCursor,
-    Math.min(maxIndex, pairCursor + 1),
-  ])).filter((index) => index >= 0 && index <= maxIndex);
+    Math.min(valueMaxIndex, pairCursor + 1),
+  ])).filter((index) => index >= 0 && index <= valueMaxIndex);
 
   if (type === 'array') {
     const pointers: Record<string, number> | undefined = slug.includes('binary-search')
       ? {
           lo: step < 2 ? 0 : step < 4 ? 2 : step < 6 ? 3 : 4,
           mid: step < 2 ? 2 : step < 4 ? 3 : 4,
-          hi: step < 2 ? 5 : step < 4 ? 5 : step < 6 ? 4 : 4,
+          hi: step < 2 ? Math.min(5, valueMaxIndex) : step < 4 ? Math.min(5, valueMaxIndex) : step < 6 ? 4 : 4,
         }
       : slug.includes('palindrome') || slug.includes('container') || slug.includes('triangle') || slug.includes('two-sum')
-        ? { L: Math.min(3, Math.floor(progress * 3)), R: Math.max(3, maxIndex - Math.floor(progress * 3)) }
+        ? { L: Math.min(3, Math.floor(progress * 3)), R: Math.max(3, valueMaxIndex - Math.floor(progress * 3)) }
         : slug.includes('window') || slug.includes('permutation') || slug.includes('subarray')
           ? { L: Math.max(0, cursor - 2), R: cursor }
         : undefined;
     const pointerActive = pointers ? Object.values(pointers) : active;
-    return { values: base, active: Array.from(new Set(pointerActive)).filter((index) => index >= 0 && index <= maxIndex), pointers };
+    return { values, active: Array.from(new Set(pointerActive)).filter((index) => index >= 0 && index <= valueMaxIndex), pointers };
   }
 
   if (type === 'matrix') {
-    const matrix = Array.from({ length: 4 }, (_, rowIndex) => Array.from({ length: 4 }, (_, colIndex) => {
+    const { rows, cols } = matrixShape(slug);
+    const cellCount = rows * cols;
+    const center = Math.min(cellCount - 1, Math.round(progress * (cellCount - 1)));
+    const threshold = Math.max(center, Math.floor(progress * (cellCount - 1)));
+    const matrix = Array.from({ length: rows }, (_, rowIndex) => Array.from({ length: cols }, (_, colIndex) => {
       const value = (hash + rowIndex * 7 + colIndex * 3) % 2;
-      const flat = rowIndex * 4 + colIndex;
-      const threshold = Math.floor(progress * 15);
+      const flat = rowIndex * cols + colIndex;
       return flat <= threshold ? 1 : value;
     }));
-    const center = Math.min(15, Math.round(progress * 15));
-    const rowIndex = Math.floor(center / 4);
-    const colIndex = center % 4;
+    const rowIndex = Math.floor(center / cols);
+    const colIndex = center % cols;
     const matrixActive = [
       center,
-      rowIndex > 0 ? center - 4 : center,
+      rowIndex > 0 ? center - cols : center,
       colIndex > 0 ? center - 1 : center,
-      rowIndex > 0 && colIndex > 0 ? center - 5 : center,
+      rowIndex > 0 && colIndex > 0 ? center - cols - 1 : center,
     ];
-    return { matrix, active: Array.from(new Set(matrixActive)).filter((index) => index >= 0 && index < 16) };
+    return { matrix, active: Array.from(new Set(matrixActive)).filter((index) => index >= 0 && index < cellCount) };
   }
 
   if (type === 'stack') {
-    const tokens = slug.includes('decode') ? ['3', '[', 'a', '2', '[', 'c', ']'] : ['-1', '(', '[', '{', '}', ']', ')'];
-    const depth = step === totalSteps - 1 ? 0 : Math.min(tokens.length, Math.max(1, Math.ceil(progress * tokens.length)));
-    return { stack: tokens.slice(0, depth) };
+    return stackPayload(slug, step);
   }
 
   if (type === 'nodes') {
@@ -154,12 +230,11 @@ function scenarioData(type: VisualType, slug: string, base: number[], step: numb
   }
 
   if (type === 'graph') {
-    const graphActiveCount = Math.min(5, Math.max(1, Math.ceil(progress * 5)));
-    return { nodes: ['A', 'B', 'C', 'D', 'E'], edges: [[0, 1], [0, 2], [1, 3], [2, 4]], active: Array.from({ length: graphActiveCount }, (_, index) => index) };
+    return graphPayload(slug, progress);
   }
 
   if (type === 'bars') {
-    const bars = base.slice(0, 7).map((value, index) => Math.max(2, ((value + index * 3) % 10) + 1));
+    const bars = values.slice(0, 12).map((value) => Math.max(1, Math.abs(value)));
     return { bars, active };
   }
 
@@ -212,7 +287,7 @@ function visualState(type: VisualType, payload: Partial<LessonFrame>, step: numb
     return [['active', (payload.active || []).map((index) => payload.nodes?.[index]).filter(Boolean).join(', ') || 'none'], ['visited', `${payload.active?.length || 0}`]];
   }
   if (type === 'bars' && payload.bars) {
-    return [['active', (payload.active || []).map((index) => `${index}:${payload.bars?.[index]}`).join(', ') || 'none'], ['best', String(Math.max(...payload.bars))]];
+    return [['active', (payload.active || []).map((index) => `${index}:${payload.bars?.[index]}`).join(', ') || 'none'], ['peak', String(Math.max(...payload.bars))]];
   }
   if (type === 'bits') return [['bits', payload.bits || ''], ['shift', String(step)]];
   return [['active', 'visible'], ['cursor', String(step)]];
