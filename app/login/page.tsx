@@ -58,6 +58,8 @@ function LoginPageInner() {
       const errorMessages: Record<string, string> = {
         google_not_configured: 'Google login is not configured.',
         google_invalid_state: 'Google sign-in session expired. Please try again.',
+        google_state_missing: 'Google sign-in session expired. Please try again.',
+        google_state_invalid: 'Google sign-in security validation failed. Please try again.',
         google_token_exchange_failed: 'Google authentication failed. Please try again.',
         google_missing_access_token: 'Could not retrieve Google access token. Try again.',
         google_profile_failed: 'Could not fetch Google profile. Try again.',
@@ -241,7 +243,7 @@ function LoginPageInner() {
             <p className="text-xs sm:text-sm text-slate-400">
               {authMode === 'forgot'
                 ? 'Reset your password via 6-digit email OTP verification'
-                : 'Sign in with your email to continue practicing DSA & AI coaching'}
+                : 'Sign in with your email to continue practicing DSA & guided coaching'}
             </p>
           </div>
 
@@ -332,6 +334,9 @@ function LoginPageInner() {
           {/* Notifications */}
           {error && (
             <motion.div
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-3 text-rose-400 text-xs font-medium"
@@ -343,6 +348,9 @@ function LoginPageInner() {
 
           {successMessage && (
             <motion.div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 text-emerald-400 text-xs font-medium"
@@ -365,10 +373,11 @@ function LoginPageInner() {
               >
                 {/* Email Field */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Email Address</label>
+                  <label htmlFor="login-password-email" className="text-xs font-semibold text-slate-300">Email Address</label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="login-password-email"
                       type="email"
                       required
                       autoComplete="username"
@@ -383,7 +392,7 @@ function LoginPageInner() {
                 {/* Password Field */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-300">Password</label>
+                    <label htmlFor="login-password" className="text-xs font-semibold text-slate-300">Password</label>
                     <button
                       type="button"
                       onClick={() => {
@@ -398,6 +407,7 @@ function LoginPageInner() {
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="login-password"
                       type={showPassword ? 'text' : 'password'}
                       required
                       autoComplete="current-password"
@@ -408,6 +418,7 @@ function LoginPageInner() {
                     />
                     <button
                       type="button"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition"
                     >
@@ -447,10 +458,11 @@ function LoginPageInner() {
               >
                 {codeStep === 1 ? (
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Email Address</label>
+                    <label htmlFor="login-code-email" className="text-xs font-semibold text-slate-300">Email Address</label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
+                        id="login-code-email"
                         type="email"
                         required
                         autoComplete="email"
@@ -527,10 +539,11 @@ function LoginPageInner() {
               >
                 {codeStep === 1 ? (
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Email Address</label>
+                    <label htmlFor="reset-email" className="text-xs font-semibold text-slate-300">Email Address</label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
+                        id="reset-email"
                         type="email"
                         required
                         autoComplete="email"
@@ -558,10 +571,11 @@ function LoginPageInner() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">New Password</label>
+                      <label htmlFor="reset-password" className="text-xs font-semibold text-slate-300">New Password</label>
                       <div className="relative">
                         <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input
+                          id="reset-password"
                           type={showPassword ? 'text' : 'password'}
                           required
                           autoComplete="new-password"
@@ -572,6 +586,7 @@ function LoginPageInner() {
                         />
                         <button
                           type="button"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition"
                         >

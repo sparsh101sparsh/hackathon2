@@ -34,6 +34,25 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   }
 }
 
+/**
+ * Hashes a short-lived verification code before it is persisted. The server
+ * secret prevents the six-digit value from being recovered from the database.
+ */
+export function hashVerificationCode(code: string): string {
+  if (!JWT_SECRET) throw new Error('JWT_SECRET is required in production');
+  return crypto.createHmac('sha256', JWT_SECRET).update(code).digest('hex');
+}
+
+export function verifyVerificationCode(code: string, storedHash: string): boolean {
+  try {
+    const expected = Buffer.from(hashVerificationCode(code), 'hex');
+    const actual = Buffer.from(storedHash, 'hex');
+    return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+  } catch {
+    return false;
+  }
+}
+
 export interface UserSessionPayload {
   userId: string;
   email: string;
@@ -99,15 +118,28 @@ export function verifyToken(token: string): UserSessionPayload | null {
 }
 
 export function getRequestToken(req: NextRequest): string | null {
-  const cookieToken = req.cookies.get('codeforge_session')?.value;
   const authHeader = req.headers.get('Authorization');
   const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  return cookieToken || headerToken || null;
+  const cookieToken = req.cookies.get('codeforge_session')?.value;
+  return headerToken || cookieToken || null;
 }
 
 export function getSessionFromRequest(req: NextRequest): UserSessionPayload | null {
   const token = getRequestToken(req);
   return token ? verifyToken(token) : null;
+}
+
+export async function requireAdmin(req: NextRequest): Promise<NextResponse | null> {
+  const session = getSessionFromRequest(req);
+  if (!session?.userId || session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Administrator access required.' }, { status: 403 });
+  }
+  const { prisma } = await import('@/lib/prisma');
+  const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } });
+  if (user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Administrator access required.' }, { status: 403 });
+  }
+  return null;
 }
 
 export function setSessionCookie(response: NextResponse, token: string): NextResponse {

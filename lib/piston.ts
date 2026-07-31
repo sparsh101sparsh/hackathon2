@@ -14,6 +14,10 @@ export const JUDGE0_LANGUAGE_MAP: Record<string, number> = {
   golang: 60,
 };
 
+export function isSupportedLanguage(language: string): boolean {
+  return Boolean(JUDGE0_LANGUAGE_MAP[language.trim().toLowerCase()]);
+}
+
 const JUDGE0_PRIMARY_ENDPOINT = 'https://ce.judge0.com/submissions?wait=true';
 
 export interface Judge0Response {
@@ -47,6 +51,7 @@ export async function executeCode(
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: AbortSignal.timeout(15000),
       body: JSON.stringify({
         source_code: finalCode,
         language_id: languageId,

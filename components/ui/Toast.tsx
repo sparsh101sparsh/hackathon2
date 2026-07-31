@@ -72,6 +72,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           {toasts.map((toast) => (
             <motion.div
               key={toast.id}
+              role={toast.type === 'error' || toast.type === 'warning' ? 'alert' : 'status'}
+              aria-live={toast.type === 'error' || toast.type === 'warning' ? 'assertive' : 'polite'}
+              aria-atomic="true"
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.9 }}
@@ -85,6 +88,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 <span className="font-medium text-slate-200 text-xs sm:text-sm">{toast.message}</span>
               </div>
               <button
+                type="button"
+                aria-label="Dismiss notification"
                 onClick={() => removeToast(toast.id)}
                 className="text-slate-400 hover:text-white transition p-1 rounded-md hover:bg-slate-800/60"
               >

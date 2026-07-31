@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getRatingTier, RatingTier } from '@/lib/rating';
+import { getTtlCached } from '@/lib/ttlCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +9,6 @@ export interface LeaderboardUser {
   rank: number;
   id: string;
   name: string;
-  email: string;
   avatar: string;
   rating: number;
   ratingTier: RatingTier;
@@ -25,27 +25,61 @@ export interface LeaderboardUser {
 
 export async function GET(req: NextRequest) {
   try {
-    // 1. Fetch user progress records from DB
-    const allProgress = await prisma.userProgress.findMany({});
-    
-    // 2. Fetch all submissions to compute real statistics per user
-    const allSubmissions = await prisma.submission.findMany({
-      include: { problem: true },
+    const [allProgress, submissionCounts, acceptedProblemGroups, allUserRatings, dbUsers] = await getTtlCached(
+      'public:leaderboard:base:v2',
+      30_000,
+      () => prisma.$transaction([
+        prisma.userProgress.findMany({
+          select: { userId: true, lastActiveDate: true },
+        }),
+        prisma.submission.groupBy({
+          by: ['userId', 'status'],
+          orderBy: [{ userId: 'asc' }, { status: 'asc' }],
+          _count: { _all: true },
+        }),
+        prisma.submission.groupBy({
+          by: ['userId', 'problemId'],
+          where: { status: 'Accepted' },
+          orderBy: [{ userId: 'asc' }, { problemId: 'asc' }],
+        }),
+        prisma.userRating.findMany({
+          select: { userId: true, rating: true, timestamp: true },
+          orderBy: { timestamp: 'desc' },
+        }),
+        prisma.user.findMany({
+          select: { id: true, name: true },
+        }),
+      ]),
+    );
+
+    const acceptedProblemIds = [...new Set(acceptedProblemGroups.map((group) => group.problemId))];
+    const problemDifficulties = acceptedProblemIds.length > 0
+      ? await prisma.problem.findMany({
+        where: { id: { in: acceptedProblemIds } },
+        select: { id: true, difficulty: true },
+      })
+      : [];
+    const difficultyByProblemId = new Map(problemDifficulties.map((problem) => [problem.id, problem.difficulty]));
+
+    const countsByUser = new Map<string, { total: number; accepted: number }>();
+    submissionCounts.forEach((group) => {
+      const uid = group.userId || 'guest';
+      const counts = countsByUser.get(uid) || { total: 0, accepted: 0 };
+      counts.total += group._count._all;
+      if (group.status === 'Accepted') counts.accepted += group._count._all;
+      countsByUser.set(uid, counts);
     });
 
-    // 3. Fetch all user ratings from DB
-    const allUserRatings = await prisma.userRating.findMany({
-      orderBy: { timestamp: 'desc' },
-    });
-
-    // Group submissions by userId
-    const userSubMap = new Map<string, typeof allSubmissions>();
-    allSubmissions.forEach((sub) => {
-      const uid = sub.userId || 'guest';
-      if (!userSubMap.has(uid)) {
-        userSubMap.set(uid, []);
-      }
-      userSubMap.get(uid)!.push(sub);
+    const solvedByUser = new Map<string, { easy: Set<string>; medium: Set<string>; hard: Set<string> }>();
+    acceptedProblemGroups.forEach((group) => {
+      const difficulty = difficultyByProblemId.get(group.problemId);
+      if (!difficulty) return;
+      const uid = group.userId || 'guest';
+      const solved = solvedByUser.get(uid) || { easy: new Set<string>(), medium: new Set<string>(), hard: new Set<string>() };
+      if (difficulty === 'EASY') solved.easy.add(group.problemId);
+      else if (difficulty === 'MEDIUM') solved.medium.add(group.problemId);
+      else if (difficulty === 'HARD') solved.hard.add(group.problemId);
+      solvedByUser.set(uid, solved);
     });
 
     // Map latest rating per user
@@ -59,44 +93,28 @@ export async function GET(req: NextRequest) {
 
     const userIds = new Set<string>([
       ...allProgress.map((p) => p.userId || 'guest'),
-      ...Array.from(userSubMap.keys()),
+      ...Array.from(countsByUser.keys()),
+      ...allUserRatings.map((rating) => rating.userId || 'guest'),
     ]);
 
-    // Fetch DB Users for real names and emails
-    const dbUsers = await prisma.user.findMany({
-      where: { id: { in: Array.from(userIds) } },
-      select: { id: true, name: true, email: true },
-    });
+    // Fetch DB Users for public display names only. Account emails are private
+    // and must not be included in the public leaderboard response.
     const dbUserMap = new Map(dbUsers.map((u) => [u.id, u]));
 
     const leaderboard: LeaderboardUser[] = [];
 
     userIds.forEach((userId) => {
-      const userSubs = userSubMap.get(userId) || [];
-      const totalSubmissions = userSubs.length;
-      const acceptedSubs = userSubs.filter((s) => s.status === 'Accepted');
-      
-      const solvedEasySet = new Set<string>();
-      const solvedMediumSet = new Set<string>();
-      const solvedHardSet = new Set<string>();
-
-      acceptedSubs.forEach((sub) => {
-        if (sub.problem) {
-          if (sub.problem.difficulty === 'EASY') solvedEasySet.add(sub.problemId);
-          else if (sub.problem.difficulty === 'MEDIUM') solvedMediumSet.add(sub.problemId);
-          else if (sub.problem.difficulty === 'HARD') solvedHardSet.add(sub.problemId);
-        }
-      });
-
-      const easyCount = solvedEasySet.size;
-      const medCount = solvedMediumSet.size;
-      const hardCount = solvedHardSet.size;
+      const counts = countsByUser.get(userId) || { total: 0, accepted: 0 };
+      const solved = solvedByUser.get(userId) || { easy: new Set<string>(), medium: new Set<string>(), hard: new Set<string>() };
+      const easyCount = solved.easy.size;
+      const medCount = solved.medium.size;
+      const hardCount = solved.hard.size;
       const totalCount = easyCount + medCount + hardCount;
 
       // Only include users who have made submissions or recorded progress
-      if (totalSubmissions > 0 || totalCount > 0) {
-        const accuracy = totalSubmissions > 0
-          ? Math.round((acceptedSubs.length / totalSubmissions) * 1000) / 10
+      if (counts.total > 0 || totalCount > 0 || userRatingMap.has(userId)) {
+        const accuracy = counts.total > 0
+          ? Math.round((counts.accepted / counts.total) * 1000) / 10
           : 0;
 
         const progressRec = allProgress.find((p) => (p.userId || 'guest') === userId);
@@ -107,8 +125,7 @@ export async function GET(req: NextRequest) {
           rank: 0,
           id: userId,
           name: dbUser?.name || (userId === 'guest' ? 'Guest Coder' : `Coder (${userId.slice(0, 6)})`),
-          email: dbUser?.email || `${userId}@codeforge.ai`,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${dbUser?.name || userId}`,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(dbUser?.name || userId)}`,
           rating,
           ratingTier: getRatingTier(rating),
           solved: {
@@ -118,7 +135,7 @@ export async function GET(req: NextRequest) {
             total: totalCount,
           },
           accuracy,
-          country: 'Global 🌐',
+          country: 'Global',
           joinedAt: progressRec?.lastActiveDate
             ? new Date(progressRec.lastActiveDate).toISOString().split('T')[0]
             : new Date().toISOString().split('T')[0],
@@ -136,10 +153,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ leaderboard });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching leaderboard:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch leaderboard' },
+      { error: 'Failed to fetch leaderboard' },
       { status: 500 }
     );
   }

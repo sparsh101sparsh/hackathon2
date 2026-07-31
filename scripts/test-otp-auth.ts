@@ -6,7 +6,7 @@ import { sendVerificationEmail } from '../lib/email';
 async function runOtpAuthTest() {
   console.log('🧪 [TEST]: Starting Email OTP Verification System E2E Test...');
 
-  const testEmail = `otp_test_${Date.now()}@codeforge.ai`;
+  const testEmail = `otp_test_${Date.now()}@codeforge.dev`;
   const testName = 'OTP Test User';
   const testPassword = 'TestPassword123!';
 

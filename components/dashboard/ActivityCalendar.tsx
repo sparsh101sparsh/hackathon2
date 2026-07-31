@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Flame } from 'lucide-react';
 
 interface ActivityItem {
   date: string;
@@ -49,7 +50,7 @@ export function ActivityCalendar({ matrix, streak }: ActivityCalendarProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            🔥 Submission Activity Calendar
+            <Flame className="w-4 h-4 text-amber-400" aria-hidden="true" /> Submission Activity Calendar
           </h3>
           <p className="text-xs text-slate-400">
             {totalSubmissionsYear} submissions in the past year • {streak} day streak
@@ -74,6 +75,8 @@ export function ActivityCalendar({ matrix, streak }: ActivityCalendarProps) {
               {week.map((day, dIdx) => (
                 <div
                   key={dIdx}
+                  role="img"
+                  aria-label={`${day.date}: ${day.count} submissions`}
                   className={`w-3 h-3 rounded-[2px] border transition-transform hover:scale-125 ${getLevelColor(
                     day.level
                   )}`}

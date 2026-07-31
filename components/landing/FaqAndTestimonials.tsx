@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
@@ -22,12 +23,12 @@ const FAQS: FaqItem[] = [
   {
     question: 'How does code execution work?',
     answer:
-      'Code is sent to the Piston API — an isolated, containerized execution engine. Each run is sandboxed with strict time and memory limits. Supported languages: Python, C++, JavaScript (Node.js), Java, and Go. No code ever touches the host system.',
+      'Code is sent to Judge0 CE — an isolated execution engine. Each run is sandboxed with strict time and memory limits. Supported languages: Python, C++, JavaScript (Node.js), Java, and Go. No code ever touches the application host.',
   },
   {
-    question: 'What AI models power the assistant?',
+    question: 'How are guided responses generated?',
     answer:
-      'The platform uses FreeModel AI — an OpenAI-compatible API. Fast operations like hints and chat use gpt-5.4-mini for low latency. Complex operations like deep code review and mock interview analysis use gpt-5.6-sol.',
+      'The platform uses a FreeModel-compatible provider for hints, tutoring, code review, and interview analysis, with deterministic fallbacks when the provider is unavailable.',
   },
   {
     question: 'How does the rating system work?',
@@ -47,17 +48,17 @@ const FAQS: FaqItem[] = [
   {
     question: 'Is this a personal/open-source project?',
     answer:
-      'Yes — CodeForge AI is an independent personal project, not a commercial product. The source code is on GitHub. Feel free to explore, fork, and contribute.',
+      'Yes — CodeForge is an independent personal project, not a commercial product. The source code is on GitHub. Feel free to explore, fork, and contribute.',
   },
 ];
 
 const TRUST_STATS = [
   { icon: <Code2 className="w-5 h-5 text-cyan-400" />, value: '600+', label: 'DSA Problems', sub: 'Arrays → Advanced DP' },
-  { icon: <Brain className="w-5 h-5 text-purple-400" />, value: '6', label: 'AI Endpoints', sub: 'Review · Hints · Tutor · Mock' },
+  { icon: <Brain className="w-5 h-5 text-purple-400" />, value: '6', label: 'Guidance Tools', sub: 'Review · Hints · Tutor · Mock' },
   { icon: <Zap className="w-5 h-5 text-amber-400" />, value: '5', label: 'Languages', sub: 'Python · C++ · JS · Java · Go' },
   { icon: <Trophy className="w-5 h-5 text-emerald-400" />, value: '8', label: 'Company Preps', sub: 'FAANG + Uber + Flipkart' },
   { icon: <BarChart3 className="w-5 h-5 text-indigo-400" />, value: 'Elo', label: 'Rating System', sub: '800 – 3500 range' },
-  { icon: <Shield className="w-5 h-5 text-rose-400" />, value: '100%', label: 'Sandboxed', sub: 'Piston containerized runner' },
+  { icon: <Shield className="w-5 h-5 text-rose-400" />, value: 'CE', label: 'Judge0 Runner', sub: 'Hosted isolated execution' },
 ];
 
 export const FaqAndTestimonials: React.FC = () => {
@@ -81,7 +82,7 @@ export const FaqAndTestimonials: React.FC = () => {
             What&apos;s Under the Hood
           </h2>
           <p className="text-sm text-slate-400 max-w-xl mx-auto">
-            A personal project built with modern tools — real AI, real code execution, real data.
+            A personal project built with modern tools, real code execution, and real data.
           </p>
         </div>
 
@@ -187,15 +188,15 @@ export const FaqAndTestimonials: React.FC = () => {
           Ready to level up?
         </div>
         <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
-          Start solving problems, get AI feedback on every submission, and track your growth — all in one place.
+            Start solving problems, get feedback on every submission, and track your growth — all in one place.
         </p>
-        <a
+        <Link
           href="/problems"
           className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
         >
           <Code2 className="w-4 h-4" />
           Start Solving
-        </a>
+        </Link>
       </motion.div>
 
     </section>

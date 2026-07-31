@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 import { getSessionFromRequest } from '@/lib/auth';
-import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
+import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,8 @@ export interface DailyRecommendation {
 
 export async function GET(request: NextRequest) {
   try {
+    const limitResponse = rateLimitResponse(request, 'ai:recommendations', 10, 60 * 1000);
+    if (limitResponse) return limitResponse;
     const { searchParams } = new URL(request.url);
     const userId = getSessionFromRequest(request)?.userId || 'guest';
     const personalityId = searchParams.get('personality');
@@ -28,8 +31,8 @@ export async function GET(request: NextRequest) {
       where: { userId },
     });
 
-    const solvedEasy = userProgress?.solvedEasy || 5;
-    const solvedMedium = userProgress?.solvedMedium || 2;
+    const solvedEasy = userProgress?.solvedEasy || 0;
+    const solvedMedium = userProgress?.solvedMedium || 0;
     const solvedHard = userProgress?.solvedHard || 0;
 
     // Read the complete catalog so recommendation selection is never limited to the first page.
@@ -61,10 +64,10 @@ export async function GET(request: NextRequest) {
       companyTags: typeof p.companyTags === 'string' ? JSON.parse(p.companyTags) : p.companyTags,
     }));
 
-    const personality = getPersonality(personalityId);
-    const personalityPrefix = buildPersonalityPrefix(personality);
+    const personality = getTeachingStyle(personalityId);
+    const personalityPrefix = buildTeachingStylePrefix(personality);
 
-    const systemPrompt = `${personalityPrefix}${personality.recommendationsSystemPrompt}
+    const systemInstruction = `${personalityPrefix}${personality.recommendationsSystemInstruction}
 
 You are analyzing user solving stats across the complete ${allProblems.length}-question catalog:
 Solved Easy: ${solvedEasy}, Solved Medium: ${solvedMedium}, Solved Hard: ${solvedHard}.
@@ -74,12 +77,12 @@ Output MUST be a raw JSON array of objects matching schema:
 [
   {
     "problemId": "string ID of the problem",
-    "aiReason": "1-2 sentence AI explanation of why this problem is recommended today for the user",
+    "aiReason": "1-2 sentence guided explanation of why this problem is recommended today for the user",
     "targetSkill": "Key skill or pattern being targeted e.g. Dynamic Programming Optimization"
   }
 ]`;
 
-    const userPrompt = `Candidate Problems:
+    const userInstruction = `Candidate Problems:
 ${JSON.stringify(
   selectedProblems.map((p) => ({ id: p.id, title: p.title, difficulty: p.difficulty, topicTags: p.topicTags }))
 )}`;
@@ -91,14 +94,14 @@ ${JSON.stringify(
           ? `Based on your ${solvedMedium} solved Medium problems, this will help solidify your foundational hash mapping and array techniques.`
           : idx === 1
           ? `Targeted recommendation to strengthen your problem-solving speed under typical Meta and Google interview time constraints.`
-          : `Recommended by AI to expand your mastery into multi-pointer and sliding window algorithmic patterns.`,
+          : `Recommended by guided to expand your mastery into multi-pointer and sliding window algorithmic patterns.`,
       targetSkill: p.topicTags[0] || 'Data Structures',
     }));
 
     const aiAnalysis = await callFreeModelJSON<Array<{ problemId: string; aiReason: string; targetSkill: string }>>({
       model: MODELS.FAST,
-      systemPrompt,
-      userPrompt,
+      systemInstruction,
+      userInstruction,
       temperature: 0.5,
       fallbackJson: fallbackAnalysis,
     });
@@ -119,10 +122,9 @@ ${JSON.stringify(
 
     return NextResponse.json({ recommendations });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/recommendations:', error);
     return NextResponse.json(
-      { error: message || 'Failed to generate daily recommendations' },
+      { error: 'Failed to generate daily recommendations' },
       { status: 500 }
     );
   }

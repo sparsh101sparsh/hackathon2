@@ -59,23 +59,28 @@ export default function RevisionPage() {
   const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
 
-  const fetchRevisionData = async () => {
+  const fetchRevisionData = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/revision');
+      const res = await fetch('/api/revision', { signal });
       if (!res.ok) throw new Error('Failed to fetch revision deck');
       const data = await res.json();
       setCards(data.cards || []);
       setDueCards(data.dueCards || []);
       setStats(data.stats || { totalCards: 0, dueTodayCount: 0, masteredCount: 0, learnedMistakeCount: 0 });
     } catch (err: unknown) {
-      console.error('Error fetching revision data:', err);
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        console.error('Error fetching revision data:', err);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRevisionData();
+    const controller = new AbortController();
+    fetchRevisionData(controller.signal);
+
+    return () => controller.abort();
   }, []);
 
   const handleRateCard = async (quality: 'HARD' | 'GOOD' | 'EASY') => {
@@ -102,6 +107,9 @@ export default function RevisionPage() {
           await fetchRevisionData();
           setCurrentIdx(0);
         }
+      } else {
+        const data = await res.json().catch(() => null);
+        showToast(data?.error || 'Failed to record rating', 'error');
       }
     } catch (err) {
       showToast('Failed to record rating', 'error');
@@ -190,6 +198,15 @@ export default function RevisionPage() {
           {/* 3D Flip Flashcard */}
           <motion.div
             onClick={() => setIsFlipped(!isFlipped)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setIsFlipped((previous) => !previous);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={isFlipped ? 'Show revision question' : 'Reveal revision answer'}
             className="cursor-pointer min-h-[380px] bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative flex flex-col justify-between transition-all group overflow-hidden"
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-cyan-500 to-emerald-500" />
@@ -304,7 +321,7 @@ export default function RevisionPage() {
                 disabled={submitting}
                 className="py-3 px-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 font-bold text-xs transition flex flex-col items-center gap-0.5"
               >
-                <span>🔴 Hard</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-400" aria-hidden="true" /> Hard</span>
                 <span className="text-[10px] text-rose-500 font-normal">Review in 1 Day</span>
               </button>
               <button
@@ -312,7 +329,7 @@ export default function RevisionPage() {
                 disabled={submitting}
                 className="py-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 font-bold text-xs transition flex flex-col items-center gap-0.5"
               >
-                <span>🔵 Good</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" /> Good</span>
                 <span className="text-[10px] text-amber-500 font-normal">Review in 3 Days</span>
               </button>
               <button
@@ -320,7 +337,7 @@ export default function RevisionPage() {
                 disabled={submitting}
                 className="py-3 px-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs transition flex flex-col items-center gap-0.5"
               >
-                <span>🟢 Easy</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" aria-hidden="true" /> Easy</span>
                 <span className="text-[10px] text-emerald-500 font-normal">Review in 7 Days</span>
               </button>
             </div>
@@ -332,7 +349,7 @@ export default function RevisionPage() {
           <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-lg">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-black text-white">All Revisions Completed Today! 🎉</h2>
+          <h2 className="text-2xl font-black text-white">All Revisions Completed Today</h2>
           <p className="text-xs text-slate-400 leading-relaxed">
             Great job! You have revised all due DSA flashcards for today. Spaced repetition ensures long-term memory retention for FAANG interviews.
           </p>

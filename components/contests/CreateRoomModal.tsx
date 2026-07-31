@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, X, Loader2, Swords, Lock, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { useDialogAccessibility } from '@/lib/useDialogAccessibility';
 
 interface CreateRoomModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
   const [durationSeconds, setDurationSeconds] = useState<number>(900);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dialogRef = useDialogAccessibility(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -68,6 +70,11 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-battle-room-title"
+          ref={dialogRef}
+          tabIndex={-1}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
@@ -83,11 +90,13 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                 <Swords className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white">Create Battle Room</h3>
+                <h3 id="create-battle-room-title" className="text-lg font-black text-white">Create Battle Room</h3>
                 <p className="text-xs text-slate-400">Compete with friends (Max 10 players)</p>
               </div>
             </div>
             <button
+              type="button"
+              aria-label="Close create battle dialog"
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
             >
@@ -106,7 +115,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                 <p className="text-xs text-slate-400 mt-1">You must be signed in to create a battle room</p>
               </div>
               <div className="flex gap-3">
-                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+                <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
                   Cancel
                 </button>
                 <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-xs font-bold text-center transition">
@@ -123,7 +132,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
               </div>
 
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-2">
+                <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   {error}
                 </div>
@@ -135,6 +144,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                   <label className="text-xs font-bold text-slate-300 mb-1 block">Room Name <span className="text-slate-500">(optional)</span></label>
                   <input
                     type="text"
+                    aria-label="Room name"
                     placeholder={`${user.name}'s Battle Arena`}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -153,7 +163,7 @@ export const CreateRoomModal: React.FC<CreateRoomModalProps> = ({ isOpen, onClos
                         onClick={() => setMode(value)}
                         className={`py-2.5 rounded-xl text-[11px] font-bold border transition ${mode === value ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'}`}
                       >
-                        {value === 'DUEL' ? '⚔️ 1v1 Duel' : '🛡️ Squad Race'}
+                        <span className="inline-flex items-center gap-1.5">{value === 'DUEL' ? <Swords className="w-3.5 h-3.5" aria-hidden="true" /> : <Users className="w-3.5 h-3.5" aria-hidden="true" />} {value === 'DUEL' ? '1v1 Duel' : 'Squad Race'}</span>
                       </button>
                     ))}
                   </div>

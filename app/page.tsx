@@ -28,7 +28,7 @@ export default function Home() {
       {/* 1. Hero Section */}
       <HeroSection />
 
-      {/* 2. Interactive Monaco Preview & AI Review Demo */}
+      {/* 2. Interactive Monaco Preview and review demo */}
       <MonacoPreviewDemo />
 
       {/* 3. Core Features Grid */}

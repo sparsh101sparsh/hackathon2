@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, setSessionCookie, signToken } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const requestLimit = checkRateLimit(req, 'auth:password-login', 10, 15 * 60 * 1000);
+    if (!requestLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many sign-in attempts. Please try again later.', retryAfter: requestLimit.retryAfter },
+        { status: 429, headers: { 'Retry-After': String(requestLimit.retryAfter) } },
+      );
+    }
     const body = await req.json();
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'A valid sign-in request is required' }, { status: 400 });
+    }
     const { email, password } = body;
 
     if (typeof email !== 'string' || typeof password !== 'string') {
@@ -77,10 +88,9 @@ export async function POST(req: NextRequest) {
 
     return setSessionCookie(response, token);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/auth/login:', error);
     return NextResponse.json(
-      { error: message || 'Failed to sign in' },
+      { error: 'Sign-in is temporarily unavailable. Please try again shortly.' },
       { status: 500 }
     );
   }

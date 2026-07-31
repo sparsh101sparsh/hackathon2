@@ -31,14 +31,14 @@ export const HeroSection: React.FC = () => {
       color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30',
     },
     {
-      label: 'Piston Execution',
-      value: '100%',
+      label: 'Judge0 Execution',
+      value: 'CE',
       sub: 'Isolated Sandbox Code Runner',
       icon: <Zap className="w-5 h-5 text-amber-400" />,
       color: 'from-amber-500/20 to-orange-500/10 border-amber-500/30',
     },
     {
-      label: 'AI Assistant',
+      label: 'Guided Practice',
       value: 'FreeModel',
       sub: 'Instant Tutor & Hints',
       icon: <Bot className="w-5 h-5 text-purple-400" />,
@@ -59,7 +59,7 @@ export const HeroSection: React.FC = () => {
         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl text-cyan-300 text-xs font-semibold shadow-lg shadow-cyan-950/30 mb-8"
       >
         <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
-        <span>Next-Gen Competitive Coding & AI Interview Platform</span>
+        <span>Focused Competitive Coding & Interview Platform</span>
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
       </motion.div>
 
@@ -72,7 +72,7 @@ export const HeroSection: React.FC = () => {
       >
         Master Coding & Crack Tech Interviews with{' '}
         <span className="bg-gradient-to-r from-cyan-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent underline decoration-cyan-500/30 underline-offset-8">
-          AI
+          CodeForge
         </span>
       </motion.h1>
 
@@ -83,7 +83,7 @@ export const HeroSection: React.FC = () => {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="mt-6 max-w-3xl text-base sm:text-xl text-slate-400 leading-relaxed font-normal"
       >
-        Solve curated Data Structures & Algorithms, execute code in 5 languages via Piston, compete in Codeforces-style rated contests, and get instant AI code reviews & hints.
+        Solve curated Data Structures & Algorithms, execute code in 5 languages via Judge0, compete in Codeforces-style rated contests, and get instant code reviews & hints.
       </motion.p>
 
       {/* CTA Action Buttons */}
@@ -106,7 +106,7 @@ export const HeroSection: React.FC = () => {
           className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all backdrop-blur-xl hover:border-cyan-500/40"
         >
           <Bot className="w-5 h-5 text-cyan-400" />
-          <span>Try AI Mock Interview</span>
+          <span>Try Mock Interview</span>
         </Link>
       </motion.div>
 

@@ -12,7 +12,7 @@ const GENERIC_OUTPUT_BOILERPLATE = "Expected output according to problem specifi
 
 async function runAudit() {
   console.log("=================================================");
-  console.log("🔍 FORENSIC RE-AUDIT FOR MILESTONE 3 (620 PROBLEMS)");
+  console.log("🔍 FORENSIC RE-AUDIT OF THE CANONICAL PROBLEM CATALOG");
   console.log("=================================================\n");
 
   let overallPass = true;
@@ -116,7 +116,7 @@ interface LeetCode400Problem {
   }
 
   // ------------------------------------------------------------------
-  // CHECK 4: Non-empty Required Fields Across 620 Problems
+  // CHECK 4: Non-empty Required Fields Across the Canonical Catalog
   // ------------------------------------------------------------------
   console.log("\n--- Check 4: Non-empty inputFormat, outputFormat, statement, constraints ---");
   const allDbProblems = await prisma.problem.findMany({
@@ -160,14 +160,15 @@ interface LeetCode400Problem {
   console.log(`leetcode400.json empty field problems count: ${jsonEmptyFieldCount}`);
   console.log(`freemodel-question-corpus.jsonl empty field problems count: ${jsonlEmptyFieldCount}`);
 
-  if (allDbProblems.length !== 620 || leetcode400.length !== 620 || freemodelLines.length !== 620) {
+  const canonicalCatalogCount = leetcode400.length;
+  if (allDbProblems.length !== canonicalCatalogCount || freemodelLines.length !== canonicalCatalogCount) {
     overallPass = false;
-    console.error(`  ❌ FAIL: Count mismatch! DB=${allDbProblems.length}, leetcode400=${leetcode400.length}, freemodel=${freemodelLines.length} (Expected 620 each)`);
+    console.error(`  ❌ FAIL: Count mismatch! DB=${allDbProblems.length}, leetcode400=${leetcode400.length}, freemodel=${freemodelLines.length} (Expected ${canonicalCatalogCount} each)`);
   } else if (dbEmptyFieldCount > 0 || jsonEmptyFieldCount > 0 || jsonlEmptyFieldCount > 0) {
     overallPass = false;
     console.error("  ❌ FAIL: Empty fields found.");
   } else {
-    console.log("  ✅ PASS: All 620 problems across DB, leetcode400.json, and freemodel-question-corpus.jsonl have crisp non-empty required fields.");
+    console.log(`  ✅ PASS: All ${canonicalCatalogCount} problems across DB, leetcode400.json, and freemodel-question-corpus.jsonl have crisp non-empty required fields.`);
   }
 
   // ------------------------------------------------------------------

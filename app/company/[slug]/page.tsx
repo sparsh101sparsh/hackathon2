@@ -17,27 +17,41 @@ interface CompanyDetailData {
   problems: CompanyProblemItem[];
 }
 
-export default function CompanyDetailPage({ params }: { params: { slug: string } }) {
+export default function CompanyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const [routeSlug, setRouteSlug] = useState<string | null>(null);
   const [data, setData] = useState<CompanyDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterFreq, setFilterFreq] = useState<'ALL' | 'High' | 'Medium' | 'Low'>('ALL');
 
   useEffect(() => {
+    let cancelled = false;
+    params.then(({ slug }) => {
+      if (!cancelled) setRouteSlug(slug);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    if (!routeSlug) return;
+    const controller = new AbortController();
     async function fetchCompanyDetail() {
       try {
-        const res = await fetch(`/api/company/${params.slug}`);
+        const res = await fetch(`/api/company/${routeSlug}`, { signal: controller.signal });
         if (!res.ok) throw new Error('Failed to fetch company details');
         const detail = await res.json();
         setData(detail);
       } catch (err) {
-        console.error(err);
+        if (!(err instanceof DOMException && err.name === 'AbortError')) console.error(err);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
-    fetchCompanyDetail();
-  }, [params.slug]);
+    void fetchCompanyDetail();
+    return () => controller.abort();
+  }, [routeSlug]);
 
   const filteredProblems = data?.problems.filter((p) => {
     const matchesSearch =
@@ -121,7 +135,7 @@ export default function CompanyDetailPage({ params }: { params: { slug: string }
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <span className="text-4xl p-3 rounded-2xl bg-slate-950 border border-slate-800 shrink-0">
-              {data.company.logo}
+              <Building2 className="w-8 h-8 text-amber-400" aria-hidden="true" />
             </span>
             <div>
               <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -149,6 +163,7 @@ export default function CompanyDetailPage({ params }: { params: { slug: string }
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            aria-label="Search company interview questions"
             placeholder="Search questions by title or topic..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

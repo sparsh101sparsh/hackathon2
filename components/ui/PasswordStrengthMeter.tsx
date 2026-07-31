@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Check, Circle } from 'lucide-react';
 
 interface PasswordStrengthMeterProps {
   password?: string;
@@ -53,13 +54,13 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({ pa
 
       <div className="flex items-center gap-3 text-[10px] text-slate-400 pt-0.5">
         <span className={hasMinLength ? 'text-emerald-400 font-semibold' : 'text-slate-500'}>
-          {hasMinLength ? '✓' : '○'} 8+ Chars
+          {hasMinLength ? <Check className="w-3 h-3 inline" aria-hidden="true" /> : <Circle className="w-3 h-3 inline" aria-hidden="true" />} 8+ Chars
         </span>
         <span className={hasNumber ? 'text-emerald-400 font-semibold' : 'text-slate-500'}>
-          {hasNumber ? '✓' : '○'} 1 Number
+          {hasNumber ? <Check className="w-3 h-3 inline" aria-hidden="true" /> : <Circle className="w-3 h-3 inline" aria-hidden="true" />} 1 Number
         </span>
         <span className={hasSpecial ? 'text-emerald-400 font-semibold' : 'text-slate-500'}>
-          {hasSpecial ? '✓' : '○'} 1 Symbol
+          {hasSpecial ? <Check className="w-3 h-3 inline" aria-hidden="true" /> : <Circle className="w-3 h-3 inline" aria-hidden="true" />} 1 Symbol
         </span>
       </div>
     </div>

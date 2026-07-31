@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { roomCode, userName } = body;
+    const limitResponse = rateLimitResponse(req, 'room:join', 20, 60 * 1000, 'Too many room join requests. Please try again shortly.');
+    if (limitResponse) return limitResponse;
 
-    if (!roomCode) {
+    const payload = getSessionFromRequest(req);
+    if (!payload?.userId) {
+      return NextResponse.json({ error: 'Sign in to join a battle room.' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'A room code is required' }, { status: 400 });
+    }
+    const { roomCode } = body as { roomCode?: unknown };
+
+    if (typeof roomCode !== 'string' || !roomCode.trim() || roomCode.length > 32) {
       return NextResponse.json({ error: 'Room code is required' }, { status: 400 });
     }
 
@@ -22,11 +34,6 @@ export async function POST(req: NextRequest) {
 
     if (!room) {
       return NextResponse.json({ error: 'Battle room not found. Check the code and try again.' }, { status: 404 });
-    }
-
-    const payload = getSessionFromRequest(req);
-    if (!payload?.userId) {
-      return NextResponse.json({ error: 'Sign in to join a battle room.' }, { status: 401 });
     }
 
     const userId = payload.userId;
@@ -69,8 +76,7 @@ export async function POST(req: NextRequest) {
       room: updatedRoom,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error joining custom room:', error);
-    return NextResponse.json({ error: message || 'Failed to join battle room' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to join battle room' }, { status: 500 });
   }
 }

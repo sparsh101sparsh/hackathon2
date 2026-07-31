@@ -1,28 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const [totalProblems, totalSubmissions, totalContests] =
-      await Promise.all([
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+
+    const [totalUsers, totalProblems, totalSubmissions, totalContests] =
+      await prisma.$transaction([
+        prisma.user.count(),
         prisma.problem.count(),
         prisma.submission.count(),
         prisma.contest.count(),
       ]);
 
     return NextResponse.json({
-      totalUsers: 1,
+      totalUsers,
       totalProblems,
       totalSubmissions,
       totalContests,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin stats:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch admin stats' },
+      { error: 'Failed to fetch admin stats' },
       { status: 500 }
     );
   }

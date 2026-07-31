@@ -17,7 +17,7 @@ import {
   Brain,
 } from 'lucide-react';
 import { ExecuteApiResponse, SubmissionApiResponse, TestCaseResult } from '@/lib/types';
-import AICodeReviewModal from '@/components/ai/AICodeReviewModal';
+import CodeReviewModal from '@/components/guidance/CodeReviewModal';
 import { useAuth } from '@/context/AuthContext';
 
 interface CodeTemplateItem {
@@ -91,7 +91,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     if (sampleTestCases.length > 0 && !customInput) {
       setCustomInput(sampleTestCases[0].input);
     }
-  }, [sampleTestCases]);
+  }, [sampleTestCases, customInput]);
 
   const handleLanguageChange = (newLang: string) => {
     setSelectedLanguage(newLang);
@@ -241,6 +241,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <span>Language:</span>
           </div>
           <select
+            aria-label="Programming language"
             value={selectedLanguage}
             onChange={(e) => handleLanguageChange(e.target.value)}
             className="bg-slate-900 text-slate-200 border border-slate-700 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
@@ -279,11 +280,11 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
           <button
             onClick={() => setIsReviewModalOpen(true)}
-            title="Get AI Code Review with gpt-5.6-sol"
+            title="Get a code review"
             className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>AI Review</span>
+            <span>Code Review</span>
           </button>
 
           <button
@@ -439,6 +440,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               </div>
 
               <textarea
+                aria-label="Custom standard input"
                 value={customInput}
                 onChange={(e) => {
                   setCustomInput(e.target.value);
@@ -611,7 +613,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                         >
                           <div className="flex items-center justify-between mb-1 font-sans font-medium">
                             <span>Case {idx + 1}</span>
-                            <span>{tr.passed ? '✓ Passed' : '✗ Failed'}</span>
+                            <span>{tr.passed ? ' Passed' : ' Failed'}</span>
                           </div>
                           <div>Expected: {tr.expectedOutput}</div>
                           <div>Actual: {tr.actualOutput}</div>
@@ -630,8 +632,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         </div>
       </div>
 
-      {/* AI Code Review Modal */}
-      <AICodeReviewModal
+      {/* Code review modal */}
+      <CodeReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         problemId={problemId}

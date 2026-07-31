@@ -66,42 +66,52 @@ export default function ProblemsPage() {
       .catch((err) => console.error(err));
   }, []);
 
-  const fetchProblems = useCallback(async () => {
+  const fetchProblems = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
     try {
+      const visualizerIds = Object.keys(visualizerMap);
+      const visualizerFilterActive = selectedDifficulty === 'VISUALIZED' || visualizedOnly;
+      if (visualizerFilterActive && visualizerIds.length === 0) {
+        setProblems([]);
+        setTotal(0);
+        setTotalPages(1);
+        return;
+      }
+
       const params = new URLSearchParams();
       params.set('page', page.toString());
       params.set('limit', '20');
 
       if (searchTerm) params.set('search', searchTerm);
+      if (!visualizerFilterActive) params.set('visualizedFirst', 'true');
       if (selectedDifficulty !== 'ALL' && selectedDifficulty !== 'VISUALIZED') {
         params.set('difficulty', selectedDifficulty);
       }
       if (selectedTopic !== 'All Topics') params.set('topic', selectedTopic);
+      if (visualizerFilterActive) params.set('ids', visualizerIds.join(','));
 
-      const res = await fetch(`/api/problems?${params.toString()}`);
+      const res = await fetch(`/api/problems?${params.toString()}`, { signal });
       if (res.ok) {
         const data = await res.json();
-        let fetchedProblems: Problem[] = data.problems || [];
-
-        // If Visualized filter is active, filter to the 75 visualizer problems
-        if (selectedDifficulty === 'VISUALIZED' || visualizedOnly) {
-          fetchedProblems = fetchedProblems.filter((p) => visualizerMap[p.id]);
-        }
+        const fetchedProblems: Problem[] = data.problems || [];
 
         setProblems(fetchedProblems);
         setTotal(data.total || 0);
         setTotalPages(data.totalPages || 1);
       }
     } catch (error) {
-      console.error('Error loading problems:', error);
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        console.error('Error loading problems:', error);
+      }
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) setIsLoading(false);
     }
   }, [page, searchTerm, selectedDifficulty, selectedTopic, visualizedOnly, visualizerMap]);
 
   useEffect(() => {
-    fetchProblems();
+    const controller = new AbortController();
+    void fetchProblems(controller.signal);
+    return () => controller.abort();
   }, [fetchProblems]);
 
   const handleDifficultyChange = (diff: string) => {
@@ -127,51 +137,6 @@ export default function ProblemsPage() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
-        {/* Hero Banner Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-purple-950/40 to-cyan-950/40 border border-slate-800 p-8 shadow-2xl"
-        >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-          <div className="relative z-10 max-w-3xl space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/60 border border-purple-800/50 text-purple-300 text-xs font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                Featured Collection: 75 Animated Step Visualizers
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-800/50 text-cyan-300 text-xs font-medium">
-                <Zap className="w-3.5 h-3.5" />
-                Piston & Judge0 Code Engine
-              </div>
-            </div>
-
-            <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
-              DSA Problem Practice Set
-            </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Master Data Structures & Algorithms with 600+ problems, custom test case runners, and 
-              <strong className="text-purple-400 font-semibold"> 75 Step-by-Step Animated Visualizers</strong> (Two Pointers, Sliding Window, DP, Trees & Graphs).
-            </p>
-
-            {/* Quick Action Button for Visualizers Collection */}
-            <div className="pt-2">
-              <button
-                onClick={() => handleDifficultyChange('VISUALIZED')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border shadow-lg ${
-                  selectedDifficulty === 'VISUALIZED'
-                    ? 'bg-purple-500 text-slate-950 border-purple-400 shadow-purple-950/50'
-                    : 'bg-purple-950/50 hover:bg-purple-900/60 text-purple-300 border-purple-800/60'
-                }`}
-              >
-                <PlayCircle className="w-4 h-4" />
-                <span>Browse 75 Animated Visualizer Problems</span>
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Filter Controls Bar */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -184,6 +149,7 @@ export default function ProblemsPage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               type="text"
+              aria-label="Search problems"
               placeholder="Search problem title or keywords..."
               value={searchTerm}
               onChange={(e) => {
@@ -211,7 +177,7 @@ export default function ProblemsPage() {
                 {diff === 'VISUALIZED' ? (
                   <>
                     <Sparkles className="w-3 h-3 text-purple-400" />
-                    <span>🎨 Visualized (75)</span>
+                    <span className="inline-flex items-center gap-1"><Sparkles className="w-3 h-3" aria-hidden="true" /> Visualized (75)</span>
                   </>
                 ) : diff === 'ALL' ? (
                   'All'
@@ -226,6 +192,7 @@ export default function ProblemsPage() {
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
             <select
+              aria-label="Filter problems by topic"
               value={selectedTopic}
               onChange={(e) => handleTopicChange(e.target.value)}
               className="bg-slate-950 text-slate-200 border border-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"

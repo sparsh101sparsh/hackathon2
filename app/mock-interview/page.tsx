@@ -20,6 +20,7 @@ import {
 import CodeEditor from '@/components/editor/CodeEditor';
 import { EvaluationReport } from '@/app/api/ai/mock-interview/route';
 import { useToast } from '@/components/ui/Toast';
+import { useDialogAccessibility } from '@/lib/useDialogAccessibility';
 
 const COMPANIES = ['Google', 'Meta', 'Amazon', 'Apple', 'Netflix', 'Microsoft', 'Uber'];
 const TOPICS = [
@@ -62,6 +63,13 @@ export default function MockInterviewPage() {
   const [timerActive, setTimerActive] = useState<boolean>(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const requestControllersRef = useRef<Set<AbortController>>(new Set());
+  const evaluationDialogRef = useDialogAccessibility(showEvalModal, () => setShowEvalModal(false));
+
+  useEffect(() => () => {
+    requestControllersRef.current.forEach((controller) => controller.abort());
+    requestControllersRef.current.clear();
+  }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -85,10 +93,13 @@ export default function MockInterviewPage() {
 
   const startInterview = async () => {
     setIsStarting(true);
+    const controller = new AbortController();
+    requestControllersRef.current.add(controller);
     try {
       const res = await fetch('/api/ai/mock-interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           action: 'start',
           company: selectedCompany,
@@ -109,10 +120,13 @@ export default function MockInterviewPage() {
         showToast('Failed to initialize interview session', 'error');
       }
     } catch (err) {
-      console.error('Error starting interview:', err);
-      showToast('Error connecting to interview service', 'error');
+      if (!controller.signal.aborted) {
+        console.error('Error starting interview:', err);
+        showToast('Error connecting to interview service', 'error');
+      }
     } finally {
-      setIsStarting(false);
+      requestControllersRef.current.delete(controller);
+      if (!controller.signal.aborted) setIsStarting(false);
     }
   };
 
@@ -123,11 +137,14 @@ export default function MockInterviewPage() {
     setMessages(newMsgs);
     setInputMessage('');
     setIsSending(true);
+    const controller = new AbortController();
+    requestControllersRef.current.add(controller);
 
     try {
       const res = await fetch('/api/ai/mock-interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           action: 'message',
           company: selectedCompany,
@@ -144,20 +161,24 @@ export default function MockInterviewPage() {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
       }
     } catch (err) {
-      console.error('Error sending message:', err);
+      if (!controller.signal.aborted) console.error('Error sending message:', err);
     } finally {
-      setIsSending(false);
+      requestControllersRef.current.delete(controller);
+      if (!controller.signal.aborted) setIsSending(false);
     }
   };
 
   const evaluateInterview = async () => {
     setIsEvaluating(true);
     setTimerActive(false);
-    showToast('Generating AI Scorecard & Hiring Recommendation...', 'info');
+    showToast('Generating scorecard & hiring recommendation...', 'info');
+    const controller = new AbortController();
+    requestControllersRef.current.add(controller);
     try {
       const res = await fetch('/api/ai/mock-interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           action: 'evaluate',
           company: selectedCompany,
@@ -178,10 +199,13 @@ export default function MockInterviewPage() {
         showToast('Failed to evaluate interview', 'error');
       }
     } catch (err) {
-      console.error('Error evaluating interview:', err);
-      showToast('Error generating evaluation report', 'error');
+      if (!controller.signal.aborted) {
+        console.error('Error evaluating interview:', err);
+        showToast('Error generating evaluation report', 'error');
+      }
     } finally {
-      setIsEvaluating(false);
+      requestControllersRef.current.delete(controller);
+      if (!controller.signal.aborted) setIsEvaluating(false);
     }
   };
 
@@ -198,10 +222,10 @@ export default function MockInterviewPage() {
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-800 text-cyan-400 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span>AI Senior Engineer Interview Suite</span>
+              <span>Senior Engineer Interview Suite</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Simulate Live Tech Interviews with <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">FreeModel AI</span>
+              Simulate Live Tech Interviews with <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">FreeModel</span>
             </h1>
             <p className="text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
               Practice real-world coding & system design interviews under time constraints. Get instant feedback on communication, algorithm choice, and final code quality.
@@ -368,6 +392,7 @@ export default function MockInterviewPage() {
                   className="flex items-center gap-2"
                 >
                   <input
+                    aria-label="Message the interviewer"
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
@@ -394,6 +419,7 @@ export default function MockInterviewPage() {
                     <span>Candidate Code Workspace</span>
                   </div>
                   <select
+                    aria-label="Interview programming language"
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                     className="bg-slate-950 text-slate-200 border border-slate-800 rounded px-2.5 py-1 text-xs"
@@ -422,6 +448,11 @@ export default function MockInterviewPage() {
       {showEvalModal && evalReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md font-sans">
           <motion.div
+            ref={evaluationDialogRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="interview-evaluation-title"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="relative w-full max-w-3xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-100"
@@ -433,7 +464,7 @@ export default function MockInterviewPage() {
                   <Award className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white tracking-tight">
+                  <h2 id="interview-evaluation-title" className="text-lg font-bold text-white tracking-tight">
                     Interview Evaluation Scorecard
                   </h2>
                   <p className="text-xs text-slate-400">
@@ -443,6 +474,8 @@ export default function MockInterviewPage() {
               </div>
 
               <button
+                type="button"
+                aria-label="Close interview evaluation"
                 onClick={() => setShowEvalModal(false)}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >

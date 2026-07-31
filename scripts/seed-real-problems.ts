@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
+import { EXPLICIT_COMPANY_MAPPINGS } from './company-mappings';
+
+export { EXPLICIT_COMPANY_MAPPINGS } from './company-mappings';
 
 const prisma = new PrismaClient();
 
@@ -39,7 +42,7 @@ interface ProblemSeedItem {
 }
 
 const COMPANY_LIST = [
-  { name: 'Google', logo: '/companies/google.png', description: 'Search, Cloud, AI & Tech Giant' },
+  { name: 'Google', logo: '/companies/google.png', description: 'Search, Cloud & Tech Giant' },
   { name: 'Amazon', logo: '/companies/amazon.png', description: 'E-Commerce & Cloud Infrastructure' },
   { name: 'Microsoft', logo: '/companies/microsoft.png', description: 'Software, OS, Azure & Gaming' },
   { name: 'Meta', logo: '/companies/meta.png', description: 'Social Networks & Metaverse' },
@@ -56,17 +59,6 @@ function getTopicTagsForIndex(index: number): string[] {
   if (index <= 300) return ['Bit Manipulation', 'Math', 'Linked List'];
   return ['Advanced DP', 'Graphs', 'Greedy', 'Heap'];
 }
-
-export const EXPLICIT_COMPANY_MAPPINGS: Record<string, number[]> = {
-  "Google": [1, 2, 3, 4, 5, 15, 20, 42, 76, 124, 200, 207, 208],
-  "Amazon": [1, 2, 3, 5, 21, 23, 146, 200, 206, 217, 238],
-  "Microsoft": [1, 2, 7, 20, 21, 70, 104, 121, 189, 206],
-  "Meta": [1, 2, 3, 4, 5, 11, 15, 56, 88, 125, 138, 206, 236],
-  "Apple": [1, 3, 20, 21, 42, 70, 104, 121, 169, 206],
-  "Netflix": [1, 2, 4, 15, 42, 78, 146, 200, 238, 300],
-  "Uber": [1, 2, 3, 20, 21, 42, 56, 200, 212, 239],
-  "Flipkart": [1, 2, 3, 5, 15, 21, 42, 70, 121, 200, 206]
-};
 
 function getCompanyTagsForProblem(frontendId: number, index: number): string[] {
   const explicitMatches: string[] = [];
@@ -185,7 +177,7 @@ export async function loadProblems(): Promise<ProblemSeedItem[]> {
 }
 
 export async function seedRealProblems() {
-  console.log('🌱 Starting CodeForge AI Real Problems Seeder (600+ Problems)...');
+  console.log('🌱 Starting CodeForge Real Problems Seeder (600+ Problems)...');
   const startTime = Date.now();
 
   const problemsToSeed = await loadProblems();

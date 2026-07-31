@@ -18,16 +18,16 @@ function error(msg: string) {
 log('--- R1 Scroll Prevention Empirical Verification ---');
 
 // 1. Static AST / Regex Check for scrollIntoView
-const vizChatbotPath = path.resolve('components/problems/VisualizerChatbot.tsx');
+const visualizerTutorPath = path.resolve('components/problems/VisualizerTutor.tsx');
 const probVizPath = path.resolve('components/problems/ProblemVisualizer.tsx');
 
-const chatbotContent = fs.readFileSync(vizChatbotPath, 'utf8');
+const visualizerTutorContent = fs.readFileSync(visualizerTutorPath, 'utf8');
 const vizContent = fs.readFileSync(probVizPath, 'utf8');
 
-if (chatbotContent.includes('scrollIntoView')) {
-  error('VisualizerChatbot.tsx contains scrollIntoView!');
+if (visualizerTutorContent.includes('scrollIntoView')) {
+  error('VisualizerTutor.tsx contains scrollIntoView!');
 } else {
-  log('✓ VisualizerChatbot.tsx does not use scrollIntoView');
+  log('✓ VisualizerTutor.tsx does not use scrollIntoView');
 }
 
 if (vizContent.includes('scrollIntoView')) {
@@ -36,11 +36,11 @@ if (vizContent.includes('scrollIntoView')) {
   log('✓ ProblemVisualizer.tsx does not use scrollIntoView');
 }
 
-// Check how scrolling is handled in VisualizerChatbot
-if (chatbotContent.includes('messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight')) {
-  log('✓ VisualizerChatbot.tsx uses container.scrollTop = container.scrollHeight for internal scrolling');
+// Check how scrolling is handled in VisualizerTutor
+if (visualizerTutorContent.includes('messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight')) {
+  log('✓ VisualizerTutor.tsx uses container.scrollTop = container.scrollHeight for internal scrolling');
 } else {
-  error('VisualizerChatbot.tsx missing expected scrollTop assignment');
+  error('VisualizerTutor.tsx missing expected scrollTop assignment');
 }
 
 // 2. Empirical Keydown PreventDefault Behavior Verification
@@ -131,18 +131,18 @@ log('✓ Keydown handler correctly permits default browser actions inside input/
 // 3. Container Bounded Height Check
 const heightClassesInViz = vizContent.match(/min-h-\[\d+px\]/g) || [];
 const overflowClassesInViz = vizContent.match(/overflow-\w+/g) || [];
-const heightClassesInChatbot = chatbotContent.match(/h-full|min-h-\[\d+px\]|overflow-y-auto/g) || [];
+const heightClassesInTutor = visualizerTutorContent.match(/h-full|min-h-\[\d+px\]|overflow-y-auto/g) || [];
 
 log(`✓ ProblemVisualizer height bounds: ${heightClassesInViz.join(', ')}`);
 log(`✓ ProblemVisualizer overflow control: ${overflowClassesInViz.join(', ')}`);
-log(`✓ VisualizerChatbot container constraints: ${heightClassesInChatbot.join(', ')}`);
+log(`✓ VisualizerTutor container constraints: ${heightClassesInTutor.join(', ')}`);
 
 if (!vizContent.includes('overflow-hidden')) {
   error('ProblemVisualizer main container is missing overflow-hidden');
 }
 
-if (!chatbotContent.includes('overflow-y-auto')) {
-  error('VisualizerChatbot messages container is missing overflow-y-auto');
+if (!visualizerTutorContent.includes('overflow-y-auto')) {
+  error('VisualizerTutor messages container is missing overflow-y-auto');
 }
 
 if (passed) {

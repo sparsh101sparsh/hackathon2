@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Zap, Trophy, X, Loader2, Play, Flame, Lock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { useDialogAccessibility } from '@/lib/useDialogAccessibility';
 
 interface OnDemandContestModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
   const [difficulty, setDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD' | 'MIXED'>('MIXED');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dialogRef = useDialogAccessibility(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -39,7 +41,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          name: format === 'AI_BOT_DUEL' ? `1v1 vs Grandmaster Gemini` : `AI On-Demand Blitz`,
+          name: format === 'AI_BOT_DUEL' ? `1v1 vs Grandmaster` : `On-Demand Blitz`,
           difficulty,
           problemCount,
           mode: format === 'AI_BOT_DUEL' ? 'DUEL' : 'SQUAD',
@@ -52,7 +54,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to launch contest');
 
-      // If AI Bot Duel, start battle immediately
+      // Bot duels start the battle immediately.
       if (format === 'AI_BOT_DUEL') {
         await fetch(`/api/rooms/${data.roomCode}`, {
           method: 'POST',
@@ -75,6 +77,11 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="on-demand-contest-title"
+          ref={dialogRef}
+          tabIndex={-1}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
@@ -89,11 +96,11 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                 <Bot className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white">Instant AI Contest</h3>
-                <p className="text-xs text-slate-400">Launch an on-demand duel or blitz rated by AI</p>
+                <h3 id="on-demand-contest-title" className="text-lg font-black text-white">Instant Contest</h3>
+                <p className="text-xs text-slate-400">Launch an on-demand duel or blitz with automatic scoring</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            <button type="button" aria-label="Close on-demand contest dialog" onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -108,7 +115,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                 <p className="text-xs text-slate-400 mt-1">You must be signed in to launch on-demand contests</p>
               </div>
               <div className="flex gap-3">
-                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">
+                <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">
                   Cancel
                 </button>
                 <Link href="/login" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-amber-500 text-slate-950 text-xs font-bold text-center">
@@ -133,8 +140,8 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                   >
                     <Bot className="w-5 h-5 mb-2 text-purple-400" />
                     <div>
-                      <div className="text-xs font-black text-white">1v1 AI Duel</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">Vs Grandmaster Gemini</div>
+                      <div className="text-xs font-black text-white">1v1 Bot Duel</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">Vs Grandmaster</div>
                     </div>
                   </button>
 
@@ -149,7 +156,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                   >
                     <Zap className="w-5 h-5 mb-2 text-amber-400" />
                     <div>
-                      <div className="text-xs font-black text-white">15m AI Blitz</div>
+                      <div className="text-xs font-black text-white">15m Blitz</div>
                       <div className="text-[10px] text-slate-400 mt-0.5">3 Dynamic Problems</div>
                     </div>
                   </button>
@@ -166,7 +173,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                     <Trophy className="w-5 h-5 mb-2 text-cyan-400" />
                     <div>
                       <div className="text-xs font-black text-white">30m Master</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">Full AI Evaluation</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">Full automatic evaluation</div>
                     </div>
                   </button>
                 </div>
@@ -193,7 +200,7 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
                 </div>
               </div>
 
-              {error && <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">{error}</div>}
+              {error && <div role="alert" aria-live="assertive" className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">{error}</div>}
 
               {/* Launch Button */}
               <button
@@ -203,11 +210,11 @@ export const OnDemandContestModal: React.FC<OnDemandContestModalProps> = ({ isOp
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Provisioning AI Contest...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Provisioning contest...
                   </>
                 ) : (
                   <>
-                    <Flame className="w-4 h-4" /> Start On-Demand AI Contest
+                    <Flame className="w-4 h-4" /> Start On-Demand Contest
                   </>
                 )}
               </button>

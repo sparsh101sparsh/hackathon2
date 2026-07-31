@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -34,8 +34,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/context/AuthContext';
-import { AICommentator } from '@/components/contests/AICommentator';
-import { AIJudgeScorecardModal, AIJudgeReportProps } from '@/components/contests/AIJudgeScorecardModal';
+import { LiveCommentator } from '@/components/contests/LiveCommentator';
+import { JudgeScorecardModal, JudgeReportProps } from '@/components/contests/JudgeScorecardModal';
 
 interface ExecutionResult {
   verdict?: string;
@@ -111,18 +111,20 @@ export default function BattleRoomPage() {
   const [solvedProblems, setSolvedProblems] = useState<Record<string, boolean>>({});
   const [battleUserId, setBattleUserId] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
-  const [aiJudgeReport, setAiJudgeReport] = useState<AIJudgeReportProps | null>(null);
+  const [judgeReport, setJudgeReport] = useState<JudgeReportProps | null>(null);
   const [isJudgeModalOpen, setIsJudgeModalOpen] = useState(false);
   const [lastEvent, setLastEvent] = useState<string>('JOIN');
   const prevTopLeaderRef = React.useRef<{ id: string; score: number } | null>(null);
+  const editorTemplateKeyRef = useRef<string | null>(null);
 
   const currentUserId = user?.id || battleUserId || `guest_local`;
   const currentUserName = user?.name || 'Guest Coder';
 
-  const fetchRoomDetails = async () => {
+  const fetchRoomDetails = useCallback(async (signal?: AbortSignal) => {
     try {
       const res = await fetch(`/api/rooms/${roomCode}`, {
         credentials: 'include',
+        signal,
       });
       if (!res.ok) {
         throw new Error('Room not found');
@@ -143,31 +145,41 @@ export default function BattleRoomPage() {
         setNow(Date.now());
       }
 
-      // Automatically set starter code for active problem
-      if (data.problems && data.problems.length > 0) {
-        const p = data.problems[activeProblemIdx] || data.problems[0];
-        const template = p.codeTemplates?.find((t: { language: string; code: string }) => t.language === language);
-        if (template) {
-          setCode(template.code);
-        }
-      }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error loading battle room';
-      showToast(message, 'error');
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        const message = err instanceof Error ? err.message : 'Error loading battle room';
+        showToast(message, 'error');
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
+  }, [roomCode, showToast]);
 
   useEffect(() => {
     if (roomCode) {
+      const controller = new AbortController();
+      let requestInFlight = false;
       const storedId = window.localStorage.getItem(`codeforge_battle_${roomCode}`);
       if (storedId) setBattleUserId(storedId);
-      fetchRoomDetails();
-      const interval = setInterval(fetchRoomDetails, 3000); // Live sync room leaderboard
-      return () => clearInterval(interval);
+
+      const poll = async () => {
+        if (requestInFlight || controller.signal.aborted) return;
+        requestInFlight = true;
+        try {
+          await fetchRoomDetails(controller.signal);
+        } finally {
+          requestInFlight = false;
+        }
+      };
+
+      poll();
+      const interval = setInterval(poll, 3000); // Live sync room leaderboard
+      return () => {
+        controller.abort();
+        clearInterval(interval);
+      };
     }
-  }, [roomCode, activeProblemIdx]);
+  }, [roomCode, fetchRoomDetails]);
 
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
@@ -188,13 +200,14 @@ export default function BattleRoomPage() {
     if (problems.length > 0) {
       const p = problems[activeProblemIdx];
       if (p) {
+        const editorTemplateKey = `${p.id}:${language}`;
+        if (editorTemplateKeyRef.current === editorTemplateKey) return;
         const template = p.codeTemplates?.find((t: { language: string; code: string }) => t.language === language);
-        if (template) {
-          setCode(template.code);
-        }
+        editorTemplateKeyRef.current = editorTemplateKey;
+        setCode(template?.code || '');
       }
     }
-  }, [language, activeProblemIdx]);
+  }, [language, activeProblemIdx, problems]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(roomCode);
@@ -213,7 +226,7 @@ export default function BattleRoomPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        showToast('⚔️ Battle Started! First to submit gets bonus speed points!', 'success');
+        showToast(' Battle Started! First to submit gets bonus speed points!', 'success');
         await fetchRoomDetails();
       } else {
         showToast(data.error || 'Battle needs two coders to start', 'error');
@@ -273,7 +286,7 @@ export default function BattleRoomPage() {
         body: JSON.stringify({
           language,
           code,
-          input: sampleTc?.input || '',
+          customInput: sampleTc?.input || '',
         }),
       });
 
@@ -316,7 +329,7 @@ export default function BattleRoomPage() {
       setExecutionResult(data);
 
       if (data.verdict === 'Accepted') {
-        showToast('🎉 Accepted! Solution passed all test cases!', 'success');
+        showToast(' Accepted! Solution passed all test cases!', 'success');
         setSolvedProblems((prev) => ({ ...prev, [activeProblem.id]: true }));
 
         const startTime = room?.startedAt ? new Date(room.startedAt).getTime() : now;
@@ -339,11 +352,12 @@ export default function BattleRoomPage() {
             action: 'SCORE_POINTS',
             userId: currentUserId,
             userName: currentUserName,
+            problemId: activeProblem.id,
             pointsToAdd: 150, // 100 pts base + 50 speed bonus
           }),
         });
 
-        // Trigger AI Judge Evaluation
+        // Trigger judge evaluation
         try {
           const judgeRes = await fetch('/api/ai/judge', {
             method: 'POST',
@@ -364,12 +378,12 @@ export default function BattleRoomPage() {
             const judgeData = await judgeRes.json();
             const reportObj = judgeData.report || judgeData;
             if (reportObj) {
-              setAiJudgeReport(reportObj);
+              setJudgeReport(reportObj);
               setIsJudgeModalOpen(true);
             }
           }
         } catch (err) {
-          console.error('AI Judge evaluation error:', err);
+          console.error('Judge evaluation error:', err);
         }
 
         await fetchRoomDetails();
@@ -434,7 +448,7 @@ export default function BattleRoomPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      <AIJudgeScorecardModal isOpen={isJudgeModalOpen} onClose={() => setIsJudgeModalOpen(false)} report={aiJudgeReport} />
+      <JudgeScorecardModal isOpen={isJudgeModalOpen} onClose={() => setIsJudgeModalOpen(false)} report={judgeReport} />
       {/* Top Arena Navigation Bar */}
       <header className="h-16 bg-slate-900/90 border-b border-slate-800/80 px-4 sm:px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-4">
@@ -462,7 +476,13 @@ export default function BattleRoomPage() {
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl">
             <span className="text-[11px] font-bold text-slate-400">CODE:</span>
             <span className="font-mono font-extrabold text-amber-400 text-xs tracking-wider">{roomCode}</span>
-            <button onClick={handleCopyCode} className="ml-1 text-slate-400 hover:text-white transition">
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              aria-label={copiedCode ? 'Room code copied' : 'Copy room code'}
+              title="Copy room code"
+              className="ml-1 text-slate-400 hover:text-white transition"
+            >
               {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
           </div>
@@ -593,6 +613,7 @@ export default function BattleRoomPage() {
                 {/* Language Selector & Controls */}
                 <div className="p-2.5 bg-slate-950 border-b border-slate-800/80 flex items-center justify-between">
                   <select
+                    aria-label="Contest programming language"
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                     className="bg-slate-900 border border-slate-800 text-xs font-bold text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500"
@@ -665,10 +686,10 @@ export default function BattleRoomPage() {
           )}
         </div>
 
-        {/* Live Leaderboard Sidebar (Max 10 Players) & AI Commentator */}
+          {/* Live Leaderboard Sidebar (Max 10 Players) and commentator */}
         <div className="p-4 bg-slate-950 space-y-4 overflow-y-auto">
-          {/* AI Live Commentator Component */}
-          <AICommentator
+          {/* Live commentator component */}
+          <LiveCommentator
             roomCode={roomCode}
             roomName={room.name}
             mode={room.mode}
@@ -717,7 +738,7 @@ export default function BattleRoomPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-6 text-center text-xs font-black font-mono">
-                      {isFirst ? '🥇' : isSecond ? '🥈' : isThird ? '🥉' : `#${rankIdx + 1}`}
+                      {isFirst ? <Medal className="w-4 h-4 text-amber-400 mx-auto" aria-label="First place" /> : isSecond ? <Medal className="w-4 h-4 text-slate-300 mx-auto" aria-label="Second place" /> : isThird ? <Medal className="w-4 h-4 text-amber-600 mx-auto" aria-label="Third place" /> : `#${rankIdx + 1}`}
                     </span>
                     <div>
                       <div className="text-xs font-bold text-white flex items-center gap-1.5">

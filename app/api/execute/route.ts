@@ -1,22 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { executeCode } from '@/lib/piston';
+import { executeCode, isSupportedLanguage } from '@/lib/piston';
 import { ExecutionVerdict, TestCaseResult } from '@/lib/types';
-
-function normalizeOutput(str: string): string {
-  return str.replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
-}
+import { normalizeOutput } from '@/lib/output';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
+    const requestLimit = checkRateLimit(request, 'code-execution', 30, 60 * 1000);
+    if (!requestLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Execution rate limit reached. Please try again shortly.', retryAfter: requestLimit.retryAfter },
+        { status: 429, headers: { 'Retry-After': String(requestLimit.retryAfter) } },
+      );
+    }
     const body = await request.json();
     const { problemId, language, code, customInput } = body;
 
-    if (!language || !code) {
+    if (typeof language !== 'string' || typeof code !== 'string' || !language.trim() || !code.trim()) {
       return NextResponse.json(
         { error: 'Language and code are required' },
         { status: 400 }
       );
+    }
+    if (problemId !== undefined && problemId !== null && typeof problemId !== 'string') {
+      return NextResponse.json({ error: 'problemId must be a string' }, { status: 400 });
+    }
+    if (customInput !== undefined && customInput !== null && typeof customInput !== 'string') {
+      return NextResponse.json({ error: 'customInput must be a string' }, { status: 400 });
+    }
+    if (!isSupportedLanguage(language)) {
+      return NextResponse.json(
+        { error: 'Unsupported language. Choose Python, C++, JavaScript, Java, or Go.' },
+        { status: 400 },
+      );
+    }
+    if (language.length > 32 || code.length > 100_000) {
+      return NextResponse.json({ error: 'Language or code exceeds the allowed size' }, { status: 413 });
+    }
+    if (typeof customInput === 'string' && customInput.length > 50_000) {
+      return NextResponse.json({ error: 'Custom input exceeds the 50KB limit' }, { status: 413 });
     }
 
     // Scenario 1: Custom input execution
@@ -163,10 +186,9 @@ export async function POST(request: NextRequest) {
       testResults: [],
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error executing code:', error);
     return NextResponse.json(
-      { error: message || 'Execution error' },
+      { error: 'Execution error' },
       { status: 500 }
     );
   }

@@ -1,28 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const defaultUsers = [
-      {
-        id: 'guest',
-        email: 'guest@codeforge.ai',
-        name: 'Guest Coder',
-        role: 'GUEST',
-        rating: 0,
-        avatar: null,
-        createdAt: new Date().toISOString(),
-        _count: { submissions: 0 },
-      },
-    ];
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
 
-    return NextResponse.json(defaultUsers);
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    const submissionCounts = await prisma.submission.groupBy({
+      by: ['userId'],
+      _count: { _all: true },
+    });
+    const submissionCountByUser = new Map(
+      submissionCounts.map((entry) => [entry.userId || 'guest', entry._count._all]),
+    );
+
+    const formattedUsers = users.map((user) => ({
+      ...user,
+      role: user.role === 'USER' ? 'REGISTERED' : user.role,
+      rating: 0,
+      avatar: null,
+      _count: { submissions: submissionCountByUser.get(user.id) || 0 },
+    }));
+
+    return NextResponse.json(formattedUsers);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin users list:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch users' },
+      { error: 'Failed to fetch users' },
       { status: 500 }
     );
   }

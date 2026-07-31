@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Lock, CheckCircle2 } from 'lucide-react';
+import { Lock, CheckCircle2, Trophy } from 'lucide-react';
 
 interface Badge {
   id: string;
@@ -44,7 +44,7 @@ export function BadgesGrid({ badges }: BadgesGridProps) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            🏆 Achievement Badges & Milestones
+            <Trophy className="w-4 h-4 text-amber-400" aria-hidden="true" /> Achievement Badges & Milestones
           </h3>
           <p className="text-xs text-slate-400">
             Unlock ranks from Bronze to Master by solving problems & competing
@@ -65,7 +65,7 @@ export function BadgesGrid({ badges }: BadgesGridProps) {
             )}`}
           >
             <div className="text-2xl p-2 rounded-md bg-slate-900/80 border border-slate-800 shrink-0">
-              {badge.icon}
+              <Trophy className="w-5 h-5" aria-hidden="true" />
             </div>
 
             <div className="flex-1 min-w-0">

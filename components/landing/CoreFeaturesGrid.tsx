@@ -18,18 +18,18 @@ import {
 export const CoreFeaturesGrid: React.FC = () => {
   const features = [
     {
-      title: 'Piston Execution Judge',
+      title: 'Judge0 Execution Engine',
       desc: 'Secure containerized sandbox executing C++, Python, JavaScript, Java, and Go in milliseconds with detailed verdict output.',
       icon: <Terminal className="w-6 h-6 text-cyan-400" />,
-      badge: '100% Isolated',
+      badge: 'Sandboxed Runner',
       link: '/problems',
       color: 'hover:border-cyan-500/50 hover:shadow-cyan-950/40',
     },
     {
-      title: 'AI Automated Code Audit',
-      desc: 'Get instant AI analysis on time/space complexity, edge case vulnerabilities, and refactoring suggestions powered by FreeModel.',
+      title: 'Automated Code Audit',
+      desc: 'Get instant analysis on time/space complexity, edge case vulnerabilities, and refactoring suggestions powered by FreeModel.',
       icon: <Sparkles className="w-6 h-6 text-purple-400" />,
-      badge: 'FreeModel AI',
+      badge: 'FreeModel',
       link: '/problems',
       color: 'hover:border-purple-500/50 hover:shadow-purple-950/40',
     },

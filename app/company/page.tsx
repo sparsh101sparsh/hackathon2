@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { CompanySummary } from '@/app/api/company/route';
-import { Building2, ArrowRight, Server, Search, Loader2, Sparkles } from 'lucide-react';
+import { Building2, ArrowRight, Search, Loader2, Sparkles } from 'lucide-react';
 import { CardSkeleton } from '@/components/ui/Skeletons';
 
 export default function CompanyDirectoryPage() {
@@ -13,19 +13,23 @@ export default function CompanyDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchCompanies() {
       try {
-        const res = await fetch('/api/company');
+        const res = await fetch('/api/company', { signal: controller.signal });
         if (!res.ok) throw new Error('Failed to fetch companies');
         const data = await res.json();
         setCompanies(data.companies || []);
       } catch (err) {
-        console.error(err);
+        if (!(err instanceof DOMException && err.name === 'AbortError')) console.error(err);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
     fetchCompanies();
+
+    return () => controller.abort();
   }, []);
 
   const filteredCompanies = companies.filter(
@@ -57,15 +61,6 @@ export default function CompanyDirectoryPage() {
           </p>
         </div>
 
-        {/* System Design Prep Banner Button */}
-        <Link
-          href="/company/system-design"
-          className="px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-purple-950/50 flex items-center gap-2 shrink-0 border border-purple-400/30 hover:scale-105"
-        >
-          <Server className="w-4 h-4" />
-          <span>System Design AI Evaluator</span>
-          <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
-        </Link>
       </div>
 
       {/* Search Bar */}
@@ -73,6 +68,7 @@ export default function CompanyDirectoryPage() {
         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
+          aria-label="Filter companies"
           placeholder="Filter by company name or domain..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -103,7 +99,7 @@ export default function CompanyDirectoryPage() {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-3xl p-3 rounded-2xl bg-slate-950 border border-slate-800 shrink-0">
-                      {comp.logo}
+                      <Building2 className="w-7 h-7 text-amber-400" aria-hidden="true" />
                     </span>
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-cyan-950/60 text-cyan-300 border border-cyan-800/60">
                       {comp.problemCount} Problems

@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { getRequestToken, verifyToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const cookieToken = req.cookies.get('codeforge_session')?.value;
-    const authHeader = req.headers.get('Authorization');
-    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const token = cookieToken || headerToken;
+    const token = getRequestToken(req);
 
     if (!token) {
       return NextResponse.json({ user: null });
@@ -37,7 +34,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ user });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    console.error('Error in /api/auth/me:', error);
     return NextResponse.json({ user: null });
   }
 }

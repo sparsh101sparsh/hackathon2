@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Target } from 'lucide-react';
 import {
   ResponsiveContainer,
   RadarChart,
@@ -35,7 +36,7 @@ export function TopicRadarChart({ topics }: TopicRadarChartProps) {
       <div className="flex items-center justify-between mb-2">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            🎯 Topic Mastery Radar
+            <Target className="w-4 h-4 text-amber-400" aria-hidden="true" /> Topic Mastery Radar
           </h3>
           <p className="text-xs text-slate-400">
             Skill balance across key algorithmic categories

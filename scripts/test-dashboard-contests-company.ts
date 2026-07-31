@@ -1,3 +1,5 @@
+import { NextRequest } from 'next/server';
+import { GET as companyDetailHandler } from '../app/api/company/[slug]/route';
 import { prisma } from '../lib/prisma';
 import { calculateRatingUpdate, getRatingTier } from '../lib/rating';
 
@@ -107,6 +109,13 @@ async function runTests() {
     include: { companyProblems: { include: { problem: true } } },
   });
   assert(Boolean(googleCompany), 'Google company entity retrievable for company detail page');
+
+  const companyResponse = await companyDetailHandler(new NextRequest('http://localhost:3000/api/company/google'), { params: Promise.resolve({ slug: 'google' }) });
+  const companyData = await companyResponse.json();
+  assert(companyResponse.status === 200 && companyData.problems?.length > 0, 'Company detail API returns mapped Google problems');
+  assert(companyData.problems.every((problem: { acceptanceRate: number }) => Number.isFinite(problem.acceptanceRate)), 'Company acceptance rates are deterministic numeric values');
+  const missingCompanyResponse = await companyDetailHandler(new NextRequest('http://localhost:3000/api/company/does-not-exist'), { params: Promise.resolve({ slug: 'does-not-exist' }) });
+  assert(missingCompanyResponse.status === 404, 'Unknown company does not fall back to unrelated problems');
 
   console.log(`\n========================================`);
   console.log(`🎉 Summary: ${passedCount} / ${totalCount} tests passed.`);

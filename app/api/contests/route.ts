@@ -9,12 +9,25 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     const session = getSessionFromRequest(req);
 
+    const contestSummarySelect = {
+      id: true,
+      title: true,
+      description: true,
+      startTime: true,
+      endTime: true,
+      isRated: true,
+      status: true,
+      _count: {
+        select: {
+          contestProblems: true,
+          contestParticipants: true,
+        },
+      },
+    } as const;
+
     let dbContests = await prisma.contest.findMany({
       orderBy: { startTime: 'desc' },
-      include: {
-        contestProblems: true,
-        contestParticipants: true,
-      },
+      select: contestSummarySelect,
     });
 
     if (dbContests.length === 0) {
@@ -58,11 +71,22 @@ export async function GET(req: NextRequest) {
 
       dbContests = await prisma.contest.findMany({
         orderBy: { startTime: 'desc' },
-        include: {
-          contestProblems: true,
-          contestParticipants: true,
-        },
+        select: contestSummarySelect,
       });
+    }
+
+    const registeredContestIds = new Set<string>();
+    if (session?.userId && dbContests.length > 0) {
+      const registrations = await prisma.contestParticipant.findMany({
+        where: {
+          userId: session.userId,
+          contestId: { in: dbContests.map((contest) => contest.id) },
+        },
+        select: { contestId: true },
+      });
+      for (const registration of registrations) {
+        registeredContestIds.add(registration.contestId);
+      }
     }
 
     const contests = dbContests.map((c) => {
@@ -75,10 +99,6 @@ export async function GET(req: NextRequest) {
         calculatedStatus = 'ENDED';
       }
 
-      const isRegistered = session?.userId
-        ? c.contestParticipants.some((p) => p.userId === session.userId)
-        : false;
-
       return {
         id: c.id,
         title: c.title,
@@ -87,18 +107,17 @@ export async function GET(req: NextRequest) {
         endTime: c.endTime,
         isRated: c.isRated,
         status: calculatedStatus,
-        problemCount: c.contestProblems.length || 4,
-        participantCount: c.contestParticipants.length,
-        isRegistered,
+        problemCount: c._count.contestProblems || 4,
+        participantCount: c._count.contestParticipants,
+        isRegistered: registeredContestIds.has(c.id),
       };
     });
 
     return NextResponse.json({ contests });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/contests:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch contests' },
+      { error: 'Failed to fetch contests' },
       { status: 500 }
     );
   }

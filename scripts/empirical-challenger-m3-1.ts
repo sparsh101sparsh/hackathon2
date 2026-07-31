@@ -296,7 +296,7 @@ async function runEmpiricalStressTest() {
 
   console.log('================================================================');
   if (overallPassed) {
-    console.log('🎉 FINAL VERDICT: PASS - ALL 620 DSA PROBLEMS MEET EMPIRICAL SPECIFICATIONS 100%');
+    console.log('🎉 FINAL VERDICT: PASS - ALL CANONICAL DSA PROBLEMS MEET EMPIRICAL SPECIFICATIONS 100%');
   } else {
     console.log('❌ FINAL VERDICT: FAIL - EMPIRICAL STRESS TEST DETECTED ISSUES');
     process.exitCode = 1;

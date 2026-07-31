@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
-import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
+import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,8 @@ export interface SystemDesignEvalResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    const limitResponse = rateLimitResponse(request, 'ai:system-design', 10, 60 * 1000);
+    if (limitResponse) return limitResponse;
     const body = await request.json();
     const {
       architectureDoc = '',
@@ -25,11 +28,14 @@ export async function POST(request: NextRequest) {
     if (!architectureDoc || !architectureDoc.trim()) {
       return NextResponse.json({ error: 'architectureDoc is required' }, { status: 400 });
     }
+    if (architectureDoc.length > 50_000) {
+      return NextResponse.json({ error: 'architectureDoc exceeds the 50KB limit' }, { status: 413 });
+    }
 
-    const personality = getPersonality(personalityId);
-    const personalityPrefix = buildPersonalityPrefix(personality);
+    const personality = getTeachingStyle(personalityId);
+    const personalityPrefix = buildTeachingStylePrefix(personality);
 
-    const systemPrompt = `${personalityPrefix}You are a Principal Infrastructure & Distributed Systems Architect reviewing a System Design Proposal for ${company} (${topic}).
+    const systemInstruction = `${personalityPrefix}You are a Principal Infrastructure & Distributed Systems Architect reviewing a System Design Proposal for ${company} (${topic}).
 Evaluate the architecture document for scalability, fault-tolerance, data model, caching, load balancing, and storage choices.
 Output MUST be a single raw JSON object matching schema:
 {
@@ -40,7 +46,7 @@ Output MUST be a single raw JSON object matching schema:
   "tradeoffs": ["array of explicit architectural tradeoffs e.g. Consistency vs Availability (CAP Theorem)"]
 }`;
 
-    const userPrompt = `Target Company: ${company}
+    const userInstruction = `Target Company: ${company}
 System Design Topic: ${topic}
 
 Candidate Architecture Proposal Document:
@@ -67,18 +73,17 @@ ${architectureDoc}`;
 
     const evalResult = await callFreeModelJSON<SystemDesignEvalResponse>({
       model: MODELS.COMPLEX,
-      systemPrompt,
-      userPrompt,
+      systemInstruction,
+      userInstruction,
       temperature: 0.3,
       fallbackJson: fallbackReport,
     });
 
     return NextResponse.json(evalResult);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/system-design:', error);
     return NextResponse.json(
-      { error: message || 'Failed to evaluate system design architecture' },
+      { error: 'System design evaluation is temporarily unavailable. Please try again shortly.' },
       { status: 500 }
     );
   }

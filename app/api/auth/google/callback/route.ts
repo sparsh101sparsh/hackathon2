@@ -6,10 +6,18 @@ import { hashPassword, setSessionCookie, signToken } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 function getBaseUrl(req: NextRequest): string {
-  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-  const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-  if (host) {
-    return `${proto}://${host}`;
+  const configuredUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (configuredUrl) {
+    try {
+      return new URL(configuredUrl).origin;
+    } catch {
+      // Fall through to the safe deployment default when configuration is invalid.
+    }
+  }
+
+  const host = req.headers.get('host') || '';
+  if (/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host)) {
+    return `http://${host}`;
   }
   return 'https://hackathon2-olive-eight.vercel.app';
 }
@@ -37,16 +45,20 @@ export async function GET(req: NextRequest) {
     return failure('google_no_code');
   }
 
-  // Validate state if cookie is present (CSRF check)
-  if (savedState && state) {
-    try {
-      if (
-        state.length !== savedState.length ||
-        !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(savedState))
-      ) {
-        // State mismatch warning
-      }
-    } catch {}
+  // OAuth state is mandatory. Accepting a missing or mismatched state allows
+  // an attacker to bind a victim's browser to an authorization response.
+  if (!savedState || !state) {
+    return failure('google_state_missing');
+  }
+  try {
+    if (
+      state.length !== savedState.length ||
+      !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(savedState))
+    ) {
+      return failure('google_state_invalid');
+    }
+  } catch {
+    return failure('google_state_invalid');
   }
 
   const callbackUrl = getCallbackUrl(req);
@@ -55,6 +67,7 @@ export async function GET(req: NextRequest) {
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal: AbortSignal.timeout(10_000),
       body: new URLSearchParams({
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
@@ -65,19 +78,20 @@ export async function GET(req: NextRequest) {
     });
 
     if (!tokenResponse.ok) {
-      const errBody = await tokenResponse.text();
-      console.error('Google token exchange failed:', errBody, 'used callbackUrl:', callbackUrl);
+      const errBody = (await tokenResponse.text()).slice(0, 300);
+      console.error('Google token exchange failed:', { status: tokenResponse.status, providerMessage: errBody });
       return failure('google_token_exchange_failed');
     }
 
     const tokens = (await tokenResponse.json()) as { access_token?: string; error?: string };
     if (!tokens.access_token) {
-      console.error('Missing access_token. Google response:', tokens);
+      console.error('Google token exchange returned no access token:', { error: tokens.error || 'unknown_provider_error' });
       return failure('google_missing_access_token');
     }
 
     const profileResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!profileResponse.ok) return failure('google_profile_failed');
@@ -135,7 +149,6 @@ export async function GET(req: NextRequest) {
     response.cookies.delete('codeforge_google_state');
     return setSessionCookie(response, token);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Google OAuth callback failed:', error);
     return failure('google_login_failed');
   }

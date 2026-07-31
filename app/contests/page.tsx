@@ -115,7 +115,7 @@ export default function ContestsPage() {
               <Swords className="w-3.5 h-3.5" /> Private Room (1v1 to 10 Players)
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white">
-              Challenge Your Friends to a Speed Coding Battle ⚡
+              Challenge Your Friends to a Speed Coding Battle
             </h2>
             <p className="text-xs sm:text-sm text-slate-300">
               Create a custom room with a unique 6-character code. First coder to submit accepted solutions gets bonus speed points! Maximum limit: <span className="font-bold text-amber-400">10 friends per room</span>.
@@ -128,7 +128,7 @@ export default function ContestsPage() {
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
             >
               <Zap className="w-4 h-4" />
-              <span>⚡ Instant AI Duel / Blitz</span>
+              <span className="inline-flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" aria-hidden="true" /> Instant Duel / Blitz</span>
             </button>
             <button
               onClick={() => setIsCreateModalOpen(true)}

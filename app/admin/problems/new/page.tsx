@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import {
   ChevronLeft,
   Plus,
@@ -51,6 +52,11 @@ const DEFAULT_TEMPLATES: TemplateInput[] = [
 
 export default function NewProblemPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user?.role !== 'ADMIN') router.replace('/');
+  }, [authLoading, user?.role, router]);
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -155,6 +161,14 @@ export default function NewProblemPage() {
     }
   };
 
+  if (authLoading || user?.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+        <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-6 lg:p-10 max-w-5xl mx-auto space-y-8">
       {/* Header */}
@@ -194,6 +208,7 @@ export default function NewProblemPage() {
               <label className="text-xs font-bold text-slate-300">Problem Title</label>
               <input
                 type="text"
+                aria-label="Problem title"
                 required
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
@@ -206,6 +221,7 @@ export default function NewProblemPage() {
               <label className="text-xs font-bold text-slate-300">URL Slug</label>
               <input
                 type="text"
+                aria-label="Problem URL slug"
                 required
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
@@ -219,6 +235,7 @@ export default function NewProblemPage() {
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-300">Difficulty</label>
               <select
+                aria-label="Problem difficulty"
                 value={difficulty}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}
                 className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
@@ -233,6 +250,7 @@ export default function NewProblemPage() {
               <label className="text-xs font-bold text-slate-300">Time Limit (seconds)</label>
               <input
                 type="number"
+                aria-label="Time limit in seconds"
                 step="0.1"
                 min="0.1"
                 max="10"
@@ -246,6 +264,7 @@ export default function NewProblemPage() {
               <label className="text-xs font-bold text-slate-300">Memory Limit (MB)</label>
               <input
                 type="number"
+                aria-label="Memory limit in megabytes"
                 value={memoryLimit}
                 onChange={(e) => setMemoryLimit(parseInt(e.target.value, 10))}
                 className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
@@ -258,6 +277,7 @@ export default function NewProblemPage() {
               <label className="text-xs font-bold text-slate-300">Topic Tags (comma-separated)</label>
               <input
                 type="text"
+                aria-label="Problem topic tags"
                 value={topicTagsStr}
                 onChange={(e) => setTopicTagsStr(e.target.value)}
                 placeholder="Arrays, Hash Table, Dynamic Programming"
@@ -269,6 +289,7 @@ export default function NewProblemPage() {
               <label className="text-xs font-bold text-slate-300">Company Tags (comma-separated)</label>
               <input
                 type="text"
+                aria-label="Problem company tags"
                 value={companyTagsStr}
                 onChange={(e) => setCompanyTagsStr(e.target.value)}
                 placeholder="Google, Amazon, Meta"
@@ -288,6 +309,7 @@ export default function NewProblemPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Problem Statement</label>
             <textarea
+              aria-label="Problem statement"
               required
               rows={5}
               value={statement}
@@ -300,10 +322,11 @@ export default function NewProblemPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-300">Input Format</label>
-              <textarea
-                required
-                rows={3}
-                value={inputFormat}
+            <textarea
+              aria-label="Input format"
+              required
+              rows={3}
+              value={inputFormat}
                 onChange={(e) => setInputFormat(e.target.value)}
                 placeholder="The first line contains..."
                 className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
@@ -313,6 +336,7 @@ export default function NewProblemPage() {
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-300">Output Format</label>
               <textarea
+                aria-label="Output format"
                 required
                 rows={3}
                 value={outputFormat}
@@ -326,6 +350,7 @@ export default function NewProblemPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Constraints</label>
             <textarea
+              aria-label="Problem constraints"
               required
               rows={3}
               value={constraints}
@@ -338,6 +363,7 @@ export default function NewProblemPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-300">Official Editorial Solution</label>
             <textarea
+              aria-label="Official editorial solution"
               rows={4}
               value={editorial}
               onChange={(e) => setEditorial(e.target.value)}
@@ -383,6 +409,7 @@ export default function NewProblemPage() {
                   <div>
                     <label className="text-[11px] text-slate-400">Input</label>
                     <textarea
+                      aria-label={`Sample case ${idx + 1} input`}
                       rows={2}
                       value={tc.input}
                       onChange={(e) => {
@@ -397,6 +424,7 @@ export default function NewProblemPage() {
                   <div>
                     <label className="text-[11px] text-slate-400">Expected Output</label>
                     <textarea
+                      aria-label={`Sample case ${idx + 1} expected output`}
                       rows={2}
                       value={tc.expectedOutput}
                       onChange={(e) => {
@@ -414,6 +442,7 @@ export default function NewProblemPage() {
                   <label className="text-[11px] text-slate-400">Explanation (Optional)</label>
                   <input
                     type="text"
+                    aria-label={`Sample case ${idx + 1} explanation`}
                     value={tc.explanation || ''}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -463,6 +492,7 @@ export default function NewProblemPage() {
                   <div>
                     <label className="text-[11px] text-slate-400">Input</label>
                     <textarea
+                      aria-label={`Hidden case ${idx + 1} input`}
                       rows={2}
                       value={tc.input}
                       onChange={(e) => {
@@ -477,6 +507,7 @@ export default function NewProblemPage() {
                   <div>
                     <label className="text-[11px] text-slate-400">Expected Output</label>
                     <textarea
+                      aria-label={`Hidden case ${idx + 1} expected output`}
                       rows={2}
                       value={tc.expectedOutput}
                       onChange={(e) => {
@@ -508,6 +539,7 @@ export default function NewProblemPage() {
                   {tmpl.language} Starter Code
                 </label>
                 <textarea
+                  aria-label={`${tmpl.language} starter code`}
                   rows={4}
                   value={tmpl.code}
                   onChange={(e) => {

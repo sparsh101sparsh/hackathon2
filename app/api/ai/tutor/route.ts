@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelText, MODELS, FreeModelMessage } from '@/lib/freemodel';
 import { getProblemKnowledge } from '@/lib/problemKnowledge';
-import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
+import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const limitResponse = rateLimitResponse(request, 'ai:tutor', 30, 60 * 1000);
+    if (limitResponse) return limitResponse;
     const body = await request.json();
     const {
       problemTitle = 'DSA Problem',
@@ -19,6 +22,20 @@ export async function POST(request: NextRequest) {
       personality: personalityId,
     } = body;
 
+    if (!Array.isArray(messages) || messages.length > 60) {
+      return NextResponse.json({ error: 'messages must be an array with at most 60 entries' }, { status: 400 });
+    }
+    if (typeof userCode !== 'string' || userCode.length > 100_000) {
+      return NextResponse.json({ error: 'userCode exceeds the 100KB limit' }, { status: 413 });
+    }
+    if (messages.some((message: unknown) => {
+      if (!message || typeof message !== 'object') return true;
+      const content = (message as { content?: unknown }).content;
+      return typeof content !== 'string' || content.length > 10_000;
+    })) {
+      return NextResponse.json({ error: 'Each tutor message must contain at most 10,000 characters' }, { status: 413 });
+    }
+
     const knowledge = await getProblemKnowledge({
       problemId,
       problemSlug,
@@ -26,10 +43,10 @@ export async function POST(request: NextRequest) {
       fallbackStatement: problemStatement,
     });
 
-    const personality = getPersonality(personalityId);
-    const personalityPrefix = buildPersonalityPrefix(personality);
+    const personality = getTeachingStyle(personalityId);
+    const personalityPrefix = buildTeachingStylePrefix(personality);
 
-    const systemPrompt = `${personalityPrefix}${personality.tutorSystemPrompt}
+    const systemInstruction = `${personalityPrefix}${personality.tutorSystemInstruction}
 
 DSA Tutor Context:
 - Problem: "${knowledge.title}", Language: "${language}".
@@ -38,7 +55,7 @@ ${knowledge.context}`;
 
     // Construct full message list
     const formattedMessages: FreeModelMessage[] = [
-      { role: 'system', content: systemPrompt },
+      { role: 'system', content: systemInstruction },
     ];
 
     if (problemTitle || userCode) {
@@ -86,10 +103,9 @@ ${userCode || '(Empty)'}
 
     return NextResponse.json({ reply });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/tutor:', error);
     return NextResponse.json(
-      { error: message || 'Failed to get response from AI Tutor' },
+      { error: 'guided Tutor is temporarily unavailable. Please try again shortly.' },
       { status: 500 }
     );
   }

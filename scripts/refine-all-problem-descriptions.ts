@@ -539,7 +539,7 @@ export function cleanConstraintsMarkdown(constraints: string | null | undefined,
 }
 
 async function refineAllProblems() {
-  console.log('🚀 Starting comprehensive problem description refinement across all 620 problems...');
+  console.log('🚀 Starting comprehensive problem description refinement across the canonical problem catalog...');
 
   const problems = await prisma.problem.findMany({
     include: {

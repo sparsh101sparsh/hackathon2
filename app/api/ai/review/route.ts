@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 import { getProblemKnowledge } from '@/lib/problemKnowledge';
-import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
+import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,8 @@ export interface CodeReviewResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    const limitResponse = rateLimitResponse(request, 'ai:review', 10, 60 * 1000);
+    if (limitResponse) return limitResponse;
     const body = await request.json();
     const {
       problemTitle = 'DSA Problem',
@@ -33,6 +36,9 @@ export async function POST(request: NextRequest) {
     if (!userCode || !userCode.trim()) {
       return NextResponse.json({ error: 'userCode is required' }, { status: 400 });
     }
+    if (userCode.length > 100_000 || problemStatement.length > 30_000) {
+      return NextResponse.json({ error: 'Code or problem statement exceeds the allowed size' }, { status: 413 });
+    }
 
     const knowledge = await getProblemKnowledge({
       problemId,
@@ -41,10 +47,10 @@ export async function POST(request: NextRequest) {
       fallbackStatement: problemStatement,
     });
 
-    const personality = getPersonality(personalityId);
-    const personalityPrefix = buildPersonalityPrefix(personality);
+    const personality = getTeachingStyle(personalityId);
+    const personalityPrefix = buildTeachingStylePrefix(personality);
 
-    const systemPrompt = `${personalityPrefix}${personality.reviewSystemPrompt}
+    const systemInstruction = `${personalityPrefix}${personality.reviewSystemInstruction}
 
 You are conducting a deep technical code review. Use the canonical question reference below as the source of truth for correctness, constraints, edge cases, and complexity. Do not review against a guessed problem.
 
@@ -63,7 +69,7 @@ JSON Schema:
   "refactoredCode": "clean, optimized, production-ready refactored version of the user code"
 }`;
 
-    const userPrompt = `Problem Title: ${knowledge.title}
+    const userInstruction = `Problem Title: ${knowledge.title}
 Problem Statement: ${knowledge.context}
 Programming Language: ${language}
 Execution Verdict: ${verdict}
@@ -96,18 +102,17 @@ ${userCode}
 
     const review = await callFreeModelJSON<CodeReviewResponse>({
       model: MODELS.COMPLEX,
-      systemPrompt,
-      userPrompt,
+      systemInstruction,
+      userInstruction,
       temperature: 0.3,
       fallbackJson,
     });
 
     return NextResponse.json(review);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/review:', error);
     return NextResponse.json(
-      { error: message || 'Failed to generate code review' },
+      { error: 'Code review is temporarily unavailable. Please try again shortly.' },
       { status: 500 }
     );
   }

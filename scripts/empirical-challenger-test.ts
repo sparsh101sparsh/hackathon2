@@ -335,11 +335,11 @@ async function runEmpiricalTests() {
     const sampleProb = await prisma.problem.findFirst();
     if (sampleProb) {
       const reqId = new NextRequest(`http://localhost:3000/api/problems/${sampleProb.id}`);
-      const resId = await getProblemById(reqId, { params: { id: sampleProb.id } });
+      const resId = await getProblemById(reqId, { params: Promise.resolve({ id: sampleProb.id }) });
       const bodyId = await resId.json();
 
       const reqSlug = new NextRequest(`http://localhost:3000/api/problems/${sampleProb.slug}`);
-      const resSlug = await getProblemById(reqSlug, { params: { id: sampleProb.slug } });
+      const resSlug = await getProblemById(reqSlug, { params: Promise.resolve({ id: sampleProb.slug }) });
       const bodySlug = await resSlug.json();
 
       const validDetail =

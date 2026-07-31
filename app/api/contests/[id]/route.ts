@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
+import { ensureContestProblemLinks } from '@/lib/contestProblems';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const session = getSessionFromRequest(req);
 
     let contest = await prisma.contest.findUnique({
@@ -35,25 +36,43 @@ export async function GET(
             },
           },
         },
-        contestParticipants: true,
+        contestParticipants: { select: { userId: true } },
       },
     });
 
     if (!contest) {
-      contest = await prisma.contest.findFirst({
-        include: {
-          contestProblems: {
-            orderBy: { order: 'asc' },
-            include: { problem: true },
-          },
-          contestParticipants: true,
-        },
-      });
-    }
-
-    if (!contest) {
       return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
     }
+
+    await ensureContestProblemLinks(contest.id);
+    contest = await prisma.contest.findUnique({
+      where: { id: contest.id },
+      include: {
+        contestProblems: {
+          orderBy: { order: 'asc' },
+          include: {
+            problem: {
+              select: {
+                id: true,
+                slug: true,
+                title: true,
+                difficulty: true,
+                topicTags: true,
+                timeLimit: true,
+                memoryLimit: true,
+                statement: true,
+                inputFormat: true,
+                outputFormat: true,
+                constraints: true,
+              },
+            },
+          },
+        },
+        contestParticipants: { select: { userId: true } },
+      },
+    });
+
+    if (!contest) return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
 
     const now = new Date();
     let calculatedStatus = contest.status;
@@ -132,10 +151,9 @@ export async function GET(
       },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/contests/[id]:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch contest detail' },
+      { error: 'Failed to fetch contest detail' },
       { status: 500 }
     );
   }

@@ -58,16 +58,31 @@ export interface DashboardStatsResponse {
 }
 
 import { getSessionFromRequest } from '@/lib/auth';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export async function GET(req: NextRequest) {
   try {
+    const limitResponse = rateLimitResponse(
+      req,
+      'dashboard:stats',
+      30,
+      60 * 1000,
+      'Dashboard refresh rate limit reached. Please try again shortly.',
+    );
+    if (limitResponse) return limitResponse;
+
     const payload = getSessionFromRequest(req);
 
     const targetUserId = payload?.userId || 'guest';
-    const dbUser = payload?.userId ? await prisma.user.findUnique({ where: { id: payload.userId } }) : null;
+    const dbUser = payload?.userId
+      ? await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { name: true, email: true },
+      })
+      : null;
 
     const userName = dbUser?.name || 'Guest Coder';
-    const userEmail = dbUser?.email || 'guest@codeforge.ai';
+    const userEmail = dbUser?.email || 'guest@codeforge.dev';
 
     const userProgress = await prisma.userProgress.findUnique({
       where: { userId: targetUserId },
@@ -75,26 +90,52 @@ export async function GET(req: NextRequest) {
 
     const userRatings = await prisma.userRating.findMany({
       where: { userId: targetUserId },
-      include: { contest: true },
+      select: {
+        rating: true,
+        delta: true,
+        timestamp: true,
+        contest: { select: { title: true } },
+      },
       orderBy: { timestamp: 'asc' },
     });
 
-    const submissions = await prisma.submission.findMany({
-      where: { userId: targetUserId },
-      include: { problem: true },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    // Get real total counts of problems in system by difficulty
-    const [totalEasy, totalMedium, totalHard] = await Promise.all([
-      prisma.problem.count({ where: { difficulty: 'EASY' } }),
-      prisma.problem.count({ where: { difficulty: 'MEDIUM' } }),
-      prisma.problem.count({ where: { difficulty: 'HARD' } }),
+    // Get real catalog totals with one grouped count query and one topic query.
+    const activityStart = new Date(Date.now() - 364 * 24 * 60 * 60 * 1000);
+    const [difficultyCounts, topicCatalog, totalSubmissions, acceptedSubmissionCount, acceptedProblemGroups, recentSubmissions] = await prisma.$transaction([
+      prisma.problem.groupBy({
+        by: ['difficulty'],
+        orderBy: { difficulty: 'asc' },
+        _count: { _all: true },
+      }),
+      prisma.problem.findMany({ select: { id: true, topicTags: true } }),
+      prisma.submission.count({ where: { userId: targetUserId } }),
+      prisma.submission.count({ where: { userId: targetUserId, status: 'Accepted' } }),
+      prisma.submission.groupBy({
+        by: ['problemId'],
+        where: { userId: targetUserId, status: 'Accepted' },
+        orderBy: { problemId: 'asc' },
+      }),
+      prisma.submission.findMany({
+        where: { userId: targetUserId, createdAt: { gte: activityStart } },
+        select: { createdAt: true },
+      }),
     ]);
 
-    const sysTotalEasy = totalEasy;
-    const sysTotalMedium = totalMedium;
-    const sysTotalHard = totalHard;
+    const acceptedProblemIds = acceptedProblemGroups.map((submission) => submission.problemId);
+    const acceptedProblems = acceptedProblemIds.length > 0
+      ? await prisma.problem.findMany({
+        where: { id: { in: acceptedProblemIds } },
+        select: { id: true, difficulty: true },
+      })
+      : [];
+
+    const catalogCount = (difficulty: string) => {
+      const entry = difficultyCounts.find((item) => item.difficulty === difficulty);
+      return entry && typeof entry._count === 'object' ? entry._count._all ?? 0 : 0;
+    };
+    const sysTotalEasy = catalogCount('EASY');
+    const sysTotalMedium = catalogCount('MEDIUM');
+    const sysTotalHard = catalogCount('HARD');
 
     let solvedEasy = 0;
     let solvedMedium = 0;
@@ -102,22 +143,15 @@ export async function GET(req: NextRequest) {
     let streak = userProgress?.streak ?? 0;
     let currentRating = userRatings.length > 0 ? userRatings[userRatings.length - 1].rating : 0;
 
-    const totalSubmissions = submissions.length;
-    const acceptedSubmissions = submissions.filter((s) => s.status === 'Accepted');
     const accuracy = totalSubmissions > 0
-      ? Math.round((acceptedSubmissions.length / totalSubmissions) * 1000) / 10
+      ? Math.round((acceptedSubmissionCount / totalSubmissions) * 1000) / 10
       : 0;
 
-    const acceptedProblemIds = new Set<string>();
-    acceptedSubmissions.forEach((sub) => {
-      if (sub.problemId && !acceptedProblemIds.has(sub.problemId)) {
-        acceptedProblemIds.add(sub.problemId);
-        if (sub.problem) {
-          if (sub.problem.difficulty === 'EASY') solvedEasy++;
-          else if (sub.problem.difficulty === 'MEDIUM') solvedMedium++;
-          else if (sub.problem.difficulty === 'HARD') solvedHard++;
-        }
-      }
+    const acceptedProblemIdSet = new Set(acceptedProblemIds);
+    acceptedProblems.forEach((problem) => {
+      if (problem.difficulty === 'EASY') solvedEasy++;
+      else if (problem.difficulty === 'MEDIUM') solvedMedium++;
+      else if (problem.difficulty === 'HARD') solvedHard++;
     });
 
     const totalSolved = solvedEasy + solvedMedium + solvedHard;
@@ -133,21 +167,23 @@ export async function GET(req: NextRequest) {
     ];
 
     const topicMasteryList = TOPICS_LIST.map((topic) => {
-      // Count total problems in DB containing topic
       const topicLower = topic.toLowerCase();
-      let topicSolvedCount = 0;
-      acceptedSubmissions.forEach((sub) => {
-        if (sub.problem?.topicTags) {
-          try {
-            const tags: string[] = JSON.parse(sub.problem.topicTags);
-            if (tags.some((t) => topicLower.includes(t.toLowerCase()) || t.toLowerCase().includes(topicLower))) {
-              topicSolvedCount++;
-            }
-          } catch {}
+      const matchesTopic = (topicTags: string) => {
+        try {
+          const tags: string[] = JSON.parse(topicTags || '[]');
+          return tags.some((tag) => topicLower.includes(tag.toLowerCase()) || tag.toLowerCase().includes(topicLower));
+        } catch {
+          return false;
         }
-      });
-      const topicTotalCount = 20; // baseline denominator
-      const percentage = Math.min(100, Math.round((topicSolvedCount / topicTotalCount) * 100));
+      };
+      const topicTotalCount = topicCatalog.filter((problem) => matchesTopic(problem.topicTags)).length;
+      const topicSolvedCount = Array.from(acceptedProblemIdSet).filter((problemId) => {
+        const catalogProblem = topicCatalog.find((problem) => problem.id === problemId);
+        return Boolean(catalogProblem && matchesTopic(catalogProblem.topicTags));
+      }).length;
+      const percentage = topicTotalCount > 0
+        ? Math.min(100, Math.round((topicSolvedCount / topicTotalCount) * 100))
+        : 0;
       return {
         topic,
         solved: topicSolvedCount,
@@ -169,7 +205,7 @@ export async function GET(req: NextRequest) {
     const activityMatrix: Array<{ date: string; count: number; level: 0 | 1 | 2 | 3 | 4 }> = [];
     const submissionMap = new Map<string, number>();
 
-    submissions.forEach((sub) => {
+    recentSubmissions.forEach((sub) => {
       const dateStr = new Date(sub.createdAt).toISOString().split('T')[0];
       submissionMap.set(dateStr, (submissionMap.get(dateStr) || 0) + 1);
     });
@@ -195,7 +231,7 @@ export async function GET(req: NextRequest) {
         id: 'bronze-coder',
         name: 'Bronze Solver',
         description: 'Solve 10 Easy Problems',
-        icon: '🥉',
+        icon: '',
         tier: 'Bronze' as const,
         unlocked: totalSolved >= 10,
         unlockedAt: totalSolved >= 10 ? new Date().toISOString().split('T')[0] : undefined,
@@ -205,7 +241,7 @@ export async function GET(req: NextRequest) {
         id: 'silver-master',
         name: 'Silver Knight',
         description: 'Achieve 1200+ Contest Rating',
-        icon: '🥈',
+        icon: '',
         tier: 'Silver' as const,
         unlocked: currentRating >= 1200,
         unlockedAt: currentRating >= 1200 ? new Date().toISOString().split('T')[0] : undefined,
@@ -215,7 +251,7 @@ export async function GET(req: NextRequest) {
         id: 'gold-grinder',
         name: 'Gold Strategist',
         description: 'Solve 25+ Problems & 7-Day Streak',
-        icon: '🥇',
+        icon: '',
         tier: 'Gold' as const,
         unlocked: totalSolved >= 25 && streak >= 7,
         unlockedAt: totalSolved >= 25 && streak >= 7 ? new Date().toISOString().split('T')[0] : undefined,
@@ -225,7 +261,7 @@ export async function GET(req: NextRequest) {
         id: 'platinum-wizard',
         name: 'Platinum Architect',
         description: 'Achieve 1600+ Rating & Solve 10 Mediums',
-        icon: '💎',
+        icon: '',
         tier: 'Platinum' as const,
         unlocked: currentRating >= 1600 && solvedMedium >= 10,
         unlockedAt: undefined,
@@ -235,7 +271,7 @@ export async function GET(req: NextRequest) {
         id: 'diamond-titan',
         name: 'Diamond Titan',
         description: 'Reach 1900+ Rating in Rated Contests',
-        icon: '👑',
+        icon: '',
         tier: 'Diamond' as const,
         unlocked: currentRating >= 1900,
         unlockedAt: undefined,
@@ -245,7 +281,7 @@ export async function GET(req: NextRequest) {
         id: 'grandmaster-legend',
         name: 'Master Overlord',
         description: 'Reach Master (2400+) Rating Status',
-        icon: '⚡',
+        icon: '',
         tier: 'Master' as const,
         unlocked: currentRating >= 2400,
         unlockedAt: undefined,
@@ -257,7 +293,7 @@ export async function GET(req: NextRequest) {
       user: {
         name: userName,
         email: userEmail,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userName)}`,
         rating: currentRating,
         ratingTier: getRatingTier(currentRating),
         streak,
@@ -285,10 +321,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(responseData);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/dashboard/stats:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch dashboard stats' },
+      { error: 'Failed to fetch dashboard stats' },
       { status: 500 }
     );
   }

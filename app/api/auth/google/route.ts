@@ -4,10 +4,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 function getBaseUrl(req: NextRequest): string {
-  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-  const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-  if (host) {
-    return `${proto}://${host}`;
+  const configuredUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (configuredUrl) {
+    try {
+      return new URL(configuredUrl).origin;
+    } catch {
+      // Fall through to the safe deployment default when configuration is invalid.
+    }
+  }
+
+  const host = req.headers.get('host') || '';
+  if (/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host)) {
+    return `http://${host}`;
   }
   return 'https://hackathon2-olive-eight.vercel.app';
 }

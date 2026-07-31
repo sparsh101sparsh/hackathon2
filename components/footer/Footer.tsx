@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Code2, Github, Twitter, Linkedin, Heart, Zap, Shield } from 'lucide-react';
+import { Code2, Github } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
@@ -22,17 +22,17 @@ export const Footer: React.FC = () => {
             <div className="p-1.5 rounded-lg bg-gradient-to-tr from-cyan-500 to-emerald-500 text-slate-950 shadow-md shadow-cyan-500/20">
               <Code2 className="w-5 h-5 fill-slate-950" />
             </div>
-            <span>CodeForge <span className="text-cyan-400">AI</span></span>
+            <span>CodeForge</span>
           </Link>
 
           <p className="text-slate-400 leading-relaxed max-w-sm">
-            AI-powered competitive programming platform. Master DSA, run code in isolated Piston containers, and ace technical interviews.
+            Competitive programming platform. Master DSA, run code in an isolated Judge0 environment, and prepare for technical interviews.
           </p>
 
           {/* System Status Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>All Systems Operational • Piston Execution 100%</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>Judge0 Code Engine enabled</span>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ export const Footer: React.FC = () => {
             </li>
             <li>
               <Link href="/mock-interview" className="hover:text-cyan-400 transition">
-                AI Mock Interview
+            Mock Interview
               </Link>
             </li>
             <li>
@@ -79,7 +79,7 @@ export const Footer: React.FC = () => {
             </li>
             <li>
               <Link href="/problems" className="hover:text-cyan-400 transition">
-                Piston Code Execution
+                Judge0 Code Execution
               </Link>
             </li>
             <li>
@@ -100,32 +100,17 @@ export const Footer: React.FC = () => {
           <h4 className="text-white font-bold text-sm tracking-tight">Community</h4>
           <div className="flex items-center gap-3">
             <a
-              href="https://github.com"
+              href="https://github.com/sparsh101sparsh/hackathon2"
               target="_blank"
               rel="noreferrer"
+              aria-label="GitHub"
               className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition"
             >
               <Github className="w-4 h-4" />
             </a>
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noreferrer"
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-400 hover:border-slate-700 transition"
-            >
-              <Twitter className="w-4 h-4" />
-            </a>
-            <a
-              href="https://linkedin.com"
-              target="_blank"
-              rel="noreferrer"
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-blue-400 hover:border-slate-700 transition"
-            >
-              <Linkedin className="w-4 h-4" />
-            </a>
           </div>
           <p className="text-[11px] text-slate-500 pt-2">
-            CodeForge AI is built for candidate engineers and tech interview preparation.
+            CodeForge is built for candidate engineers and technical interview preparation.
           </p>
         </div>
       </div>
@@ -133,14 +118,14 @@ export const Footer: React.FC = () => {
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
         <div>
-          © {new Date().getFullYear()} CodeForge AI Inc. All rights reserved.
+          © {new Date().getFullYear()} CodeForge. All rights reserved.
         </div>
         <div className="flex items-center gap-4">
-          <span className="hover:text-slate-400 cursor-pointer">Privacy Policy</span>
+          <span>Privacy Policy</span>
           <span>•</span>
-          <span className="hover:text-slate-400 cursor-pointer">Terms of Service</span>
+          <span>Terms of Service</span>
           <span>•</span>
-          <span className="hover:text-slate-400 cursor-pointer">Security Attestation</span>
+          <span>Security Attestation</span>
         </div>
       </div>
     </footer>

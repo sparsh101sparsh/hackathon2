@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,6 +27,25 @@ export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileMenuOpen]);
 
   // Hide main navbar inside problem detail view if it uses full screen workspace layout
   if (pathname.startsWith('/problems/') && pathname !== '/problems') {
@@ -37,7 +57,7 @@ export const Navbar: React.FC = () => {
     { label: 'Contests', href: '/contests', icon: <Trophy className="w-4 h-4" /> },
     { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-purple-400" /> },
     { label: 'Company Prep', href: '/company', icon: <Building2 className="w-4 h-4" /> },
-    { label: 'AI Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-cyan-400" /> },
+    { label: 'Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-cyan-400" /> },
     { label: 'Leaderboard', href: '/leaderboard', icon: <BarChart2 className="w-4 h-4" /> },
     { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-amber-400" /> },
   ];
@@ -52,7 +72,7 @@ export const Navbar: React.FC = () => {
             <Code2 className="w-5 h-5 fill-slate-950 text-slate-950" />
           </div>
           <span className="text-lg font-black tracking-tight">
-            CodeForge <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">AI</span>
+            CodeForge
           </span>
         </Link>
 
@@ -97,9 +117,12 @@ export const Navbar: React.FC = () => {
               className="flex items-center gap-2.5 group cursor-pointer"
               title="View User Dashboard"
             >
-              <img
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+              <Image
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                 alt={user.name}
+                width={28}
+                height={28}
+                unoptimized
                 className="w-7 h-7 rounded-lg border border-slate-700 bg-slate-950 shrink-0 group-hover:border-cyan-400 transition"
               />
               <div className="text-left leading-none">
@@ -110,6 +133,7 @@ export const Navbar: React.FC = () => {
             <button
               onClick={() => logout()}
               title="Sign Out"
+              aria-label="Sign out"
               className="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition"
             >
               <LogOut className="w-4 h-4" />
@@ -138,7 +162,12 @@ export const Navbar: React.FC = () => {
       {/* Mobile Drawer Hamburger Button */}
       <div className="flex xl:hidden items-center gap-2">
         <button
+          ref={menuButtonRef}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          type="button"
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-navigation-menu"
           className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
         >
           {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -149,6 +178,9 @@ export const Navbar: React.FC = () => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
+            id="mobile-navigation-menu"
+            role="region"
+            aria-label="Mobile navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -183,9 +215,12 @@ export const Navbar: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center gap-3 group"
                   >
-                    <img
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                    <Image
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                       alt={user.name}
+                      width={32}
+                      height={32}
+                      unoptimized
                       className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-cyan-400 transition"
                     />
                     <div>
@@ -198,6 +233,8 @@ export const Navbar: React.FC = () => {
                       logout();
                       setIsMobileMenuOpen(false);
                     }}
+                    type="button"
+                    aria-label="Sign out"
                     className="p-2 rounded-lg text-rose-400 hover:bg-slate-800 transition"
                   >
                     <LogOut className="w-4 h-4" />

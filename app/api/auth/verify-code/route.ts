@@ -1,16 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { hashPassword, setSessionCookie, signToken } from '@/lib/auth';
+import { hashPassword, setSessionCookie, signToken, verifyVerificationCode } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const requestLimit = checkRateLimit(req, 'auth:verify-code', 12, 10 * 60 * 1000);
+    if (!requestLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many verification attempts. Please request a new code later.', retryAfter: requestLimit.retryAfter },
+        { status: 429, headers: { 'Retry-After': String(requestLimit.retryAfter) } },
+      );
+    }
     const body = await req.json();
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'A valid verification request is required' }, { status: 400 });
+    }
     const { email, code, purpose = 'SIGNUP', name, password } = body;
 
     if (typeof email !== 'string' || typeof code !== 'string') {
       return NextResponse.json({ error: 'Email and verification code are required' }, { status: 400 });
+    }
+    if ((name !== undefined && typeof name !== 'string') || (password !== undefined && typeof password !== 'string')) {
+      return NextResponse.json({ error: 'Name and password must be text values' }, { status: 400 });
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -26,21 +40,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid purpose specified' }, { status: 400 });
     }
 
-    // Find valid active verification entry
+    // Fetch the active record without querying by plaintext code. New records
+    // contain an HMAC digest; the short legacy fallback handles old pending rows.
     const verification = await prisma.emailVerification.findFirst({
       where: {
         email: cleanEmail,
-        code: cleanCode,
         purpose,
         expiresAt: { gt: new Date() },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    if (!verification) {
+    const codeMatches = verification && (
+      verifyVerificationCode(cleanCode, verification.code) ||
+      // Legacy records created before hashed OTP storage are short plaintext codes.
+      (verification.code.length === 6 && verification.code === cleanCode)
+    );
+
+    if (!verification || !codeMatches) {
+      // Invalidate the pending code after a failed attempt. This makes a stolen
+      // email address unable to brute-force the six-digit value; the user can
+      // request a fresh code after the resend cooldown.
+      if (verification) {
+        await prisma.emailVerification.delete({ where: { id: verification.id } }).catch(() => undefined);
+      }
       return NextResponse.json(
         { error: 'Invalid or expired verification code. Please request a new code.' },
         { status: 400 }
+      );
+    }
+
+    // Consume the exact verification row before creating a session or account.
+    // A conditional delete makes concurrent requests single-use even when both
+    // requests read the same valid row before either branch finishes.
+    const consumedVerification = await prisma.emailVerification.deleteMany({
+      where: { id: verification.id },
+    });
+    if (consumedVerification.count !== 1) {
+      return NextResponse.json(
+        { error: 'This verification code has already been used. Please request a new code.' },
+        { status: 400 },
       );
     }
 
@@ -150,10 +189,9 @@ export async function POST(req: NextRequest) {
       return setSessionCookie(response, token);
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/auth/verify-code:', error);
     return NextResponse.json(
-      { error: message || 'Verification failed' },
+      { error: 'Verification is temporarily unavailable. Please try again shortly.' },
       { status: 500 }
     );
   }

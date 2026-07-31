@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { TrendingUp } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -24,15 +25,16 @@ interface RatingHistoryChartProps {
 }
 
 export function RatingHistoryChart({ history, currentRating }: RatingHistoryChartProps) {
-  const minRating = Math.max(800, Math.min(...history.map((h) => h.rating)) - 100);
-  const maxRating = Math.min(3500, Math.max(...history.map((h) => h.rating)) + 100);
+  const ratings = history.map((item) => item.rating);
+  const minRating = history.length > 0 ? Math.max(800, Math.min(...ratings) - 100) : 800;
+  const maxRating = history.length > 0 ? Math.min(3500, Math.max(...ratings) + 100) : 1000;
 
   return (
     <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 flex flex-col h-full">
       <div className="flex items-center justify-between mb-2">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            📈 Rating Progression History
+            <TrendingUp className="w-4 h-4 text-amber-400" aria-hidden="true" /> Rating Progression History
           </h3>
           <p className="text-xs text-slate-400">
             Performance over time in CodeForge Rated Contests
@@ -44,8 +46,13 @@ export function RatingHistoryChart({ history, currentRating }: RatingHistoryChar
         </div>
       </div>
 
-      <div className="w-full h-64 min-h-[240px] flex-1 mt-2">
-        <ResponsiveContainer width="100%" height="100%">
+      {history.length === 0 ? (
+        <div className="w-full h-64 min-h-[240px] flex-1 mt-2 flex items-center justify-center rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-6 text-center">
+          <p className="text-xs text-slate-500">Join a rated contest to start building your rating history.</p>
+        </div>
+      ) : (
+        <div className="w-full h-64 min-h-[240px] flex-1 mt-2">
+          <ResponsiveContainer width="100%" height="100%">
           <LineChart data={history} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
             <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 11 }} />
@@ -86,8 +93,9 @@ export function RatingHistoryChart({ history, currentRating }: RatingHistoryChar
               activeDot={{ r: 6, fill: '#38bdf8' }}
             />
           </LineChart>
-        </ResponsiveContainer>
-      </div>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }

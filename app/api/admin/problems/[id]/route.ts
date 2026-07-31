@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { requireAdmin } from '@/lib/auth';
 
 export interface TestCaseInput {
   input: string;
@@ -17,10 +18,13 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+
+    const { id } = await params;
 
     const problem = await prisma.problem.findUnique({
       where: { id },
@@ -40,10 +44,9 @@ export async function GET(
       companyTags: safeParseJsonArray(problem.companyTags),
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin problem detail:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch problem detail' },
+      { error: 'Failed to fetch problem detail' },
       { status: 500 }
     );
   }
@@ -51,10 +54,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+
+    const { id } = await params;
     const body = await request.json();
 
     const existingProblem = await prisma.problem.findUnique({ where: { id } });
@@ -87,10 +93,28 @@ export async function PUT(
     if (inputFormat !== undefined) updateData.inputFormat = inputFormat;
     if (outputFormat !== undefined) updateData.outputFormat = outputFormat;
     if (constraints !== undefined) updateData.constraints = constraints;
-    if (difficulty !== undefined) updateData.difficulty = difficulty.toUpperCase();
+    if (difficulty !== undefined) {
+      const normalizedDifficulty = typeof difficulty === 'string' ? difficulty.toUpperCase() : '';
+      if (!['EASY', 'MEDIUM', 'HARD'].includes(normalizedDifficulty)) {
+        return NextResponse.json({ error: 'difficulty must be EASY, MEDIUM, or HARD' }, { status: 400 });
+      }
+      updateData.difficulty = normalizedDifficulty;
+    }
     if (editorial !== undefined) updateData.editorial = editorial;
-    if (timeLimit !== undefined) updateData.timeLimit = parseFloat(String(timeLimit));
-    if (memoryLimit !== undefined) updateData.memoryLimit = parseInt(String(memoryLimit), 10);
+    if (timeLimit !== undefined) {
+      const parsedTimeLimit = Number(timeLimit);
+      if (!Number.isFinite(parsedTimeLimit) || parsedTimeLimit <= 0 || parsedTimeLimit > 60) {
+        return NextResponse.json({ error: 'timeLimit must be a number greater than 0 and at most 60 seconds' }, { status: 400 });
+      }
+      updateData.timeLimit = parsedTimeLimit;
+    }
+    if (memoryLimit !== undefined) {
+      const parsedMemoryLimit = Number(memoryLimit);
+      if (!Number.isInteger(parsedMemoryLimit) || parsedMemoryLimit < 1 || parsedMemoryLimit > 4096) {
+        return NextResponse.json({ error: 'memoryLimit must be an integer between 1 and 4096 MB' }, { status: 400 });
+      }
+      updateData.memoryLimit = parsedMemoryLimit;
+    }
 
     if (topicTags !== undefined) {
       updateData.topicTags = Array.isArray(topicTags)
@@ -173,10 +197,9 @@ export async function PUT(
       companyTags: safeParseJsonArray(updatedProblem?.companyTags || '[]'),
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error updating problem:', error);
     return NextResponse.json(
-      { error: message || 'Failed to update problem' },
+      { error: 'Failed to update problem' },
       { status: 500 }
     );
   }
@@ -184,10 +207,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+
+    const { id } = await params;
 
     const existingProblem = await prisma.problem.findUnique({ where: { id } });
     if (!existingProblem) {
@@ -203,10 +229,9 @@ export async function DELETE(
       message: 'Problem deleted successfully',
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error deleting problem:', error);
     return NextResponse.json(
-      { error: message || 'Failed to delete problem' },
+      { error: 'Failed to delete problem' },
       { status: 500 }
     );
   }
@@ -216,8 +241,7 @@ function safeParseJsonArray(str: string): string[] {
   try {
     const parsed = JSON.parse(str);
     return Array.isArray(parsed) ? parsed : [];
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+  } catch {
     return [];
   }
 }

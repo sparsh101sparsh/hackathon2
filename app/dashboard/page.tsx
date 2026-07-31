@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { SolvedSummaryCards } from '@/components/dashboard/SolvedSummaryCards';
 import { TopicRadarChart } from '@/components/dashboard/TopicRadarChart';
 import { RatingHistoryChart } from '@/components/dashboard/RatingHistoryChart';
 import { ActivityCalendar } from '@/components/dashboard/ActivityCalendar';
 import { BadgesGrid } from '@/components/dashboard/BadgesGrid';
-import { WeeklyAiInsights } from '@/components/dashboard/WeeklyAiInsights';
-import { AIPersonalitySelector } from '@/components/dashboard/AIPersonalitySelector';
+import { WeeklyInsights } from '@/components/dashboard/WeeklyInsights';
+import { TeachingStyleSelector } from '@/components/dashboard/TeachingStyleSelector';
 import { DashboardStatsResponse } from '@/app/api/dashboard/stats/route';
 import { DashboardSkeleton } from '@/components/ui/Skeletons';
 import { LayoutDashboard, Trophy } from 'lucide-react';
@@ -20,19 +21,25 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchStats() {
       try {
-        const res = await fetch('/api/dashboard/stats', { credentials: 'include' });
+        const res = await fetch('/api/dashboard/stats', { credentials: 'include', signal: controller.signal });
         if (!res.ok) throw new Error('Failed to fetch dashboard data');
         const stats = await res.json();
         setData(stats);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Error loading dashboard');
+        if (!(err instanceof DOMException && err.name === 'AbortError')) {
+          setError(err instanceof Error ? err.message : 'Error loading dashboard');
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
     fetchStats();
+
+    return () => controller.abort();
   }, []);
 
   if (loading) {
@@ -70,9 +77,12 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div className="flex items-center gap-3">
-          <img
+          <Image
             src={data.user.avatar}
             alt={data.user.name}
+            width={48}
+            height={48}
+            unoptimized
             className="w-12 h-12 rounded-full border-2 border-cyan-500/60 bg-slate-900 shadow-md shadow-cyan-950/50"
           />
           <div>
@@ -118,16 +128,16 @@ export default function DashboardPage() {
         />
       </motion.div>
 
-      {/* 2. AI Personality Selector */}
+      {/* 2. Teaching style selector */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
         className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-5"
       >
-        <AIPersonalitySelector />
+        <TeachingStyleSelector />
       </motion.div>
 
-      {/* 3. AI Weekly Insights */}
+      {/* 3. Weekly insights */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
-        <WeeklyAiInsights />
+        <WeeklyInsights />
       </motion.div>
 
       {/* 4. Recharts Section: Topic Radar + Rating Line Chart */}

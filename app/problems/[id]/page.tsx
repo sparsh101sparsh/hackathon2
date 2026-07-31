@@ -17,8 +17,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import EditorWorkspace from '@/components/editor/EditorWorkspace';
-import ProgressiveHints from '@/components/ai/ProgressiveHints';
-import AIChatTutorDrawer from '@/components/ai/AIChatTutorDrawer';
+import ProgressiveHints from '@/components/guidance/ProgressiveHints';
+import TutorDrawer from '@/components/guidance/TutorDrawer';
 import { ProblemVisualizer } from '@/components/problems/ProblemVisualizer';
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 import { Problem, Submission } from '@/lib/types';
@@ -41,12 +41,12 @@ export default function ProblemDetailPage() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   // Fetch problem details
-  const fetchProblem = useCallback(async () => {
+  const fetchProblem = useCallback(async (signal?: AbortSignal) => {
     if (!problemId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/problems/${problemId}?includeEditorial=true`);
+      const res = await fetch(`/api/problems/${problemId}?includeEditorial=true`, { signal });
       if (res.ok) {
         const data = await res.json();
         setProblem(data);
@@ -55,37 +55,48 @@ export default function ProblemDetailPage() {
         setError(errData.error || 'Failed to load problem');
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error loading problem');
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        setError(err instanceof Error ? err.message : 'Error loading problem');
+      }
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) setIsLoading(false);
     }
   }, [problemId]);
 
+  const loadedProblemId = problem?.id;
+
   // Fetch submission history for this problem
-  const fetchSubmissions = useCallback(async () => {
-    if (!problem?.id) return;
+  const fetchSubmissions = useCallback(async (signal?: AbortSignal) => {
+    if (!loadedProblemId) return;
     setIsLoadingSubmissions(true);
     try {
-      const res = await fetch(`/api/submissions?problemId=${problem.id}&limit=20`);
+      const res = await fetch(`/api/submissions?problemId=${loadedProblemId}&limit=20`, { signal });
       if (res.ok) {
         const data = await res.json();
         setSubmissions(data.submissions || []);
       }
     } catch (err) {
-      console.error('Error fetching submissions:', err);
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        console.error('Error fetching submissions:', err);
+      }
     } finally {
-      setIsLoadingSubmissions(false);
+      if (!signal?.aborted) setIsLoadingSubmissions(false);
     }
-  }, [problem?.id]);
+  }, [loadedProblemId]);
 
   useEffect(() => {
-    fetchProblem();
+    const controller = new AbortController();
+    void fetchProblem(controller.signal);
+    return () => controller.abort();
   }, [fetchProblem]);
 
   useEffect(() => {
     if (activeLeftTab === 'submissions') {
-      fetchSubmissions();
+      const controller = new AbortController();
+      void fetchSubmissions(controller.signal);
+      return () => controller.abort();
     }
+    return undefined;
   }, [activeLeftTab, fetchSubmissions]);
 
   const copyToClipboard = (text: string, idx: number) => {
@@ -352,7 +363,7 @@ export default function ProblemDetailPage() {
                     Submission History
                   </h3>
                   <button
-                    onClick={fetchSubmissions}
+                    onClick={() => void fetchSubmissions()}
                     className="text-xs text-cyan-400 hover:underline font-semibold"
                   >
                     Refresh
@@ -450,8 +461,8 @@ export default function ProblemDetailPage() {
         </div>
       </div>
 
-      {/* Floating AI Chat Tutor Drawer */}
-      <AIChatTutorDrawer
+      {/* Floating tutor drawer */}
+      <TutorDrawer
         problemId={problem.id}
         problemTitle={problem.title}
         problemStatement={problem.statement}

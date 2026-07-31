@@ -5,13 +5,16 @@ const testFiles = [
   'verify-db.ts',
   'test-piston-execution.ts',
   'test-auth-and-admin.ts',
-  'test-ai-features.ts',
+  'test-provider-features.ts',
   'test-dashboard-contests-company.ts',
+  'test-contest-submission.ts',
+  'test-room-integrity.ts',
+  'test-public-boundaries.ts',
 ];
 
 async function runMasterTestSuite() {
   console.log('===========================================================');
-  console.log('🚀 CodeForge AI - Master E2E Verification Test Suite');
+  console.log('🚀 CodeForge - Master E2E Verification Test Suite');
   console.log('===========================================================\n');
 
   let passedCount = 0;

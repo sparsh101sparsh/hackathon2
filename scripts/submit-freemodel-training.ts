@@ -15,6 +15,8 @@ async function main() {
   if (!FREEMODEL_API_KEY) throw new Error('FREEMODEL_API_KEY is not configured');
   if (!fs.existsSync(corpusPath)) throw new Error(`Training corpus not found: ${corpusPath}`);
 
+  const corpusCount = fs.readFileSync(corpusPath, 'utf8').trim().split('\n').filter(Boolean).length;
+
   const file = new Blob([fs.readFileSync(corpusPath)], { type: 'application/jsonl' });
   const form = new FormData();
   form.append('file', file, 'freemodel-question-corpus.jsonl');
@@ -35,7 +37,7 @@ async function main() {
   });
   const jobBody = await jobResponse.text();
   if (!jobResponse.ok) throw new Error(`Fine-tuning job creation failed (${jobResponse.status}): ${jobBody.slice(0, 500)}`);
-  console.log(`Fine-tuning job submitted for 620 canonical questions: ${jobBody}`);
+  console.log(`Fine-tuning job submitted for ${corpusCount} canonical questions: ${jobBody}`);
 }
 
 main().catch((error) => {

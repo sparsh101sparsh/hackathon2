@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ScoreboardParticipant } from '@/app/api/contests/[id]/leaderboard/route';
 import {
   Trophy,
@@ -44,7 +45,8 @@ interface ContestDetail {
   problems: ContestProblem[];
 }
 
-export default function ContestArenaPage({ params }: { params: { id: string } }) {
+export default function ContestArenaPage({ params }: { params: Promise<{ id: string }> }) {
+  const [routeId, setRouteId] = useState<string | null>(null);
   const [contest, setContest] = useState<ContestDetail | null>(null);
   const [scoreboard, setScoreboard] = useState<ScoreboardParticipant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,13 +62,25 @@ export default function ContestArenaPage({ params }: { params: { id: string } })
   );
   const [submitting, setSubmitting] = useState(false);
   const [submissionVerdict, setSubmissionVerdict] = useState<string | null>(null);
+  const [scoreAwarded, setScoreAwarded] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    params.then(({ id }) => {
+      if (!cancelled) setRouteId(id);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    if (!routeId) return;
     async function loadContestData() {
       try {
         const [cRes, sRes] = await Promise.all([
-          fetch(`/api/contests/${params.id}`, { credentials: 'include' }),
-          fetch(`/api/contests/${params.id}/leaderboard`, { credentials: 'include' }),
+          fetch(`/api/contests/${routeId}`, { credentials: 'include' }),
+          fetch(`/api/contests/${routeId}/leaderboard`, { credentials: 'include' }),
         ]);
 
         if (cRes.ok) {
@@ -90,7 +104,7 @@ export default function ContestArenaPage({ params }: { params: { id: string } })
     }
 
     loadContestData();
-  }, [params.id]);
+  }, [routeId]);
 
   // Live timer interval
   useEffect(() => {
@@ -108,13 +122,41 @@ export default function ContestArenaPage({ params }: { params: { id: string } })
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleSimulateSubmit = () => {
+  const handleSimulateSubmit = async () => {
+    if (!selectedProblem) return;
     setSubmitting(true);
     setSubmissionVerdict(null);
-    setTimeout(() => {
+    setScoreAwarded(0);
+    try {
+      const response = await fetch(`/api/contests/${routeId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          problemId: selectedProblem.id,
+          language: 'python',
+          code,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setSubmissionVerdict(data.error || 'Submission failed');
+        return;
+      }
+
+      setSubmissionVerdict(data.verdict);
+      setScoreAwarded(data.scoreAwarded || 0);
+      const scoreboardResponse = await fetch(`/api/contests/${routeId}/leaderboard`, { credentials: 'include' });
+      if (scoreboardResponse.ok) {
+        const scoreboardData = await scoreboardResponse.json();
+        setScoreboard(scoreboardData.leaderboard || []);
+      }
+    } catch (error) {
+      console.error('Contest submission failed:', error);
+      setSubmissionVerdict('Submission failed. Please try again.');
+    } finally {
       setSubmitting(false);
-      setSubmissionVerdict('Accepted');
-    }, 1200);
+    }
   };
 
   if (loading) {
@@ -337,9 +379,12 @@ export default function ContestArenaPage({ params }: { params: { id: string } })
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
-                        <img
+                        <Image
                           src={user.avatar}
                           alt={user.name}
+                          width={28}
+                          height={28}
+                          unoptimized
                           className="w-7 h-7 rounded-full border border-slate-700 bg-slate-800"
                         />
                         <span className="font-bold text-white">{user.name}</span>
@@ -393,6 +438,7 @@ export default function ContestArenaPage({ params }: { params: { id: string } })
           </div>
 
           <textarea
+            aria-label="Contest solution code"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             rows={12}
@@ -400,9 +446,13 @@ export default function ContestArenaPage({ params }: { params: { id: string } })
           />
 
           {submissionVerdict && (
-            <div className="p-3 bg-emerald-950/50 border border-emerald-700/60 rounded-lg flex items-center gap-2 text-xs text-emerald-300 font-bold">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Verdict: {submissionVerdict}! +250 Points awarded to your scoreboard rank.</span>
+            <div role={submissionVerdict === 'Accepted' ? 'status' : 'alert'} aria-live={submissionVerdict === 'Accepted' ? 'polite' : 'assertive'} aria-atomic="true" className={`p-3 rounded-lg flex items-center gap-2 text-xs font-bold ${
+              submissionVerdict === 'Accepted'
+                ? 'bg-emerald-950/50 border border-emerald-700/60 text-emerald-300'
+                : 'bg-rose-950/40 border border-rose-700/60 text-rose-300'
+            }`}>
+              {submissionVerdict === 'Accepted' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertCircle className="w-4 h-4 text-rose-400" />}
+              <span>Verdict: {submissionVerdict}{scoreAwarded > 0 ? `! +${scoreAwarded} points added to your scoreboard.` : ''}</span>
             </div>
           )}
         </div>

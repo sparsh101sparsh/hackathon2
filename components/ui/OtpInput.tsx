@@ -24,7 +24,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
     if (inputsRef.current[0] && !value) {
       inputsRef.current[0].focus();
     }
-  }, []);
+  }, [value]);
 
   const handleChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -100,6 +100,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
           maxLength={1}
           autoComplete="one-time-code"
           disabled={disabled}
+          aria-label={`Verification code digit ${idx + 1}`}
           value={digits[idx] || ''}
           onChange={(e) => handleChange(idx, e)}
           onKeyDown={(e) => handleKeyDown(idx, e)}

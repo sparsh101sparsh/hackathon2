@@ -1,27 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
-import { executeCode } from '@/lib/piston';
+import { executeCode, isSupportedLanguage } from '@/lib/piston';
 import { ExecutionVerdict, TestCaseResult } from '@/lib/types';
 import { getSessionFromRequest } from '@/lib/auth';
 import { buildRevisionLearning, snapshotForRevision } from '@/lib/revisionLearning';
+import { normalizeOutput } from '@/lib/output';
+import { syncAcceptedProgress } from '@/lib/progress';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
-function normalizeOutput(str: string): string {
-  return str.replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
-}
-
 export async function POST(request: NextRequest) {
+  const limitResponse = rateLimitResponse(
+    request,
+    'submissions:create',
+    20,
+    60 * 1000,
+    'Too many code submissions. Please try again shortly.',
+  );
+  if (limitResponse) return limitResponse;
+
   try {
     const body = await request.json();
     const { problemId, language, code } = body;
 
-    if (!problemId || !language || !code) {
+    if (typeof problemId !== 'string' || typeof language !== 'string' || typeof code !== 'string' || !problemId || !language.trim() || !code.trim()) {
       return NextResponse.json(
         { error: 'problemId, language, and code are required' },
         { status: 400 }
       );
+    }
+    if (!isSupportedLanguage(language)) {
+      return NextResponse.json(
+        { error: 'Unsupported language. Choose Python, C++, JavaScript, Java, or Go.' },
+        { status: 400 },
+      );
+    }
+    if (language.length > 32 || code.length > 100_000) {
+      return NextResponse.json({ error: 'Language or code exceeds the allowed size' }, { status: 413 });
     }
 
     const session = getSessionFromRequest(request);
@@ -58,6 +75,7 @@ export async function POST(request: NextRequest) {
       actualOutput: string;
       error?: string;
     } | null = null;
+    let failedTestCaseId: string | null = null;
 
     const testResults: TestCaseResult[] = [];
 
@@ -68,6 +86,7 @@ export async function POST(request: NextRequest) {
 
       if (execResult.verdict === 'Compilation Error') {
         overallVerdict = 'Compilation Error';
+        failedTestCaseId = tc.id;
         failedTestCaseInfo = {
           input: tc.input,
           expectedOutput: tc.expectedOutput,
@@ -91,6 +110,7 @@ export async function POST(request: NextRequest) {
       if (execResult.verdict === 'Runtime Error') {
         if (overallVerdict === 'Accepted') overallVerdict = 'Runtime Error';
         if (!failedTestCaseInfo) {
+          failedTestCaseId = tc.id;
           failedTestCaseInfo = {
             input: tc.input,
             expectedOutput: tc.expectedOutput,
@@ -115,6 +135,7 @@ export async function POST(request: NextRequest) {
       if (execResult.verdict === 'TLE') {
         if (overallVerdict === 'Accepted') overallVerdict = 'TLE';
         if (!failedTestCaseInfo) {
+          failedTestCaseId = tc.id;
           failedTestCaseInfo = {
             input: tc.input,
             expectedOutput: tc.expectedOutput,
@@ -157,6 +178,7 @@ export async function POST(request: NextRequest) {
           overallVerdict = 'Wrong Answer';
         }
         if (!failedTestCaseInfo) {
+          failedTestCaseId = tc.id;
           failedTestCaseInfo = {
             input: tc.input,
             expectedOutput: tc.expectedOutput,
@@ -195,35 +217,8 @@ export async function POST(request: NextRequest) {
     // Update user progress if Accepted
     if (overallVerdict === 'Accepted') {
       try {
-        const difficulty = problem.difficulty;
-        const existingProgress = await prisma.userProgress.findUnique({
-          where: { userId: activeUserId },
-        });
-
-        if (existingProgress) {
-          const updateData: Prisma.UserProgressUpdateInput = { lastActiveDate: new Date() };
-          if (difficulty === 'EASY') updateData.solvedEasy = existingProgress.solvedEasy + 1;
-          if (difficulty === 'MEDIUM') updateData.solvedMedium = existingProgress.solvedMedium + 1;
-          if (difficulty === 'HARD') updateData.solvedHard = existingProgress.solvedHard + 1;
-
-          await prisma.userProgress.update({
-            where: { userId: activeUserId },
-            data: updateData,
-          });
-        } else {
-          await prisma.userProgress.create({
-            data: {
-              userId: activeUserId,
-              solvedEasy: difficulty === 'EASY' ? 1 : 0,
-              solvedMedium: difficulty === 'MEDIUM' ? 1 : 0,
-              solvedHard: difficulty === 'HARD' ? 1 : 0,
-              streak: 1,
-              lastActiveDate: new Date(),
-            },
-          });
-        }
+        await syncAcceptedProgress(activeUserId);
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
         console.error('Error updating user progress:', error);
       }
 
@@ -255,7 +250,6 @@ export async function POST(request: NextRequest) {
           },
         });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
         console.error('Error creating revision flashcard:', error);
       }
     }
@@ -270,13 +264,7 @@ export async function POST(request: NextRequest) {
       try {
         const revision = buildRevisionLearning(overallVerdict, problem.topicTags, failedTestCaseInfo);
         const snapshot = snapshotForRevision(failedTestCaseInfo);
-        const existingCard = await prisma.revisionCard.findUnique({
-          where: { userId_problemId: { userId: activeUserId, problemId: problem.id } },
-          select: { failureCount: true },
-        });
-        const failureCount = (existingCard?.failureCount || 0) + 1;
-
-        await prisma.revisionCard.upsert({
+        const learnedCard = await prisma.revisionCard.upsert({
           where: {
             userId_problemId: {
               userId: activeUserId,
@@ -291,7 +279,7 @@ export async function POST(request: NextRequest) {
             interval: 1,
             repetitions: 0,
             dueDate: new Date(),
-            failureCount,
+            failureCount: 1,
             lastFailureType: revision.failureType,
             ...snapshot,
             learnedAt: new Date(),
@@ -302,7 +290,7 @@ export async function POST(request: NextRequest) {
             interval: 1,
             repetitions: 0,
             dueDate: new Date(),
-            failureCount,
+            failureCount: { increment: 1 },
             lastFailureType: revision.failureType,
             ...snapshot,
             learnedAt: new Date(),
@@ -310,12 +298,11 @@ export async function POST(request: NextRequest) {
         });
 
         learning = {
-          failureCount,
+          failureCount: learnedCard.failureCount,
           failureType: revision.failureType,
           pattern: revision.pattern,
         };
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
         console.error('Error learning from failed submission:', error);
       }
     }
@@ -327,16 +314,29 @@ export async function POST(request: NextRequest) {
       totalCount: testCases.length,
       executionTime: avgExecutionTime,
       memory: maxMemory,
-      failedTestCase: failedTestCaseInfo,
+      failedTestCase: failedTestCaseInfo
+        ? (testCases.find((testCase) => testCase.id === failedTestCaseId)?.isSample
+          ? failedTestCaseInfo
+          : {
+              input: '[hidden test case]',
+              expectedOutput: '[hidden test case]',
+              actualOutput: failedTestCaseInfo.actualOutput,
+              error: failedTestCaseInfo.error,
+            })
+        : null,
       learning,
-      testResults,
+      testResults: testResults.map((result) => ({
+        ...result,
+        isSample: testCases.find((testCase) => testCase.id === result.testCaseId)?.isSample ?? false,
+        input: testCases.find((testCase) => testCase.id === result.testCaseId)?.isSample ? result.input : '[hidden test case]',
+        expectedOutput: testCases.find((testCase) => testCase.id === result.testCaseId)?.isSample ? result.expectedOutput : '[hidden test case]',
+      })),
       createdAt: submission.createdAt,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error processing submission:', error);
     return NextResponse.json(
-      { error: message || 'Submission processing error' },
+      { error: 'Submission processing error' },
       { status: 500 }
     );
   }
@@ -347,8 +347,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const problemId = searchParams.get('problemId');
     const session = getSessionFromRequest(request);
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '20', 10)));
+    const rawPage = searchParams.get('page');
+    const rawLimit = searchParams.get('limit');
+    const page = rawPage === null ? 1 : Number(rawPage);
+    const limit = rawLimit === null ? 20 : Number(rawLimit);
+    if (!Number.isInteger(page) || page < 1 || page > 10_000) {
+      return NextResponse.json({ error: 'page must be an integer between 1 and 10000' }, { status: 400 });
+    }
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+      return NextResponse.json({ error: 'limit must be an integer between 1 and 100' }, { status: 400 });
+    }
 
     const whereClause: Prisma.SubmissionWhereInput = {};
     if (problemId) whereClause.problemId = problemId;
@@ -371,18 +379,39 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    const safeSubmissions = submissions.map((submission) => {
+      let safeFailedTestCase = submission.failedTestCase;
+      if (submission.failedTestCase) {
+        try {
+          const parsed = JSON.parse(submission.failedTestCase) as { actualOutput?: string; error?: string };
+          safeFailedTestCase = JSON.stringify({
+            input: '[hidden test case]',
+            expectedOutput: '[hidden test case]',
+            actualOutput: parsed.actualOutput || '',
+            error: parsed.error,
+          });
+        } catch {
+          safeFailedTestCase = JSON.stringify({
+            input: '[hidden test case]',
+            expectedOutput: '[hidden test case]',
+            actualOutput: '',
+          });
+        }
+      }
+      return { ...submission, failedTestCase: safeFailedTestCase };
+    });
+
     return NextResponse.json({
-      submissions,
+      submissions: safeSubmissions,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit) || 1,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching submissions:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch submissions' },
+      { error: 'Failed to fetch submissions' },
       { status: 500 }
     );
   }

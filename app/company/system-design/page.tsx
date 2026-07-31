@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { SystemDesignEvalResponse } from '@/app/api/ai/system-design/route';
 import {
@@ -82,6 +82,11 @@ export default function SystemDesignPage() {
   const [evaluating, setEvaluating] = useState(false);
   const [result, setResult] = useState<SystemDesignEvalResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const evaluationControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => evaluationControllerRef.current?.abort();
+  }, []);
 
   const handleSelectScenario = (scen: (typeof PRESET_SCENARIOS)[0]) => {
     setSelectedScenario(scen);
@@ -92,12 +97,16 @@ export default function SystemDesignPage() {
 
   const handleEvaluate = async () => {
     if (!architectureDoc.trim()) return;
+    evaluationControllerRef.current?.abort();
+    const controller = new AbortController();
+    evaluationControllerRef.current = controller;
     setEvaluating(true);
     setError(null);
     try {
       const res = await fetch('/api/ai/system-design', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           architectureDoc,
           company: selectedScenario.company,
@@ -109,9 +118,13 @@ export default function SystemDesignPage() {
       const data = await res.json();
       setResult(data);
     } catch (err: unknown) {
+      if (controller.signal.aborted) return;
       setError(err instanceof Error ? err.message : 'Evaluation failed');
     } finally {
-      setEvaluating(false);
+      if (evaluationControllerRef.current === controller) {
+        evaluationControllerRef.current = null;
+        if (!controller.signal.aborted) setEvaluating(false);
+      }
     }
   };
 
@@ -131,17 +144,17 @@ export default function SystemDesignPage() {
                 <Server className="w-6 h-6" />
               </div>
               <h1 className="text-2xl font-bold text-white tracking-tight">
-                System Design AI Evaluator
+                System Design Evaluator
               </h1>
             </div>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-              Architect real-world distributed systems and get instant Principal Engineer feedback powered by FreeModel AI (<code className="text-purple-300">gpt-5.6-sol</code>).
+              Architect real-world distributed systems and get instant Principal Engineer feedback powered by FreeModel.
             </p>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-purple-300 bg-purple-950/60 border border-purple-700/60 px-3 py-1.5 rounded-lg shrink-0">
             <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
-            <span>AI Model: gpt-5.6-sol</span>
+            <span>Guidance provider: FreeModel</span>
           </div>
         </div>
       </div>
@@ -178,12 +191,13 @@ export default function SystemDesignPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                ✍️ Architecture Proposal Document
+                Architecture Proposal Document
               </h3>
               <span className="text-[11px] text-slate-400">Markdown supported</span>
             </div>
 
             <textarea
+              aria-label="Architecture proposal"
               value={architectureDoc}
               onChange={(e) => setArchitectureDoc(e.target.value)}
               rows={16}
@@ -208,7 +222,7 @@ export default function SystemDesignPage() {
           </div>
         </div>
 
-        {/* Right Column: AI Evaluation Output */}
+        {/* Right Column: evaluation output */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4 backdrop-blur-sm">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -223,14 +237,14 @@ export default function SystemDesignPage() {
           </div>
 
           {evaluating && (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400" role="status" aria-live="polite">
               <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
               <p className="text-xs">Analyzing distributed scalability, bottlenecks, & trade-offs...</p>
             </div>
           )}
 
           {error && !evaluating && (
-            <div className="p-4 bg-rose-950/40 border border-rose-800 rounded-lg text-rose-300 text-xs">
+            <div role="alert" aria-live="assertive" className="p-4 bg-rose-950/40 border border-rose-800 rounded-lg text-rose-300 text-xs">
               {error}
             </div>
           )}

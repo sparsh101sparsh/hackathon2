@@ -11,6 +11,7 @@ interface VisualizerEntry {
   pattern: string;
   lessonPath: string;
   hasVisualizer: boolean;
+  slug?: string;
 }
 
 const patternLabels: Record<string, string> = {
@@ -42,38 +43,37 @@ const catalogEntries = Object.values(visualizerData) as VisualizerEntry[];
 
 export default function VisualizerLibraryPage() {
   const [entries] = useState<VisualizerEntry[]>(catalogEntries);
-  const [titles, setTitles] = useState<Record<string, string>>({});
+  const [problemMeta, setProblemMeta] = useState<Record<string, { title: string; slug: string }>>({});
   const [selectedId, setSelectedId] = useState(catalogEntries[0]?.problemId || '');
   const [query, setQuery] = useState('');
   const [pattern, setPattern] = useState('all');
 
   useEffect(() => {
-    Promise.allSettled(entries.map(async (entry) => {
-          try {
-            const response = await fetch(`/api/problems/${entry.problemId}`);
-            if (!response.ok) return [entry.problemId, titleFromPath(entry.lessonPath)] as const;
-            const problem = await response.json();
-            return [entry.problemId, problem.title] as const;
-          } catch {
-            return [entry.problemId, titleFromPath(entry.lessonPath)] as const;
-          }
-        }))
-      .then((results) => {
-        const pairs = results
-          .filter((result): result is PromiseFulfilledResult<readonly [string, string]> => result.status === 'fulfilled')
-          .map((result) => result.value);
-        setTitles(Object.fromEntries(pairs));
+    const ids = entries.map((entry) => entry.problemId).join(',');
+    const controller = new AbortController();
+    fetch(`/api/problems?ids=${encodeURIComponent(ids)}&limit=100`, { signal: controller.signal })
+      .then(async (response) => (response.ok ? response.json() : { problems: [] }))
+      .then((data) => {
+        if (controller.signal.aborted) return;
+        const titleMap = Object.fromEntries(
+          (data.problems || []).map((problem: { id: string; title: string; slug: string }) => [problem.id, { title: problem.title, slug: problem.slug }]),
+        );
+        setProblemMeta(titleMap);
+      })
+      .catch((error: unknown) => {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) setProblemMeta({});
       });
+    return () => controller.abort();
   }, [entries]);
 
   const filteredEntries = useMemo(() => entries.filter((entry) => {
-    const title = titles[entry.problemId] || titleFromPath(entry.lessonPath);
+    const title = problemMeta[entry.problemId]?.title || titleFromPath(entry.lessonPath);
     const matchesQuery = `${title} ${entry.pattern}`.toLowerCase().includes(query.toLowerCase());
     return matchesQuery && (pattern === 'all' || entry.pattern === pattern);
-  }), [entries, titles, query, pattern]);
+  }), [entries, problemMeta, query, pattern]);
 
   const selected = entries.find((entry) => entry.problemId === selectedId) || filteredEntries[0];
-  const selectedTitle = selected ? (titles[selected.problemId] || titleFromPath(selected.lessonPath)) : 'Choose a lesson';
+  const selectedTitle = selected ? (problemMeta[selected.problemId]?.title || titleFromPath(selected.lessonPath)) : 'Choose a lesson';
   const patterns = Array.from(new Set(entries.map((entry) => entry.pattern)));
 
   useEffect(() => {
@@ -96,14 +96,14 @@ export default function VisualizerLibraryPage() {
 
         <div className="grid xl:grid-cols-[280px_minmax(0,1fr)] gap-6 items-start">
           <aside className="border border-slate-800/80 bg-slate-900/70 backdrop-blur-xl rounded-2xl p-4 xl:sticky xl:top-24">
-            <div className="flex items-center gap-2 px-3 py-2 border border-slate-800 rounded-xl text-xs text-slate-400 mb-4"><span className="text-emerald-400">$</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="search lessons..." className="bg-transparent outline-none w-full placeholder:text-slate-500 text-slate-200" /></div>
+            <div className="flex items-center gap-2 px-3 py-2 border border-slate-800 rounded-xl text-xs text-slate-400 mb-4"><span className="text-emerald-400">$</span><input aria-label="Search visualizer lessons" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="search lessons..." className="bg-transparent outline-none w-full placeholder:text-slate-500 text-slate-200" /></div>
             <select value={pattern} onChange={(event) => setPattern(event.target.value)} aria-label="Filter visualizer patterns" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs mb-4 text-slate-200"><option value="all">All patterns</option>{patterns.map((item) => <option key={item} value={item}>{patternLabels[item] || item}</option>)}</select>
-            <div className="max-h-[55vh] overflow-y-auto space-y-1 pr-1">{filteredEntries.map((entry) => { const title = titles[entry.problemId] || titleFromPath(entry.lessonPath); return <button key={entry.problemId} type="button" onClick={() => setSelectedId(entry.problemId)} className={`w-full text-left p-3 rounded-xl transition border ${entry.problemId === selected?.problemId ? 'bg-cyan-500/10 border-cyan-400/50 text-cyan-400 font-semibold' : 'border-transparent hover:border-slate-700/60 hover:bg-slate-800/50'}`}><div className="font-sans text-sm text-slate-200 leading-snug">{title}</div><div className="text-[10px] text-slate-400 mt-1">{patternLabels[entry.pattern] || entry.pattern}</div></button>; })}</div>
+            <div className="max-h-[55vh] overflow-y-auto space-y-1 pr-1">{filteredEntries.map((entry) => { const title = problemMeta[entry.problemId]?.title || titleFromPath(entry.lessonPath); return <button key={entry.problemId} type="button" onClick={() => setSelectedId(entry.problemId)} className={`w-full text-left p-3 rounded-xl transition border ${entry.problemId === selected?.problemId ? 'bg-cyan-500/10 border-cyan-400/50 text-cyan-400 font-semibold' : 'border-transparent hover:border-slate-700/60 hover:bg-slate-800/50'}`}><div className="font-sans text-sm text-slate-200 leading-snug">{title}</div><div className="text-[10px] text-slate-400 mt-1">{patternLabels[entry.pattern] || entry.pattern}</div></button>; })}</div>
           </aside>
 
           <section className="min-w-0">
             {selected ? <ProblemVisualizer key={selected.problemId} problemId={selected.problemId} problemTitle={selectedTitle} topicTags={JSON.stringify([selected.pattern])} verified={selected.hasVisualizer} /> : <div className="border border-slate-800 rounded-2xl p-10 text-center text-slate-500">No lessons match this filter.</div>}
-            {selected && <div className="flex flex-wrap justify-between items-center gap-3 mt-4 text-xs text-slate-400"><span>Interactive lesson: {selected.lessonPath}</span><Link href={`/problems/${selected.problemId}`} className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-semibold">Open coding workspace <ChevronRight className="w-3.5 h-3.5" /></Link></div>}
+            {selected && <div className="flex flex-wrap justify-between items-center gap-3 mt-4 text-xs text-slate-400"><span>Interactive lesson: {selected.lessonPath}</span><Link href={`/problems/${problemMeta[selected.problemId]?.slug || selected.problemId}`} className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-semibold">Open coding workspace <ChevronRight className="w-3.5 h-3.5" /></Link></div>}
           </section>
         </div>
       </div>

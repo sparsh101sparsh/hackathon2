@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
 import { getProblemKnowledge } from '@/lib/problemKnowledge';
-import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
+import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,8 @@ export interface HintResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    const limitResponse = rateLimitResponse(request, 'ai:hints', 30, 60 * 1000);
+    if (limitResponse) return limitResponse;
     const body = await request.json();
     const {
       problemTitle = 'DSA Problem',
@@ -23,7 +26,16 @@ export async function POST(request: NextRequest) {
       language = 'cpp',
       hintLevel = 1,
       personality: personalityId,
-    } = body;
+      } = body;
+
+    if (typeof problemTitle !== 'string' || problemTitle.length > 300 ||
+      typeof problemStatement !== 'string' || problemStatement.length > 30_000 ||
+      typeof userCode !== 'string' || userCode.length > 100_000 ||
+      typeof language !== 'string' || language.length > 32 ||
+      (problemId !== undefined && (typeof problemId !== 'string' || problemId.length > 128)) ||
+      (problemSlug !== undefined && (typeof problemSlug !== 'string' || problemSlug.length > 256))) {
+      return NextResponse.json({ error: 'Hint request fields exceed the allowed size' }, { status: 413 });
+    }
 
     const level = Number(hintLevel) as 1 | 2 | 3;
     if (![1, 2, 3].includes(level)) {
@@ -43,10 +55,10 @@ export async function POST(request: NextRequest) {
       3: 'Level 3 - Detailed Logic & Step-by-Step Pseudocode: Provide detailed logical breakdown or clean pseudocode without providing complete solution code in the target language.',
     };
 
-    const personality = getPersonality(personalityId);
-    const personalityPrefix = buildPersonalityPrefix(personality);
+    const personality = getTeachingStyle(personalityId);
+    const personalityPrefix = buildTeachingStylePrefix(personality);
 
-    const systemPrompt = `${personalityPrefix}${personality.hintsSystemPrompt}
+    const systemInstruction = `${personalityPrefix}${personality.hintsSystemInstruction}
 
 Hint Level Context: ${levelDescriptions[level]}
 IMPORTANT: DO NOT leak the full final solution code in the user's language. Encourage learning!
@@ -61,7 +73,7 @@ Output MUST be a single raw JSON object matching schema:
   "hint": "Detailed hint text corresponding to level ${level}"
 }`;
 
-    const userPrompt = `Problem Title: ${knowledge.title}
+    const userInstruction = `Problem Title: ${knowledge.title}
 Problem Statement: ${knowledge.context}
 User Current Code (${language}):
 ${userCode ? userCode : '(No code written yet)'}
@@ -88,18 +100,17 @@ Provide Hint Level ${level}.`;
 
     const responseData = await callFreeModelJSON<HintResponse>({
       model: MODELS.FAST,
-      systemPrompt,
-      userPrompt,
+      systemInstruction,
+      userInstruction,
       temperature: 0.5,
       fallbackJson,
     });
 
     return NextResponse.json(responseData);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/hints:', error);
     return NextResponse.json(
-      { error: message || 'Failed to generate hint' },
+      { error: 'Hints are temporarily unavailable. Please try again shortly.' },
       { status: 500 }
     );
   }

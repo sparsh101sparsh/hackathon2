@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/ui/Toast';
+import { useAuth } from '@/context/AuthContext';
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
+import { useDialogAccessibility } from '@/lib/useDialogAccessibility';
 import {
   Users,
   Code2,
@@ -58,6 +60,7 @@ interface AdminUser {
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { user, loading: authLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'problems' | 'users'>('overview');
 
@@ -74,6 +77,7 @@ export default function AdminDashboardPage() {
   // Delete modal state
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const deleteDialogRef = useDialogAccessibility(Boolean(deleteTargetId), () => setDeleteTargetId(null));
 
   // Users state
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -130,10 +134,15 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (!authLoading && user?.role !== 'ADMIN') {
+      router.replace('/');
+      return;
+    }
+    if (authLoading || user?.role !== 'ADMIN') return;
     fetchStats();
     fetchProblems();
     fetchUsers();
-  }, [fetchStats, fetchProblems, fetchUsers]);
+  }, [authLoading, user?.role, router, fetchStats, fetchProblems, fetchUsers]);
 
   // Handle problem delete
   const handleDeleteProblem = async (id: string) => {
@@ -202,6 +211,14 @@ export default function AdminDashboardPage() {
     );
   });
 
+  if (authLoading || user?.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+        <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -219,7 +236,7 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Control Panel</h1>
           </div>
           <p className="text-xs text-slate-400">
-            Manage system statistics, problem bank, and user permissions across CodeForge AI
+            Manage system statistics, problem bank, and user permissions across CodeForge
           </p>
         </div>
 
@@ -364,6 +381,7 @@ export default function AdminDashboardPage() {
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
               <input
                 type="text"
+                aria-label="Search problems by title or slug"
                 placeholder="Search problem title or slug..."
                 value={problemSearch}
                 onChange={(e) => setProblemSearch(e.target.value)}
@@ -373,6 +391,7 @@ export default function AdminDashboardPage() {
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <select
+                aria-label="Filter admin problems by difficulty"
                 value={difficultyFilter}
                 onChange={(e) => setDifficultyFilter(e.target.value)}
                 className="bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
@@ -481,6 +500,7 @@ export default function AdminDashboardPage() {
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
               <input
                 type="text"
+                aria-label="Search users by name or email"
                 placeholder="Search user name or email..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
@@ -548,6 +568,7 @@ export default function AdminDashboardPage() {
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <select
+                            aria-label={`Role for ${u.name}`}
                             value={u.role}
                             disabled={roleUpdatingId === u.id}
                             onChange={(e) => handleRoleChange(u.id, e.target.value)}
@@ -571,10 +592,17 @@ export default function AdminDashboardPage() {
       {/* Delete Confirmation Modal */}
       {deleteTargetId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-4">
+          <div
+            ref={deleteDialogRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-problem-title"
+            className="max-w-md w-full bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-4"
+          >
             <div className="flex items-center gap-3 text-rose-400 font-bold text-base">
               <AlertCircle className="w-5 h-5" />
-              <span>Confirm Problem Deletion</span>
+              <span id="delete-problem-title">Confirm Problem Deletion</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
               Are you sure you want to permanently delete this problem and all associated test cases and code templates? This action cannot be undone.

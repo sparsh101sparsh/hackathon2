@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { MotionConfig } from 'framer-motion';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthProvider } from '@/context/AuthContext';
@@ -21,13 +22,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CodeForge AI — AI-Powered DSA & Competitive Programming',
+  title: 'CodeForge — DSA & Competitive Programming',
   description:
-    'Practice DSA, execute code in 5 languages, get AI code review and hints, compete in rated contests, and prepare for FAANG interviews — all in one platform.',
-  keywords: ['DSA', 'competitive programming', 'coding practice', 'AI code review', 'interview prep', 'LeetCode alternative'],
+    'Practice DSA, execute code in 5 languages, get guided code reviews and hints, compete in rated contests, and prepare for technical interviews — all in one platform.',
+  keywords: ['DSA', 'competitive programming', 'coding practice', 'code review', 'interview prep', 'LeetCode alternative'],
   openGraph: {
-    title: 'CodeForge AI',
-    description: 'AI-powered DSA & competitive programming platform',
+    title: 'CodeForge',
+    description: 'DSA and competitive programming platform',
     type: 'website',
   },
 };
@@ -40,16 +41,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
       <body
-        className="bg-[#020817] text-slate-100 min-h-screen antialiased flex flex-col font-sans"
+        className="bg-[#08080a] text-stone-100 min-h-screen antialiased flex flex-col font-sans"
       >
         <AuthProvider>
-          <ToastProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </ToastProvider>
+          <MotionConfig reducedMotion="user">
+            <ToastProvider>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+            </ToastProvider>
+          </MotionConfig>
         </AuthProvider>
       </body>
     </html>

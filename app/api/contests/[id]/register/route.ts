@@ -1,28 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: contestId } = params;
+    const limitResponse = rateLimitResponse(
+      req,
+      'contest:register',
+      12,
+      60 * 1000,
+      'Contest registration rate limit reached. Please try again shortly.',
+    );
+    if (limitResponse) return limitResponse;
+
+    const { id: contestId } = await params;
     const session = getSessionFromRequest(req);
     if (!session?.userId) {
       return NextResponse.json({ error: 'Sign in to register for contests.' }, { status: 401 });
     }
     const userId = session.userId;
 
-    let contest = await prisma.contest.findUnique({ where: { id: contestId } });
-    if (!contest) {
-      contest = await prisma.contest.findFirst();
-    }
-
+    const contest = await prisma.contest.findUnique({ where: { id: contestId } });
     if (!contest) {
       return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
+    }
+    if (new Date() > contest.endTime) {
+      return NextResponse.json({ error: 'This contest has already ended.' }, { status: 409 });
     }
 
     // Check if participant already exists
@@ -44,16 +54,33 @@ export async function POST(
     const userRating = 0;
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
 
-    const participant = await prisma.contestParticipant.create({
-      data: {
-        contestId: contest.id,
-        userId: userId,
-        name: user?.name || session.name,
-        oldRating: userRating,
-        newRating: userRating,
-        score: 0,
-      },
-    });
+    let participant;
+    try {
+      participant = await prisma.contestParticipant.create({
+        data: {
+          contestId: contest.id,
+          userId: userId,
+          name: user?.name || session.name,
+          oldRating: userRating,
+          newRating: userRating,
+          score: 0,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        const concurrentParticipant = await prisma.contestParticipant.findFirst({
+          where: { contestId: contest.id, userId },
+        });
+        if (concurrentParticipant) {
+          return NextResponse.json({
+            message: 'Already registered for this contest',
+            participant: concurrentParticipant,
+            registered: true,
+          });
+        }
+      }
+      throw error;
+    }
 
     return NextResponse.json({
       message: 'Successfully registered for contest',
@@ -61,10 +88,9 @@ export async function POST(
       registered: true,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/contests/[id]/register:', error);
     return NextResponse.json(
-      { error: message || 'Failed to register for contest' },
+      { error: 'Failed to register for contest' },
       { status: 500 }
     );
   }

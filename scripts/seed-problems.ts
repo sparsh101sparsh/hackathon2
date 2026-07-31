@@ -6,7 +6,7 @@ import { ProblemSeedData } from './dataset-helpers';
 const prisma = new PrismaClient();
 
 export async function seedDatabase() {
-  console.log('🌱 Starting CodeForge AI SQLite Database Seeding (400+ Problems)...');
+  console.log('🌱 Starting CodeForge Database Seeding (400+ Problems)...');
   const startTime = Date.now();
 
   const datasetPath = path.join(__dirname, '..', 'prisma', 'seedData', 'leetcode400.json');
@@ -49,7 +49,7 @@ export async function seedDatabase() {
   // 3. Seed Companies
   console.log('🏢 Seeding Companies...');
   const companyList = [
-    { name: 'Google', logo: '/companies/google.png', description: 'Search, Cloud, AI & Tech Giant' },
+    { name: 'Google', logo: '/companies/google.png', description: 'Search, Cloud & Tech Giant' },
     { name: 'Amazon', logo: '/companies/amazon.png', description: 'E-Commerce & Cloud Infrastructure' },
     { name: 'Microsoft', logo: '/companies/microsoft.png', description: 'Software, OS, Azure & Gaming' },
     { name: 'Meta', logo: '/companies/meta.png', description: 'Social Networks & Metaverse' },

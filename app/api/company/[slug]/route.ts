@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getTtlCached } from '@/lib/ttlCache';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,133 +17,122 @@ export interface CompanyProblemItem {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slugName = params.slug.toLowerCase();
-
-    // Find matching company in DB
-    const dbCompany = await prisma.company.findFirst({
-      where: {
-        name: {
-          contains: slugName,
-        },
-      },
-      include: {
-        companyProblems: {
-          include: {
-            problem: true,
-          },
-          orderBy: {
-            frequency: 'desc',
-          },
-        },
-      },
-    });
-
+    const { slug } = await params;
+    const slugName = slug.toLowerCase();
     const companyName = slugName.charAt(0).toUpperCase() + slugName.slice(1);
 
-    // Also query problems that mention this company tag in problem.companyTags
-    const taggedProblems = await prisma.problem.findMany({
-      where: {
-        companyTags: {
-          contains: companyName,
+    const data = await getTtlCached(`public:company:${slugName}:v2`, 30_000, async () => {
+      // Find matching company in DB
+      const dbCompany = await prisma.company.findFirst({
+        where: {
+          name: {
+            equals: companyName,
+          },
         },
-      },
-      take: 20,
+        include: {
+          companyProblems: {
+            include: {
+              problem: {
+                select: {
+                  id: true,
+                  slug: true,
+                  title: true,
+                  difficulty: true,
+                  topicTags: true,
+                },
+              },
+            },
+            orderBy: {
+              frequency: 'desc',
+            },
+          },
+        },
+      });
+
+    // Also query problems that mention this company tag in problem.companyTags
+      const taggedProblems = await prisma.problem.findMany({
+        where: {
+          companyTags: {
+            contains: companyName,
+          },
+        },
+        take: 20,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          difficulty: true,
+          topicTags: true,
+        },
+      });
+
+      const sourceProblems = dbCompany && dbCompany.companyProblems.length > 0
+        ? dbCompany.companyProblems.map((companyProblem) => ({
+            problem: companyProblem.problem,
+            frequency: companyProblem.frequency,
+          }))
+        : taggedProblems.map((problem) => ({ problem, frequency: 1 }));
+
+      if (sourceProblems.length === 0) return null;
+
+      const problemIds = sourceProblems.map(({ problem }) => problem.id);
+      const submissionGroups = await prisma.submission.groupBy({
+        by: ['problemId', 'status'],
+        where: { problemId: { in: problemIds } },
+        _count: { _all: true },
+      });
+      const submissionStats = new Map<string, { total: number; accepted: number }>();
+      for (const group of submissionGroups) {
+        const stats = submissionStats.get(group.problemId) || { total: 0, accepted: 0 };
+        stats.total += group._count._all;
+        if (group.status === 'Accepted') stats.accepted += group._count._all;
+        submissionStats.set(group.problemId, stats);
+      }
+
+      const problemList: CompanyProblemItem[] = sourceProblems.map(({ problem, frequency }) => {
+        let tags: string[] = [];
+        try {
+          const parsed = JSON.parse(problem.topicTags || '[]');
+          tags = Array.isArray(parsed) ? parsed.map(String) : [];
+        } catch {
+          tags = [];
+        }
+        const frequencyScore = Math.max(1, Math.min(100, frequency || 1));
+        const stats = submissionStats.get(problem.id) || { total: 0, accepted: 0 };
+        return {
+          id: problem.id,
+          slug: problem.slug,
+          title: problem.title,
+          difficulty: problem.difficulty as 'EASY' | 'MEDIUM' | 'HARD',
+          frequencyTag: frequencyScore >= 80 ? 'High' : frequencyScore >= 60 ? 'Medium' : 'Low',
+          frequencyScore,
+          acceptanceRate: stats.total > 0 ? Math.round((stats.accepted / stats.total) * 1000) / 10 : 0,
+          topicTags: tags,
+        };
+      });
+
+      return {
+        company: {
+          id: dbCompany?.id || slugName,
+          name: dbCompany?.name || companyName,
+          slug: slugName,
+          logo: dbCompany?.logo || '/companies/google.png',
+          description: dbCompany?.description || `${companyName} Top Interview Questions & System Design Prep`,
+          problemCount: problemList.length,
+        },
+        problems: problemList,
+      };
     });
 
-    let problemList: CompanyProblemItem[] = [];
-
-    if (dbCompany && dbCompany.companyProblems.length > 0) {
-      problemList = dbCompany.companyProblems.map((cp) => {
-        const freq = cp.frequency || Math.floor(Math.random() * 40) + 60;
-        const freqTag: 'High' | 'Medium' | 'Low' = freq >= 80 ? 'High' : freq >= 60 ? 'Medium' : 'Low';
-        let tags: string[] = [];
-        try {
-          tags = JSON.parse(cp.problem.topicTags || '[]');
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-          tags = ['Algorithms'];
-        }
-
-        return {
-          id: cp.problem.id,
-          slug: cp.problem.slug,
-          title: cp.problem.title,
-          difficulty: cp.problem.difficulty as 'EASY' | 'MEDIUM' | 'HARD',
-          frequencyTag: freqTag,
-          frequencyScore: freq,
-          acceptanceRate: Math.floor(Math.random() * 30) + 55, // Realistic 55-85%
-          topicTags: tags,
-        };
-      });
-    } else if (taggedProblems.length > 0) {
-      problemList = taggedProblems.map((p, idx) => {
-        const freq = 95 - idx * 4;
-        const freqTag: 'High' | 'Medium' | 'Low' = freq >= 80 ? 'High' : freq >= 60 ? 'Medium' : 'Low';
-        let tags: string[] = [];
-        try {
-          tags = JSON.parse(p.topicTags || '[]');
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-          tags = ['Data Structures'];
-        }
-        return {
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          difficulty: p.difficulty as 'EASY' | 'MEDIUM' | 'HARD',
-          frequencyTag: freqTag,
-          frequencyScore: freq,
-          acceptanceRate: 64.5,
-          topicTags: tags,
-        };
-      });
-    }
-
-    // Fallback problem set if database query yields fewer than 4 problems
-    if (problemList.length === 0) {
-      const allDbProbs = await prisma.problem.findMany({ take: 10 });
-      problemList = allDbProbs.map((p, idx) => {
-        const freq = 92 - idx * 5;
-        const freqTag: 'High' | 'Medium' | 'Low' = freq >= 80 ? 'High' : freq >= 65 ? 'Medium' : 'Low';
-        let tags: string[] = [];
-        try {
-          tags = JSON.parse(p.topicTags || '[]');
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-          tags = ['Algorithms'];
-        }
-        return {
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          difficulty: p.difficulty as 'EASY' | 'MEDIUM' | 'HARD',
-          frequencyTag: freqTag,
-          frequencyScore: freq,
-          acceptanceRate: 62.8,
-          topicTags: tags,
-        };
-      });
-    }
-
-    return NextResponse.json({
-      company: {
-        id: dbCompany?.id || slugName,
-        name: dbCompany?.name || companyName,
-        slug: slugName,
-        logo: dbCompany?.logo || '/companies/google.png',
-        description: dbCompany?.description || `${companyName} Top Interview Questions & System Design Prep`,
-        problemCount: problemList.length,
-      },
-      problems: problemList,
-    });
+    if (!data) return NextResponse.json({ error: 'Company not found or has no mapped problems' }, { status: 404 });
+    return NextResponse.json(data);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/company/[slug]:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch company detail' },
+      { error: 'Failed to fetch company detail' },
       { status: 500 }
     );
   }

@@ -139,8 +139,8 @@ async function runTests() {
   // Test 2a: Missing API key WITHOUT fallback (should throw "FREEMODEL_API_KEY is not configured")
   try {
     await callFreeModelText({
-      systemPrompt: 'sys',
-      userPrompt: 'user',
+      systemInstruction: 'sys',
+      userInstruction: 'user',
     });
     console.error('FAIL: callFreeModelText did not throw error when API key was missing and no fallback was set');
     freemodelPass = false;
@@ -157,8 +157,8 @@ async function runTests() {
   // Test 2b: Missing API key WITH fallbackText
   try {
     const res = await callFreeModelText({
-      systemPrompt: 'sys',
-      userPrompt: 'user',
+      systemInstruction: 'sys',
+      userInstruction: 'user',
       fallbackText: 'Fallback Text Missing Key',
     });
     if (res === 'Fallback Text Missing Key') {
@@ -184,8 +184,8 @@ async function runTests() {
 
   try {
     const res = await freemodelConfigured.callFreeModelText({
-      systemPrompt: 'sys',
-      userPrompt: 'user',
+      systemInstruction: 'sys',
+      userInstruction: 'user',
       fallbackText: 'Fallback on HTTP 500',
     });
     if (res === 'Fallback on HTTP 500') {
@@ -202,8 +202,8 @@ async function runTests() {
   // Test 2d: Configured API Key with HTTP 500 response WITHOUT fallback (should throw status 500 error)
   try {
     await freemodelConfigured.callFreeModelText({
-      systemPrompt: 'sys',
-      userPrompt: 'user',
+      systemInstruction: 'sys',
+      userInstruction: 'user',
     });
     console.error('FAIL: callFreeModelText did not throw error on HTTP 500 when no fallback set');
     freemodelPass = false;
@@ -224,8 +224,8 @@ async function runTests() {
 
   try {
     const res = await freemodelConfigured.callFreeModelJSON({
-      systemPrompt: 'sys',
-      userPrompt: 'user',
+      systemInstruction: 'sys',
+      userInstruction: 'user',
       fallbackJson: { status: 'fallback_success' },
     });
     if ((res as any)?.status === 'fallback_success') {
@@ -248,8 +248,8 @@ async function runTests() {
 
   try {
     const res = await freemodelConfigured.callFreeModelJSON({
-      systemPrompt: 'sys',
-      userPrompt: 'user',
+      systemInstruction: 'sys',
+      userInstruction: 'user',
       fallbackJson: { error: 'invalid_json_fallback' },
     });
     if ((res as any)?.error === 'invalid_json_fallback') {

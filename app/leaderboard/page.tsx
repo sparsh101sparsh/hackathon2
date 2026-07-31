@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { LeaderboardUser } from '@/app/api/leaderboard/route';
-import { Trophy, Search, Loader2 } from 'lucide-react';
+import { Trophy, Search, Loader2, Medal } from 'lucide-react';
 import { ContestScoreboardSkeleton } from '@/components/ui/Skeletons';
 
 export default function LeaderboardPage() {
@@ -12,25 +13,28 @@ export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchLeaderboard() {
       try {
-        const res = await fetch('/api/leaderboard');
+        const res = await fetch('/api/leaderboard', { signal: controller.signal });
         if (!res.ok) throw new Error('Failed to fetch leaderboard');
         const data = await res.json();
         setUsers(data.leaderboard || []);
       } catch (err) {
-        console.error(err);
+        if (!(err instanceof DOMException && err.name === 'AbortError')) console.error(err);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
     fetchLeaderboard();
+
+    return () => controller.abort();
   }, []);
 
   const filteredUsers = users.filter(
     (u) =>
       u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.ratingTier.badge.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -38,21 +42,21 @@ export default function LeaderboardPage() {
     if (rank === 1) {
       return (
         <span className="flex items-center justify-center w-7 h-7 rounded-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-bold text-sm">
-          🥇
+          <Medal className="w-4 h-4" aria-hidden="true" />
         </span>
       );
     }
     if (rank === 2) {
       return (
         <span className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-400/20 border border-slate-400 text-slate-300 font-bold text-sm">
-          🥈
+          <Medal className="w-4 h-4" aria-hidden="true" />
         </span>
       );
     }
     if (rank === 3) {
       return (
         <span className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-700/20 border border-amber-600 text-amber-500 font-bold text-sm">
-          🥉
+          <Medal className="w-4 h-4" aria-hidden="true" />
         </span>
       );
     }
@@ -87,6 +91,7 @@ export default function LeaderboardPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            aria-label="Search leaderboard users"
             placeholder="Search handle, name, tier..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -133,16 +138,19 @@ export default function LeaderboardPage() {
 
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <img
+                          <Image
                             src={u.avatar}
                             alt={u.name}
+                            width={36}
+                            height={36}
+                            unoptimized
                             className="w-9 h-9 rounded-full border border-slate-700 bg-slate-800 shrink-0"
                           />
                           <div>
                             <div className="font-bold text-white group-hover:text-cyan-400 transition-colors">
                               {u.name}
                             </div>
-                            <div className="text-[11px] text-slate-400">{u.email}</div>
+                            <div className="text-[11px] text-slate-400">{u.ratingTier.badge}</div>
                           </div>
                         </div>
                       </td>

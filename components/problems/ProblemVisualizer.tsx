@@ -9,13 +9,12 @@ import {
   Pause,
   Play,
   RotateCcw,
-  Search,
   Sparkles,
 } from 'lucide-react';
 import { getVisualizerLesson } from './visualizerLessons';
 import { problemVisualizerScenarios, ProblemVisualizerScenario } from './problemVisualizerScenarios';
 import { VisualizerScene } from './VisualizerScene';
-import { VisualizerChatbot } from './VisualizerChatbot';
+import { VisualizerTutor } from './VisualizerTutor';
 
 export type VisualType = 'array' | 'matrix' | 'stack' | 'nodes' | 'graph' | 'bars' | 'bits';
 
@@ -327,9 +326,8 @@ function codeFor(pattern: string, lessonPath?: string) {
   return codeByPattern[pattern] || ['state = initial_state()', 'for item in input:', '  inspect the invariant', '  update the state', 'return answer'];
 }
 
-function pointerColor(name: string) {
-  const palette: Record<string, string> = { L: 'text-cyan-300', R: 'text-emerald-300', lo: 'text-cyan-300', hi: 'text-emerald-300', mid: 'text-purple-300', left: 'text-cyan-300', right: 'text-emerald-300' };
-  return palette[name] || 'text-cyan-300';
+function stateValue(frameItem: LessonFrame | undefined, label: string) {
+  return frameItem?.state.find((item) => item.label === label)?.value;
 }
 
 export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId, problemTitle, topicTags, verified = false }) => {
@@ -354,8 +352,11 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
   const frames = useMemo(() => buildVisualizerFrames(pattern, problemTitle, lessonPath), [pattern, problemTitle, lessonPath]);
   const isVerified = verified || Boolean(config?.hasVisualizer);
   const code = codeFor(pattern, lessonPath);
-  const current = frames[Math.min(step, frames.length - 1)];
-  const progress = (step / Math.max(frames.length - 1, 1)) * 100;
+  const boundedStep = Math.min(step, frames.length - 1);
+  const current = frames[boundedStep];
+  const currentPhase = stateValue(current, 'phase') || `step ${boundedStep + 1}`;
+  const frameKey = `${problemId}:${lessonPath}:${boundedStep}:${currentPhase}:${current.codeLine}`;
+  const progress = (boundedStep / Math.max(frames.length - 1, 1)) * 100;
 
   useEffect(() => {
     if (!playing) return;
@@ -369,6 +370,10 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
   }, [playing, speed, frames.length]);
 
   useEffect(() => { setStep(0); setPlaying(false); }, [problemId, pattern]);
+
+  useEffect(() => {
+    setStep((value) => Math.min(value, Math.max(frames.length - 1, 0)));
+  }, [frames.length]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -431,23 +436,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
 
   return (
     <div tabIndex={0} className="min-h-[640px] bg-slate-950/90 text-slate-200 border border-slate-800/80 hover:border-cyan-500/30 transition-all rounded-2xl overflow-hidden font-mono shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50">
-      <div className="grid lg:grid-cols-[220px_minmax(0,1fr)_320px] min-h-[640px]">
-        <aside className="hidden lg:flex flex-col border-r border-slate-800/80 bg-slate-900/90 p-4 gap-6">
-          <div>
-            <div className="text-[11px] text-slate-400 mb-2 font-bold uppercase tracking-wider">PATTERN</div>
-            <div className="text-xl font-bold font-sans text-slate-100">{patternNames[pattern] || 'DSA Visual'}</div>
-            <div className="text-[11px] text-slate-400 mt-2 leading-relaxed">step-by-step pattern animations</div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 border border-slate-800 rounded-xl text-xs text-slate-400">
-            <Search className="w-3.5 h-3.5" /> Search lessons
-          </div>
-          <div className="space-y-2 overflow-hidden">
-            <div className="text-[10px] tracking-[0.18em] text-slate-400 font-bold uppercase">CURRENT LESSON</div>
-            <div className="border-l-2 border-cyan-400 pl-3 text-sm text-slate-100 font-semibold leading-relaxed">{problemTitle}</div>
-            <div className="text-[11px] text-slate-400">{isVerified ? 'verified lesson' : 'pattern lesson'}</div>
-          </div>
-        </aside>
-
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] min-h-[720px]">
         <section className="flex flex-col min-w-0 bg-slate-950/90">
           <header className="px-5 sm:px-8 pt-5 pb-3 flex items-start justify-between gap-4 border-b border-slate-800/60 bg-slate-900/40">
             <div>
@@ -461,23 +450,48 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </header>
 
-          <div className="px-5 sm:px-8 flex items-center justify-between text-[11px] text-slate-400 my-3"><span>{patternNames[pattern] || 'Algorithm'} walk</span><span>step {step + 1} / {frames.length}</span></div>
+          <div className="px-5 sm:px-8 flex items-center justify-between text-[11px] text-slate-400 my-3"><span>{patternNames[pattern] || 'Algorithm'} walk</span><span>step {boundedStep + 1} / {frames.length}</span></div>
 
-          <div className="px-5 sm:px-8 flex-1 grid xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,.75fr)] gap-5 items-center">
-            <div className="min-h-[290px] flex items-center justify-center border-y border-slate-800/80 py-8 overflow-hidden bg-slate-950/90 rounded-xl">
+          <div className="px-5 sm:px-8 pb-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {frames.map((item, index) => {
+                const phase = stateValue(item, 'phase') || `Step ${index + 1}`;
+                const selected = index === boundedStep;
+                return (
+                  <button
+                    key={`${phase}-${index}`}
+                    type="button"
+                    aria-current={selected ? 'step' : undefined}
+                    onClick={() => { setPlaying(false); setStep(index); }}
+                    className={`min-h-[58px] rounded-xl border px-3 py-2 text-left transition-all ${
+                      selected
+                        ? 'border-cyan-400/60 bg-cyan-500/10 shadow-sm shadow-cyan-500/10'
+                        : 'border-slate-800/80 bg-slate-900/50 hover:border-slate-700 hover:bg-slate-900'
+                    }`}
+                  >
+                    <span className={`block text-[10px] font-mono uppercase tracking-[0.16em] ${selected ? 'text-cyan-300' : 'text-slate-500'}`}>0{index + 1}</span>
+                    <span className={`mt-1 block font-sans text-xs font-semibold leading-snug ${selected ? 'text-slate-100' : 'text-slate-300'}`}>{phase}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="px-5 sm:px-8 flex-1 grid xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)] gap-5 items-stretch">
+            <div className="min-h-[440px] flex items-center justify-center border border-slate-800/80 p-4 sm:p-6 overflow-hidden bg-slate-950/90 rounded-xl">
               <AnimatePresence mode="popLayout">
-                <VisualizerScene frame={current} step={step} />
+                <VisualizerScene frame={current} step={boundedStep} />
               </AnimatePresence>
             </div>
 
             <div className="space-y-4">
               <div className="border border-slate-800/80 rounded-xl overflow-hidden bg-slate-950/90 shadow-inner">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/80"><span className="font-sans font-bold text-xs uppercase tracking-wider text-slate-200">{mode === 'concept' ? 'Concept Pseudocode' : 'Practice Pseudocode'}</span><button type="button" onClick={copyCode} title="Copy pseudocode" className="px-2.5 py-1 border border-slate-700/60 rounded-lg bg-slate-800 text-xs text-slate-200 flex items-center gap-1.5 hover:border-cyan-400/50 hover:text-cyan-300 transition-all"><Copy className="w-3.5 h-3.5" /> {copied ? 'copied' : 'copy'}</button></div>
-                <div className="p-3.5 space-y-1.5 text-xs leading-relaxed bg-slate-950/90">{code.map((line, index) => <div key={line} className={`flex gap-3 px-2.5 py-1 rounded-md transition-all ${current.codeLine === index + 1 ? 'bg-cyan-500/15 border-l-2 border-cyan-400 text-cyan-200 font-medium' : 'text-slate-400'}`}><span className="w-5 text-right text-slate-500 shrink-0 select-none">{index + 1}</span><code className="font-mono">{line}</code></div>)}</div>
+                <div className="p-3.5 space-y-1.5 text-xs leading-relaxed bg-slate-950/90">{code.map((line, index) => <div key={`${line}-${index}`} className={`flex gap-3 px-2.5 py-1 rounded-md transition-all ${current.codeLine === index + 1 ? 'bg-cyan-500/15 border-l-2 border-cyan-400 text-cyan-200 font-medium' : 'text-slate-400'}`}><span className="w-5 text-right text-slate-500 shrink-0 select-none">{index + 1}</span><code className="font-mono">{line}</code></div>)}</div>
               </div>
               <div className="border border-slate-800/80 rounded-xl p-3.5 grid grid-cols-2 gap-2.5 bg-slate-900/70 min-h-[80px]">
                 {current.state.map((item, idx) => (
-                  <div key={item.label} className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800/60">
+                  <div key={`${item.label}-${item.value}`} className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800/60">
                     <div className="flex items-center justify-between gap-1">
                       <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400 font-bold">{item.label}</span>
                       <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${idx % 2 === 0 ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>active</span>
@@ -494,15 +508,15 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI Commentary</span>
+                  <span>Commentary</span>
                 </div>
                 <span className="text-[10px] font-mono font-medium tracking-wider px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300">
-                  AI Commentary • Step {step + 1} of {frames.length}
+                  Commentary • Step {boundedStep + 1} of {frames.length}
                 </span>
               </div>
               <AnimatePresence mode="wait">
                 <motion.p
-                  key={step}
+                  key={frameKey}
                   initial={{ opacity: 0, y: 3 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -3 }}
@@ -515,20 +529,26 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </div>
 
+          <div className="lg:hidden px-5 sm:px-8 mt-5">
+            <div className="h-[520px] overflow-hidden rounded-xl border border-slate-800/80">
+              <VisualizerTutor currentFrame={current} problemTitle={problemTitle} step={boundedStep} totalSteps={frames.length} frameKey={frameKey} />
+            </div>
+          </div>
+
           <footer className="px-5 sm:px-8 py-4 mt-4 flex flex-wrap items-center gap-3 border-t border-slate-800/80 bg-slate-900/60 font-sans">
-            <button type="button" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-sm hover:shadow-cyan-500/20 transition-all"><RotateCcw className="w-4 h-4" /></button>
-            <button type="button" title="Previous step" disabled={step === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronLeft className="w-4 h-4" /></button>
+            <button type="button" aria-label="Reset visualization" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-sm hover:shadow-cyan-500/20 transition-all"><RotateCcw className="w-4 h-4" /></button>
+            <button type="button" aria-label="Previous visualization step" title="Previous step" disabled={boundedStep === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronLeft className="w-4 h-4" /></button>
             <button type="button" onClick={() => setPlaying((value) => !value)} className={`px-5 py-2.5 rounded-xl font-sans font-bold text-xs flex items-center gap-2 transition-all ${playing ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/30 ring-2 ring-cyan-400/50' : 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 shadow-lg hover:shadow-cyan-500/30'}`}>{playing ? <Pause className="w-4 h-4 fill-slate-950" /> : <Play className="w-4 h-4 fill-slate-950" />} {playing ? 'Pause' : 'Play'}</button>
-            <button type="button" title="Next step" disabled={step === frames.length - 1} onClick={() => { setPlaying(false); setStep((value) => Math.min(frames.length - 1, value + 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronRight className="w-4 h-4" /></button>
-            <input aria-label="Lesson progress" type="range" min="0" max={frames.length - 1} value={step} onChange={(event) => { setPlaying(false); setStep(Number(event.target.value)); }} className="flex-1 min-w-[120px] accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer" />
+            <button type="button" aria-label="Next visualization step" title="Next step" disabled={boundedStep === frames.length - 1} onClick={() => { setPlaying(false); setStep((value) => Math.min(frames.length - 1, value + 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronRight className="w-4 h-4" /></button>
+            <input aria-label="Lesson progress" type="range" min="0" max={frames.length - 1} value={boundedStep} onChange={(event) => { setPlaying(false); setStep(Number(event.target.value)); }} className="flex-1 min-w-[120px] accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer" />
             <select aria-label="Playback speed" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="bg-slate-800 border border-slate-700/60 rounded-xl px-3 py-2 text-xs text-slate-200 hover:border-cyan-400/50 transition-all"><option value="1800">0.5x</option><option value="1200">1x</option><option value="700">2x</option></select>
             <span className="text-[10px] text-slate-400 w-10 text-right font-mono">{Math.round(progress)}%</span>
           </footer>
         </section>
 
-        {/* AI Chatbot Sidebar */}
+        {/* Tutor sidebar */}
         <aside className="hidden lg:block border-l border-slate-800/80">
-          <VisualizerChatbot currentFrame={current} problemTitle={problemTitle} step={step} />
+          <VisualizerTutor currentFrame={current} problemTitle={problemTitle} step={boundedStep} totalSteps={frames.length} frameKey={frameKey} />
         </aside>
       </div>
     </div>

@@ -23,7 +23,7 @@ async function runCompleteAuthMasterSuite() {
     }
   }
 
-  const testEmail = `auth_master_${Date.now()}@codeforge.ai`;
+  const testEmail = `auth_master_${Date.now()}@codeforge.dev`;
   const testName = 'Shashwat Auth';
   const initialPassword = 'InitialPassword123!';
   const updatedPassword = 'NewSecurePassword456!';

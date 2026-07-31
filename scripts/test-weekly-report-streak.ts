@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 
 async function testWeeklyReportStreakLogic() {
-  console.log('🧪 Testing Weekly Report 0-Day Streak AI Logic...');
+  console.log('🧪 Testing Weekly Report 0-Day Streak Weekly report logic...');
 
   // Test guest/0-day streak fallback logic directly
   const streak = 0;

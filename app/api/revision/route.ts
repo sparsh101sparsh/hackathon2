@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import { getRequestToken, verifyToken } from '@/lib/auth';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const cookieToken = req.cookies.get('codeforge_session')?.value;
-    const authHeader = req.headers.get('Authorization');
-    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const payload = verifyToken(cookieToken || headerToken || '');
+    const payload = verifyToken(getRequestToken(req) || '');
 
     const targetUserId = payload?.userId || 'guest';
 
@@ -46,7 +44,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching revision cards:', error);
     return NextResponse.json({ error: 'Failed to fetch revision flashcards' }, { status: 500 });
   }
@@ -54,10 +51,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieToken = req.cookies.get('codeforge_session')?.value;
-    const authHeader = req.headers.get('Authorization');
-    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const payload = verifyToken(cookieToken || headerToken || '');
+    const limitResponse = rateLimitResponse(
+      req,
+      'revision:review',
+      60,
+      60 * 1000,
+      'Revision update rate limit reached. Please try again shortly.',
+    );
+    if (limitResponse) return limitResponse;
+
+    const payload = verifyToken(getRequestToken(req) || '');
     if (!payload?.userId) {
       return NextResponse.json({ error: 'Sign in to review flashcards.' }, { status: 401 });
     }
@@ -109,7 +112,6 @@ export async function POST(req: NextRequest) {
       nextDueDate,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error updating revision card:', error);
     return NextResponse.json({ error: 'Failed to update revision flashcard' }, { status: 500 });
   }

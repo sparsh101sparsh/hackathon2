@@ -1,9 +1,21 @@
-export const FREEMODEL_BASE_URL = 'https://api.freemodel.dev/v1';
+export const FREEMODEL_BASE_URL = process.env.FREEMODEL_BASE_URL || 'https://api.freemodel.dev/v1';
 export const FREEMODEL_API_KEY = process.env.FREEMODEL_API_KEY || '';
 
+function getFreeModelApiKeys(): string[] {
+  return [
+    process.env.FREEMODEL_API_KEY,
+    process.env.FREEMODEL_API_KEY_2,
+    process.env.FREEMODEL_API_KEY_3,
+  ].filter((key, index, keys): key is string => Boolean(key?.trim()) && keys.indexOf(key) === index);
+}
+
+export function hasFreeModelProvider(): boolean {
+  return getFreeModelApiKeys().length > 0;
+}
+
 export const MODELS = {
-  FAST: 'gpt-5.4-mini',
-  COMPLEX: 'gpt-5.6-sol',
+  FAST: process.env.FREEMODEL_FAST_MODEL || '',
+  COMPLEX: process.env.FREEMODEL_COMPLEX_MODEL || '',
 } as const;
 
 export interface FreeModelMessage {
@@ -14,10 +26,11 @@ export interface FreeModelMessage {
 export interface FreeModelOptions {
   model?: string;
   messages?: FreeModelMessage[];
-  systemPrompt?: string;
-  userPrompt?: string;
+  systemInstruction?: string;
+  userInstruction?: string;
   temperature?: number;
   maxTokens?: number;
+  timeoutMs?: number;
   fallbackText?: string;
   fallbackJson?: unknown;
 }
@@ -40,61 +53,77 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
   let messages: FreeModelMessage[] = [];
   if (options.messages && options.messages.length > 0) {
     messages = [...options.messages];
-    if (options.systemPrompt && !messages.some((m) => m.role === 'system')) {
-      messages.unshift({ role: 'system', content: options.systemPrompt });
+    if (options.systemInstruction && !messages.some((m) => m.role === 'system')) {
+      messages.unshift({ role: 'system', content: options.systemInstruction });
     }
   } else {
-    if (options.systemPrompt) {
-      messages.push({ role: 'system', content: options.systemPrompt });
+    if (options.systemInstruction) {
+      messages.push({ role: 'system', content: options.systemInstruction });
     }
-    if (options.userPrompt) {
-      messages.push({ role: 'user', content: options.userPrompt });
+    if (options.userInstruction) {
+      messages.push({ role: 'user', content: options.userInstruction });
     }
   }
 
-  try {
-    if (!FREEMODEL_API_KEY) {
-      if (fallbackString !== undefined) return fallbackString;
-      throw new Error('FREEMODEL_API_KEY is not configured');
-    }
+  const apiKeys = getFreeModelApiKeys();
+  if (apiKeys.length === 0) {
+    if (fallbackString !== undefined) return fallbackString;
+    throw new Error('FREEMODEL_API_KEY is not configured');
+  }
 
-    const response = await fetch(`${FREEMODEL_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${FREEMODEL_API_KEY}`,
-      },
-      signal: AbortSignal.timeout(5000),
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens,
-      }),
-    });
+  let lastError: Error | null = null;
+  const requestDeadline = options.timeoutMs === undefined
+    ? null
+    : Date.now() + Math.max(1, options.timeoutMs);
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.warn(`[FreeModel API Error ${response.status}]: ${errText}`);
-      if (fallbackString !== undefined) {
-        return fallbackString;
+  for (const [index, apiKey] of apiKeys.entries()) {
+    try {
+      const remainingTimeout = requestDeadline === null
+        ? 5000
+        : requestDeadline - Date.now();
+      if (remainingTimeout <= 0) {
+        lastError = new Error('FreeModel provider request timed out.');
+        break;
       }
-      throw new Error(`FreeModel API request failed with status ${response.status}: ${errText}`);
-    }
 
-    const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content || '';
-    if (!content && fallbackString !== undefined) {
-      return fallbackString;
+      const response = await fetch(`${FREEMODEL_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        signal: AbortSignal.timeout(remainingTimeout),
+        body: JSON.stringify({
+          ...(model ? { model } : {}),
+          messages,
+          temperature,
+          max_tokens,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = (await response.text()).slice(0, 500);
+        lastError = new Error(`FreeModel API request failed with status ${response.status}: ${errText}`);
+        console.warn(`[FreeModel API Error ${response.status}] provider ${index + 1}/${apiKeys.length}; trying next provider.`);
+        continue;
+      }
+
+      const data = await response.json();
+      const content = data?.choices?.[0]?.message?.content || '';
+      if (content) return content;
+
+      lastError = new Error('FreeModel API returned an empty response.');
+      console.warn(`[FreeModel API Empty Response] provider ${index + 1}/${apiKeys.length}; trying next provider.`);
+    } catch (error: unknown) {
+      lastError = error instanceof Error ? error : new Error('FreeModel provider request failed.');
+      console.warn(`[FreeModel API Unavailable] provider ${index + 1}/${apiKeys.length}; trying next provider.`);
     }
-    return content;
-  } catch (error: unknown) {
-    console.warn('[FreeModel Client Notice]: Network/API connection unavailable, utilizing fallback handling.');
-    if (fallbackString !== undefined) {
-      return fallbackString;
-    }
-    throw error;
   }
+
+  if (fallbackString !== undefined) {
+    return fallbackString;
+  }
+  throw lastError || new Error('All configured FreeModel providers failed.');
 }
 
 /**
@@ -123,4 +152,3 @@ export async function callFreeModelJSON<T = unknown>(options: FreeModelOptions):
  * Alias export for callFreeModel
  */
 export const callFreeModel = callFreeModelText;
-

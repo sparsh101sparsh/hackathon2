@@ -21,6 +21,7 @@ export interface PistonResult {
 
 export interface TestCaseResult {
   testCaseId?: string;
+  isSample?: boolean;
   passed: boolean;
   input: string;
   expectedOutput: string;

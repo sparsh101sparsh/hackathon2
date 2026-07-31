@@ -18,10 +18,18 @@ export interface ScoreboardParticipant {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: contestId } = params;
+    const { id: contestId } = await params;
+
+    const contest = await prisma.contest.findUnique({
+      where: { id: contestId },
+      select: { id: true },
+    });
+    if (!contest) {
+      return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
+    }
 
     const dbParticipants = await prisma.contestParticipant.findMany({
       where: { contestId },
@@ -35,7 +43,7 @@ export async function GET(
       rank: idx + 1,
       userId: p.userId || 'guest',
       name: p.name || 'Guest Coder',
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.userId || 'Guest'}`,
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(p.userId || 'Guest')}`,
       rating: p.newRating || 0,
       ratingTier: getRatingTier(p.newRating || 0),
       totalScore: p.score,
@@ -45,10 +53,9 @@ export async function GET(
 
     return NextResponse.json({ leaderboard });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching contest leaderboard:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch contest leaderboard' },
+      { error: 'Failed to fetch contest leaderboard' },
       { status: 500 }
     );
   }

@@ -1,12 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    // Ensure the SQLite database file is included in the Vercel serverless function bundle
-    // so lib/prisma.ts can copy it to /tmp at cold start
-    outputFileTracingIncludes: {
-      '/api': ['./prisma/dev.db'],
-    },
+  images: {
+    remotePatterns: [{ protocol: 'https', hostname: 'api.dicebear.com' }],
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+        ],
+      },
+    ];
   },
 }
 

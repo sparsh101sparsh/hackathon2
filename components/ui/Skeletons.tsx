@@ -40,7 +40,7 @@ export const DashboardSkeleton: React.FC = () => {
         ))}
       </div>
 
-      {/* AI Insights placeholder */}
+      {/* Weekly insights placeholder */}
       <div className="h-28 bg-slate-900/80 border border-slate-800 rounded-xl p-5" />
 
       {/* Charts Grid */}

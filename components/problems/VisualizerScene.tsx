@@ -23,31 +23,31 @@ type SceneProps = {
 
 export const SCENE_THEME = {
   active: {
-    fill: '#0891b2',
-    fillGradient: '#0e7490',
-    stroke: '#22d3ee',
-    shadow: 'rgba(34, 211, 238, 0.2)',
-    text: '#22d3ee',
+    fill: '#92400e',
+    fillGradient: '#b45309',
+    stroke: '#fbbf24',
+    shadow: 'rgba(251, 191, 36, 0.2)',
+    text: '#fcd34d',
   },
   visited: {
-    fill: '#059669',
-    fillGradient: '#047857',
-    stroke: '#34d399',
-    shadow: 'rgba(52, 211, 153, 0.2)',
-    text: '#34d399',
+    fill: '#57534e',
+    fillGradient: '#78716c',
+    stroke: '#d6d3d1',
+    shadow: 'rgba(214, 211, 209, 0.16)',
+    text: '#e7e5e4',
   },
   default: {
-    fill: '#0f172a',
-    stroke: '#334155',
+    fill: '#111115',
+    stroke: '#3f3f46',
     text: '#f8fafc',
   },
   text: {
     slate100: '#f8fafc',
-    cyan300: '#67e8f9',
-    emerald300: '#6ee7b7',
-    muted: '#94a3b8',
+    cyan300: '#fcd34d',
+    emerald300: '#d6d3d1',
+    muted: '#a8a29e',
   },
-  background: '#020617',
+  background: '#08080a',
 } as const;
 
 const ink = SCENE_THEME.text.slate100;

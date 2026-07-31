@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const code = params.code.trim().toUpperCase();
+    const limitResponse = rateLimitResponse(req, 'room:read', 40, 60 * 1000, 'Battle room polling is temporarily rate limited. Please try again shortly.');
+    if (limitResponse) return limitResponse;
+
+    const session = getSessionFromRequest(req);
+    if (!session?.userId) {
+      return NextResponse.json({ error: 'Sign in to view a battle room.' }, { status: 401 });
+    }
+    const { code: rawCode } = await params;
+    const code = rawCode.trim().toUpperCase();
 
     const room = await prisma.customRoom.findUnique({
       where: { code },
@@ -22,6 +31,10 @@ export async function GET(
 
     if (!room) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 });
+    }
+
+    if (!room.participants.some((participant) => participant.userId === session.userId)) {
+      return NextResponse.json({ error: 'Join this battle room before viewing its contents.' }, { status: 403 });
     }
 
     if (room.status === 'IN_PROGRESS' && room.startedAt) {
@@ -62,7 +75,6 @@ export async function GET(
       problems,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching custom room:', error);
     return NextResponse.json({ error: 'Failed to fetch battle room' }, { status: 500 });
   }
@@ -70,15 +82,18 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const code = params.code.trim().toUpperCase();
+    const limitResponse = rateLimitResponse(req, 'room:mutate', 60, 60 * 1000, 'Too many battle room updates. Please try again shortly.');
+    if (limitResponse) return limitResponse;
+
+    const { code: rawCode } = await params;
+    const code = rawCode.trim().toUpperCase();
     const body = await req.json();
-    const { action, pointsToAdd = 100, progress = 'CODING' } = body;
+    const { action, pointsToAdd = 100, progress = 'CODING', problemId } = body;
     const session = getSessionFromRequest(req);
     const userId = session?.userId;
-    const userName = session?.name;
     if (!userId) return NextResponse.json({ error: 'Sign in to use battle rooms.' }, { status: 401 });
 
     const room = await prisma.customRoom.findUnique({
@@ -90,7 +105,17 @@ export async function POST(
       return NextResponse.json({ error: 'Room not found' }, { status: 404 });
     }
 
+    const currentParticipant = room.participants.find((participant) => participant.userId === userId);
+    const hostParticipant = [...room.participants].sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())[0];
+    const isHost = currentParticipant?.userId === hostParticipant?.userId;
+
     if (action === 'START_BATTLE') {
+      if (!currentParticipant) {
+        return NextResponse.json({ error: 'Join the room before starting the battle.' }, { status: 403 });
+      }
+      if (!isHost) {
+        return NextResponse.json({ error: 'Only the room host can start the battle.' }, { status: 403 });
+      }
       if (room.status !== 'WAITING') {
         return NextResponse.json({ error: 'This battle has already started.' }, { status: 409 });
       }
@@ -120,11 +145,12 @@ export async function POST(
       if (remaining.length === 0) {
         // Delete room if no participants left
         await prisma.customRoom.delete({ where: { id: room.id } });
-      } else if (room.hostName === userName) {
+      } else if (isHost) {
         // Reassign host
+        const nextHost = [...remaining].sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())[0];
         await prisma.customRoom.update({
           where: { id: room.id },
-          data: { hostName: remaining[0].userName },
+          data: { hostName: nextHost.userName },
         });
       }
 
@@ -132,6 +158,12 @@ export async function POST(
     }
 
     if (action === 'CLOSE_ROOM') {
+      if (!currentParticipant) {
+        return NextResponse.json({ error: 'Join the room before closing the room.' }, { status: 403 });
+      }
+      if (!isHost) {
+        return NextResponse.json({ error: 'Only the room host can close the room.' }, { status: 403 });
+      }
       if (room.status === 'WAITING') {
         await prisma.customRoom.delete({ where: { id: room.id } });
         return NextResponse.json({ success: true, closed: true, deleted: true });
@@ -168,9 +200,47 @@ export async function POST(
       if (!participant) {
         return NextResponse.json({ error: 'Join the room before submitting a battle result.' }, { status: 403 });
       } else {
+        if (typeof problemId !== 'string') {
+          return NextResponse.json({ error: 'problemId is required when recording a battle result.' }, { status: 400 });
+        }
+        let roomProblemIds: string[] = [];
+        try {
+          const parsedProblemIds = JSON.parse(room.problemIds || '[]');
+          roomProblemIds = Array.isArray(parsedProblemIds) ? parsedProblemIds.map(String) : [];
+        } catch {
+          return NextResponse.json({ error: 'Battle problem configuration is invalid.' }, { status: 500 });
+        }
+        if (!roomProblemIds.includes(problemId)) {
+          return NextResponse.json({ error: 'That problem is not part of this battle room.' }, { status: 400 });
+        }
         if (room.status !== 'IN_PROGRESS') {
           return NextResponse.json({ success: false, finished: true, room }, { status: 409 });
         }
+        if (participant.acceptedAt) {
+          return NextResponse.json({ error: 'This participant has already recorded a battle solve.' }, { status: 409 });
+        }
+        if (room.startedAt && Date.now() >= room.startedAt.getTime() + room.durationSeconds * 1000) {
+          const finishedRoom = await prisma.customRoom.update({
+            where: { id: room.id },
+            data: { status: 'FINISHED', endedAt: new Date() },
+            include: { participants: true },
+          });
+          return NextResponse.json({ success: false, finished: true, room: finishedRoom }, { status: 409 });
+        }
+        const acceptedSubmission = await prisma.submission.findFirst({
+          where: {
+            userId,
+            problemId,
+            status: 'Accepted',
+            createdAt: { gte: room.startedAt || room.createdAt },
+          },
+          select: { id: true },
+        });
+        if (!acceptedSubmission) {
+          return NextResponse.json({ error: 'Submit an accepted solution before recording battle points.' }, { status: 403 });
+        }
+        const requestedPoints = Number(pointsToAdd);
+        const awardedPoints = requestedPoints === 150 ? 150 : 100;
         await prisma.$transaction(async (tx) => {
           const currentRoom = await tx.customRoom.findUnique({ where: { id: room.id }, include: { participants: true } });
           if (!currentRoom || currentRoom.status !== 'IN_PROGRESS') return;
@@ -179,7 +249,7 @@ export async function POST(
           const acceptedAt = new Date();
           await tx.roomParticipant.update({
             where: { id: currentParticipant.id },
-            data: { score: currentParticipant.score + (Number(pointsToAdd) || 100), solved: currentParticipant.solved + 1, progress: 'SOLVED', acceptedAt },
+            data: { score: currentParticipant.score + awardedPoints, solved: currentParticipant.solved + 1, progress: 'SOLVED', acceptedAt },
           });
           if (currentRoom.mode === 'DUEL') {
             await tx.customRoom.update({ where: { id: currentRoom.id }, data: { status: 'FINISHED', endedAt: acceptedAt, winnerId: currentParticipant.userId } });
@@ -201,7 +271,6 @@ export async function POST(
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error updating battle room:', error);
     return NextResponse.json({ error: 'Failed to update battle room' }, { status: 500 });
   }

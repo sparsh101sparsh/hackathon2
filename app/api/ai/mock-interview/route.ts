@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callFreeModelJSON, callFreeModelText, MODELS, FreeModelMessage } from '@/lib/freemodel';
 import { getProblemKnowledge, getProblemKnowledgeForTopic } from '@/lib/problemKnowledge';
-import { getPersonality, buildPersonalityPrefix } from '@/lib/aiPersonalities';
+import { getTeachingStyle, buildTeachingStylePrefix } from '@/lib/teachingStyles';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,8 @@ export interface EvaluationReport {
 
 export async function POST(request: NextRequest) {
   try {
+    const limitResponse = rateLimitResponse(request, 'ai:mock-interview', 12, 60 * 1000);
+    if (limitResponse) return limitResponse;
     const body = await request.json();
     const {
       action = 'start',
@@ -31,28 +34,45 @@ export async function POST(request: NextRequest) {
       personality: personalityId,
     } = body;
 
+    if (!['start', 'message', 'evaluate'].includes(action)) {
+      return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
+    }
+    if (!Array.isArray(messages) || messages.length > 60) {
+      return NextResponse.json({ error: 'messages must be an array with at most 60 entries' }, { status: 400 });
+    }
+    if (typeof code !== 'string' || code.length > 100_000) {
+      return NextResponse.json({ error: 'code exceeds the 100KB limit' }, { status: 413 });
+    }
+    if (messages.some((message: unknown) => {
+      if (!message || typeof message !== 'object') return true;
+      const content = (message as { content?: unknown }).content;
+      return typeof content !== 'string' || content.length > 10_000;
+    })) {
+      return NextResponse.json({ error: 'Each interview message must contain at most 10,000 characters' }, { status: 413 });
+    }
+
     const knowledge = problemId || problemSlug || problemTitle !== 'DSA Problem'
       ? await getProblemKnowledge({ problemId, problemSlug, problemTitle })
       : await getProblemKnowledgeForTopic(topic, company);
 
-    const personality = getPersonality(personalityId);
-    const personalityPrefix = buildPersonalityPrefix(personality);
+    const personality = getTeachingStyle(personalityId);
+    const personalityPrefix = buildTeachingStylePrefix(personality);
 
-    const interviewerSystemPrompt = `${personalityPrefix}${personality.interviewSystemPrompt}
+    const interviewerSystemPrompt = `${personalityPrefix}${personality.interviewSystemInstruction}
 
 Technical Interview Context: Conducting interview for ${company}, topic ${topic}, canonical problem ${knowledge.title}.
 Use this canonical question reference as the source of truth:
 ${knowledge.context}`;
 
     if (action === 'start') {
-      const userPrompt = `Begin the interview. Introduce yourself in one sentence, state the exact problem "${knowledge.title}" with its key constraints, then ask the candidate to restate the requirements and call out any clarifying questions. Do not discuss the solution yet.`;
+      const userInstruction = `Begin the interview. Introduce yourself in one sentence, state the exact problem "${knowledge.title}" with its key constraints, then ask the candidate to restate the requirements and call out any clarifying questions. Do not discuss the solution yet.`;
 
       const fallbackGreeting = `Hello, I'm your ${company} interviewer. Today we'll discuss **${knowledge.title}**. Please restate the requirements in your own words and tell me what clarifying questions you would ask before proposing an approach.`;
 
       const message = await callFreeModelText({
         model: MODELS.COMPLEX,
-        systemPrompt: interviewerSystemPrompt,
-        userPrompt,
+        systemInstruction: interviewerSystemPrompt,
+        userInstruction,
         temperature: 0.7,
         fallbackText: fallbackGreeting,
       });
@@ -130,7 +150,7 @@ Output MUST be a single raw JSON object matching schema:
         .map((m: { role: string; content: string }) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
         .join('\n\n');
 
-      const userPrompt = `Interview Transcript:\n${transcriptText}\n\nFinal Candidate Code:\n\`\`\`\n${code}\n\`\`\``;
+      const userInstruction = `Interview Transcript:\n${transcriptText}\n\nFinal Candidate Code:\n\`\`\`\n${code}\n\`\`\``;
 
       const fallbackReport: EvaluationReport = {
         score: 85,
@@ -153,8 +173,8 @@ Output MUST be a single raw JSON object matching schema:
 
       const report = await callFreeModelJSON<EvaluationReport>({
         model: MODELS.COMPLEX,
-        systemPrompt: evalSystemPrompt,
-        userPrompt,
+        systemInstruction: evalSystemPrompt,
+        userInstruction,
         temperature: 0.3,
         fallbackJson: fallbackReport,
       });
@@ -164,10 +184,9 @@ Output MUST be a single raw JSON object matching schema:
 
     return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error in /api/ai/mock-interview:', error);
     return NextResponse.json(
-      { error: message || 'Mock interview processing error' },
+      { error: 'Mock interview processing is temporarily unavailable. Please try again shortly.' },
       { status: 500 }
     );
   }

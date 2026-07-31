@@ -158,7 +158,7 @@ export default function RegisterPage() {
             </h1>
             <p className="text-xs sm:text-sm text-slate-400">
               {step === 1
-                ? 'Join CodeForge AI to track your DSA mastery & interview preparation'
+                ? 'Join CodeForge to track your DSA mastery & interview preparation'
                 : `Enter the 6-digit code sent to ${email}`}
             </p>
           </div>
@@ -166,6 +166,9 @@ export default function RegisterPage() {
           {/* Notifications */}
           {error && (
             <motion.div
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-3 text-rose-400 text-xs font-medium"
@@ -234,10 +237,11 @@ export default function RegisterPage() {
 
                 {/* Full Name Field */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Full Name</label>
+                  <label htmlFor="register-name" className="text-xs font-semibold text-slate-300">Full Name</label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="register-name"
                       type="text"
                       required
                       autoComplete="name"
@@ -251,10 +255,11 @@ export default function RegisterPage() {
 
                 {/* Email Address Field */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Email Address</label>
+                  <label htmlFor="register-email" className="text-xs font-semibold text-slate-300">Email Address</label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="register-email"
                       type="email"
                       required
                       autoComplete="email"
@@ -268,10 +273,11 @@ export default function RegisterPage() {
 
                 {/* Password Field */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Password</label>
+                  <label htmlFor="register-password" className="text-xs font-semibold text-slate-300">Password</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="register-password"
                       type={showPassword ? 'text' : 'password'}
                       required
                       autoComplete="new-password"
@@ -282,6 +288,7 @@ export default function RegisterPage() {
                     />
                     <button
                       type="button"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition"
                     >
@@ -294,10 +301,11 @@ export default function RegisterPage() {
 
                 {/* Confirm Password Field */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Confirm Password</label>
+                  <label htmlFor="register-confirm-password" className="text-xs font-semibold text-slate-300">Confirm Password</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
+                      id="register-confirm-password"
                       type={showPassword ? 'text' : 'password'}
                       required
                       autoComplete="new-password"

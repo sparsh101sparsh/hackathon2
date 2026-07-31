@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { callFreeModelJSON, MODELS } from '@/lib/freemodel';
+import { callFreeModelJSON, hasFreeModelProvider, MODELS } from '@/lib/freemodel';
+import { rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +11,7 @@ export interface TestResultItem {
   [key: string]: unknown;
 }
 
-export interface AIJudgeRequestBody {
+export interface JudgeRequestBody {
   code?: string;
   language?: string;
   problemTitle?: string;
@@ -21,7 +22,7 @@ export interface AIJudgeRequestBody {
   memoryUsed?: number;
 }
 
-export interface AIJudgeReport {
+export interface JudgeReport {
   verdict: string;
   overallScore: number;
   correctnessScore: number;
@@ -38,7 +39,7 @@ export interface AIJudgeReport {
   optimizedSnippet?: string;
 }
 
-function evaluateAlgorithmicCode(body: AIJudgeRequestBody): AIJudgeReport {
+function evaluateAlgorithmicCode(body: JudgeRequestBody): JudgeReport {
   const code = body.code || '';
   const language = (body.language || 'cpp').toLowerCase();
   const problemTitle = body.problemTitle || 'DSA Challenge';
@@ -175,11 +176,11 @@ function evaluateAlgorithmicCode(body: AIJudgeRequestBody): AIJudgeReport {
 
   let optimizedSnippet = '';
   if (language === 'cpp') {
-    optimizedSnippet = `// AI Recommended Optimization Pattern (C++)\n// Fast I/O & Memory Pre-allocation\nios_base::sync_with_stdio(false);\ncin.tie(NULL);`;
+    optimizedSnippet = `// guided Recommended Optimization Pattern (C++)\n// Fast I/O & Memory Pre-allocation\nios_base::sync_with_stdio(false);\ncin.tie(NULL);`;
   } else if (language === 'python') {
-    optimizedSnippet = `# AI Recommended Optimization Pattern (Python)\n# Using sys.stdin.read for fast I/O\nimport sys\ninput = sys.stdin.read`;
+    optimizedSnippet = `# guided Recommended Optimization Pattern (Python)\n# Using sys.stdin.read for fast I/O\nimport sys\ninput = sys.stdin.read`;
   } else {
-    optimizedSnippet = `// AI Recommended Optimization Pattern\n// Use in-place transformations to maintain O(1) space complexity.`;
+    optimizedSnippet = `// guided Recommended Optimization Pattern\n// Use in-place transformations to maintain O(1) space complexity.`;
   }
 
   return {
@@ -202,7 +203,15 @@ function evaluateAlgorithmicCode(body: AIJudgeRequestBody): AIJudgeReport {
 
 export async function POST(req: NextRequest) {
   try {
-    const body: AIJudgeRequestBody = await req.json();
+    const limitResponse = rateLimitResponse(req, 'ai:judge', 20, 60 * 1000);
+    if (limitResponse) return limitResponse;
+    const body: JudgeRequestBody = await req.json();
+    if (typeof body.code === 'string' && body.code.length > 100_000) {
+      return NextResponse.json({ error: 'Code exceeds the 100KB limit' }, { status: 413 });
+    }
+    if (typeof body.problemDescription === 'string' && body.problemDescription.length > 30_000) {
+      return NextResponse.json({ error: 'Problem description exceeds the 30KB limit' }, { status: 413 });
+    }
 
     // Generate native fallback evaluation
     const fallbackReport = evaluateAlgorithmicCode(body);
@@ -210,14 +219,14 @@ export async function POST(req: NextRequest) {
     let report = fallbackReport;
 
     // Call FreeModel API if key configured
-    if (process.env.FREEMODEL_API_KEY) {
+    if (hasFreeModelProvider()) {
       try {
-        const systemPrompt =
-          'You are an expert AI Algorithmic Judge for competitive coding. ' +
+        const systemInstruction =
+          'You are an expert guided Algorithmic Judge for competitive coding. ' +
           'Evaluate the user code submission for time complexity, space complexity, correctness, edge case resilience, and readability. ' +
           'Return strict JSON with fields: verdict, overallScore, correctnessScore, timeComplexity, spaceComplexity, codeQualityScore, edgeCaseScore, edgeCaseRating, readabilityScore, efficiencyScore, robustnessScore, feedback (array of strings), recommendations (array of strings), optimizedSnippet (string).';
 
-        const userPrompt = JSON.stringify({
+        const userInstruction = JSON.stringify({
           problemTitle: body.problemTitle || 'DSA Challenge',
           problemDescription: body.problemDescription || body.problemStatement || '',
           language: body.language || 'cpp',
@@ -227,26 +236,25 @@ export async function POST(req: NextRequest) {
           testResults: body.testResults,
         });
 
-        const aiResult = await callFreeModelJSON<AIJudgeReport>({
+        const providerResult = await callFreeModelJSON<JudgeReport>({
           model: MODELS.COMPLEX,
-          systemPrompt,
-          userPrompt,
+          systemInstruction,
+          userInstruction,
           temperature: 0.2,
           maxTokens: 1024,
           fallbackJson: fallbackReport,
         });
 
-        if (aiResult && aiResult.overallScore !== undefined) {
+        if (providerResult && providerResult.overallScore !== undefined) {
           report = {
             ...fallbackReport,
-            ...aiResult,
-            feedback: aiResult.feedback?.length ? aiResult.feedback : fallbackReport.feedback,
-            recommendations: aiResult.recommendations?.length ? aiResult.recommendations : fallbackReport.recommendations,
+            ...providerResult,
+            feedback: providerResult.feedback?.length ? providerResult.feedback : fallbackReport.feedback,
+            recommendations: providerResult.recommendations?.length ? providerResult.recommendations : fallbackReport.recommendations,
           };
         }
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-        console.warn('[AI Judge API] FreeModel call failed, utilizing native evaluator:', error);
+        console.warn('[guided Judge API] FreeModel call failed, utilizing native evaluator:', error);
       }
     }
 
@@ -256,15 +264,14 @@ export async function POST(req: NextRequest) {
       ...report,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-    console.error('Error in AI Judge API route:', error);
+    console.error('Error in guided Judge API route:', error);
     const fallback = evaluateAlgorithmicCode({});
     return NextResponse.json(
       {
         success: false,
         report: fallback,
         ...fallback,
-        error: message || 'AI evaluation error',
+        error: 'guided evaluation error',
       },
       { status: 500 }
     );

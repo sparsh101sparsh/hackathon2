@@ -22,8 +22,8 @@ async function runExhaustiveEdgeCaseVerification() {
     }
   }
 
-  const testEmail = `edgecase_test_${Date.now()}@codeforge.ai`;
-  const existingEmail = `existing_user_${Date.now()}@codeforge.ai`;
+  const testEmail = `edgecase_test_${Date.now()}@codeforge.dev`;
+  const existingEmail = `existing_user_${Date.now()}@codeforge.dev`;
   const testPassword = 'SecurePassword123!';
 
   try {
@@ -71,7 +71,7 @@ async function runExhaustiveEdgeCaseVerification() {
     assert(Boolean(isEmailTaken), `Duplicate SIGNUP check identifies existing email ${existingEmail}`);
 
     // Check non-existent email guard for LOGIN
-    const nonExistentEmail = `nonexistent_${Date.now()}@codeforge.ai`;
+    const nonExistentEmail = `nonexistent_${Date.now()}@codeforge.dev`;
     const checkUnregistered = await prisma.user.findUnique({ where: { email: nonExistentEmail } });
     assert(checkUnregistered === null, `LOGIN check identifies unregistered email ${nonExistentEmail}`);
 

@@ -6,10 +6,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const includeEditorial = searchParams.get('includeEditorial') === 'true';
 
@@ -17,7 +17,21 @@ export async function GET(
       where: {
         OR: [{ id: id }, { slug: id }],
       },
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        statement: true,
+        inputFormat: true,
+        outputFormat: true,
+        constraints: true,
+        difficulty: true,
+        topicTags: true,
+        companyTags: true,
+        editorial: true,
+        timeLimit: true,
+        memoryLimit: true,
+        createdAt: true,
         testCases: {
           where: { isSample: true },
           select: {
@@ -70,7 +84,7 @@ export async function GET(
       companyTags: parsedCompanyTags,
       timeLimit: problem.timeLimit,
       memoryLimit: problem.memoryLimit,
-      editorial: includeEditorial ? problem.editorial : problem.editorial,
+      editorial: includeEditorial ? problem.editorial : null,
       testCases: problem.testCases,
       codeTemplates: problem.codeTemplates,
       createdAt: problem.createdAt,
@@ -78,10 +92,9 @@ export async function GET(
 
     return NextResponse.json(responseData);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching problem details:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch problem' },
+      { error: 'Unable to load this problem right now. Please try again shortly.' },
       { status: 500 }
     );
   }

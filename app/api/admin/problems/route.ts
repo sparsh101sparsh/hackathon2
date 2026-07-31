@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 export interface TestCaseInput {
   input: string;
@@ -16,6 +17,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+
     const problems = await prisma.problem.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
@@ -35,10 +39,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(formattedProblems);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error fetching admin problems:', error);
     return NextResponse.json(
-      { error: message || 'Failed to fetch admin problems' },
+      { error: 'Failed to fetch admin problems' },
       { status: 500 }
     );
   }
@@ -46,6 +49,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authError = await requireAdmin(request);
+    if (authError) return authError;
+
     const body = await request.json();
     const {
       title,
@@ -70,6 +76,19 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required problem fields (title, statement, inputFormat, outputFormat, constraints, difficulty)' },
         { status: 400 }
       );
+    }
+
+    const normalizedDifficulty = typeof difficulty === 'string' ? difficulty.toUpperCase() : '';
+    if (!['EASY', 'MEDIUM', 'HARD'].includes(normalizedDifficulty)) {
+      return NextResponse.json({ error: 'difficulty must be EASY, MEDIUM, or HARD' }, { status: 400 });
+    }
+    const parsedTimeLimit = Number(timeLimit);
+    const parsedMemoryLimit = Number(memoryLimit);
+    if (!Number.isFinite(parsedTimeLimit) || parsedTimeLimit <= 0 || parsedTimeLimit > 60) {
+      return NextResponse.json({ error: 'timeLimit must be a number greater than 0 and at most 60 seconds' }, { status: 400 });
+    }
+    if (!Number.isInteger(parsedMemoryLimit) || parsedMemoryLimit < 1 || parsedMemoryLimit > 4096) {
+      return NextResponse.json({ error: 'memoryLimit must be an integer between 1 and 4096 MB' }, { status: 400 });
     }
 
     // Generate slug if not provided
@@ -134,12 +153,12 @@ export async function POST(request: NextRequest) {
         inputFormat,
         outputFormat,
         constraints,
-        difficulty: difficulty.toUpperCase(),
+        difficulty: normalizedDifficulty,
         topicTags: topicTagsJson,
         companyTags: companyTagsJson,
         editorial: editorial || '',
-        timeLimit: parseFloat(String(timeLimit)) || 1.0,
-        memoryLimit: parseInt(String(memoryLimit), 10) || 256,
+        timeLimit: parsedTimeLimit,
+        memoryLimit: parsedMemoryLimit,
         testCases: {
           create: allTestCases,
         },
@@ -162,10 +181,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Error creating problem:', error);
     return NextResponse.json(
-      { error: message || 'Failed to create problem' },
+      { error: 'Failed to create problem' },
       { status: 500 }
     );
   }
@@ -175,8 +193,7 @@ function safeParseJsonArray(str: string): string[] {
   try {
     const parsed = JSON.parse(str);
     return Array.isArray(parsed) ? parsed : [];
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+  } catch {
     return [];
   }
 }
