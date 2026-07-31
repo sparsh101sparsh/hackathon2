@@ -54,25 +54,25 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { label: 'Problems', href: '/problems', icon: <Code className="w-4 h-4" /> },
-    { label: 'Contests', href: '/contests', icon: <Trophy className="w-4 h-4" /> },
-    { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-amber-400" /> },
+    { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-cyan-200" /> },
+    { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-violet-300" /> },
+    { label: 'AI Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-sky-300" /> },
     { label: 'Company Prep', href: '/company', icon: <Building2 className="w-4 h-4" /> },
-    { label: 'Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-amber-400" /> },
+    { label: 'Contests', href: '/contests', icon: <Trophy className="w-4 h-4" /> },
     { label: 'Leaderboard', href: '/leaderboard', icon: <BarChart2 className="w-4 h-4" /> },
-    { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-amber-400" /> },
   ];
 
   return (
-    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-6 h-14 flex items-center justify-between font-sans">
+    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-5 sm:px-10 h-[76px] flex items-center justify-between font-sans">
       {/* Left Brand Emblem & Nav Links */}
-      <div className="flex items-center gap-5 lg:gap-7">
+      <div className="flex items-center gap-6 lg:gap-8">
         {/* Glowing Logo Emblem */}
-        <Link href="/" className="flex items-center gap-2 text-white font-extrabold text-lg tracking-tight group">
-          <div className="p-1.5 rounded-md bg-amber-400 text-[#08080a] group-hover:bg-amber-300 transition duration-200">
-            <Code2 className="w-4 h-4" aria-hidden="true" />
+        <Link href="/" className="flex items-center gap-3 text-white font-extrabold text-xl tracking-tight group">
+          <div className="p-2.5 rounded-lg bg-cyan-200 text-[#08080a] group-hover:bg-cyan-100 transition duration-200">
+            <Code2 className="w-6 h-6" aria-hidden="true" />
           </div>
-          <span className="text-base font-black tracking-tight">
-            CodeForge<span className="text-amber-400">_</span>
+          <span className="text-xl font-black tracking-tight">
+            CodeForge<span className="text-cyan-200">_</span>
           </span>
         </Link>
 
@@ -84,9 +84,9 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-2.5 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`px-3.5 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 ${
                   isActive
-                    ? 'bg-[#17171b] text-amber-300 border border-amber-400/35'
+                    ? 'bg-[#17171b] text-cyan-100 border border-cyan-300/25'
                     : 'text-slate-400 hover:text-white hover:bg-[#111115]'
                 }`}
               >
@@ -104,14 +104,14 @@ export const Navbar: React.FC = () => {
           href="https://github.com/sparsh101sparsh/hackathon2"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
+          className="px-4 py-3 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
         >
-          <Github className="w-4 h-4 text-amber-300" />
+          <Github className="w-4 h-4 text-cyan-200" />
           <span>GitHub</span>
         </a>
 
         {user ? (
-          <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/10 rounded-lg p-1 pr-3 shadow-inner hover:border-amber-400/40 transition">
+            <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/10 rounded-lg p-1.5 pr-3.5 shadow-inner hover:border-cyan-300/30 transition">
             <Link
               href="/dashboard"
               className="flex items-center gap-2.5 group cursor-pointer"
@@ -120,14 +120,14 @@ export const Navbar: React.FC = () => {
               <Image
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                 alt={user.name}
-                width={28}
-                height={28}
+                width={36}
+                height={36}
                 unoptimized
-                className="w-7 h-7 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-amber-400 transition"
+                className="w-9 h-9 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-cyan-300 transition"
               />
               <div className="text-left leading-none">
-                <div className="text-xs font-bold text-slate-100 group-hover:text-amber-300 transition">{user.name}</div>
-                <div className="text-[10px] text-slate-400">{user.email}</div>
+                <div className="text-sm font-bold text-slate-100 group-hover:text-cyan-100 transition">{user.name}</div>
+                <div className="text-[11px] text-slate-400">{user.email}</div>
               </div>
             </Link>
             <button
@@ -143,14 +143,14 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
+              className="px-4 py-3 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
             >
-              <LogIn className="w-3.5 h-3.5 text-amber-300" />
+              <LogIn className="w-3.5 h-3.5 text-cyan-200" />
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/10 transition-all flex items-center gap-1.5"
+              className="px-5 py-3 rounded-lg bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-sm transition-all flex items-center gap-2"
             >
               <UserPlus className="w-3.5 h-3.5 text-slate-950" />
               <span>Sign Up</span>
@@ -168,9 +168,9 @@ export const Navbar: React.FC = () => {
           aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-navigation-menu"
-          className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
+          className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
         >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
@@ -184,7 +184,7 @@ export const Navbar: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="absolute top-16 left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
+            className="absolute top-[76px] left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
           >
             <div className="space-y-1">
               {navLinks.map((link) => {
@@ -196,7 +196,7 @@ export const Navbar: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${
                       isActive
-                        ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
+                        ? 'bg-[#17171b] text-cyan-100 border border-cyan-300/25'
                         : 'text-slate-300 hover:bg-slate-900'
                     }`}
                   >
@@ -221,10 +221,10 @@ export const Navbar: React.FC = () => {
                       width={32}
                       height={32}
                       unoptimized
-                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-amber-400 transition"
+                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-cyan-300 transition"
                     />
                     <div>
-                      <div className="text-xs font-bold text-white group-hover:text-amber-300 transition">{user.name}</div>
+                      <div className="text-xs font-bold text-white group-hover:text-cyan-100 transition">{user.name}</div>
                       <div className="text-[11px] text-slate-400">{user.email}</div>
                     </div>
                   </Link>
@@ -247,13 +247,13 @@ export const Navbar: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
                   >
-                    <LogIn className="w-4 h-4 text-amber-300" />
+                    <LogIn className="w-4 h-4 text-cyan-200" />
                     <span>Sign In</span>
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="py-2.5 rounded-lg text-xs font-bold bg-amber-400 hover:bg-amber-300 text-[#08080a] flex items-center justify-center gap-2 transition font-bold"
+                    className="py-2.5 rounded-lg text-xs font-bold bg-cyan-200 hover:bg-cyan-100 text-[#08080a] flex items-center justify-center gap-2 transition font-bold"
                   >
                     <UserPlus className="w-4 h-4 text-slate-950" />
                     <span>Sign Up</span>
@@ -268,7 +268,7 @@ export const Navbar: React.FC = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="w-full py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
               >
-                <Github className="w-4 h-4 text-amber-300" />
+                <Github className="w-4 h-4 text-cyan-200" />
                 <span>GitHub Repo</span>
               </a>
             </div>
