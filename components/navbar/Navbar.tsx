@@ -63,16 +63,16 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-[#08080a]/95 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-6 h-16 flex items-center justify-between font-sans">
+    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-6 h-14 flex items-center justify-between font-sans">
       {/* Left Brand Emblem & Nav Links */}
-      <div className="flex items-center gap-6 lg:gap-8">
+      <div className="flex items-center gap-5 lg:gap-7">
         {/* Glowing Logo Emblem */}
         <Link href="/" className="flex items-center gap-2 text-white font-extrabold text-lg tracking-tight group">
-          <div className="p-2 rounded-lg bg-amber-400 text-[#08080a] shadow-lg shadow-amber-400/10 group-hover:scale-105 group-hover:shadow-amber-400/20 transition duration-200">
-            <Code2 className="w-5 h-5 fill-slate-950 text-slate-950" />
+          <div className="p-1.5 rounded-md bg-amber-400 text-[#08080a] group-hover:bg-amber-300 transition duration-200">
+            <Code2 className="w-4 h-4" aria-hidden="true" />
           </div>
-          <span className="text-lg font-black tracking-tight">
-            CodeForge
+          <span className="text-base font-black tracking-tight">
+            CodeForge<span className="text-amber-400">_</span>
           </span>
         </Link>
 
@@ -84,10 +84,10 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`px-2.5 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-[#17171b] text-amber-300 border border-amber-400/40 shadow-sm'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
+                    ? 'bg-[#17171b] text-amber-300 border border-amber-400/35'
+                    : 'text-slate-400 hover:text-white hover:bg-[#111115]'
                 }`}
               >
                 {link.icon}

@@ -182,20 +182,20 @@ export const FaqAndTestimonials: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="rounded-xl border border-white/10 bg-[#0f0f12] p-10 text-center shadow-xl"
+        className="rounded-lg border border-white/10 bg-[#0f0f12] p-8 sm:p-10 text-center"
       >
-        <div className="text-3xl sm:text-4xl font-black text-white mb-3">
-          Ready to level up?
+        <div className="text-3xl sm:text-4xl font-bold text-white mb-3">
+          Your next solved problem starts here.
         </div>
         <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
-            Start solving problems, get feedback on every submission, and track your growth — all in one place.
+            Open the workspace and build a practice loop that remembers where you need work.
         </p>
         <Link
           href="/problems"
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-amber-400 text-[#08080a] font-bold text-sm shadow-xl shadow-amber-950/30 hover:bg-amber-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-amber-400 text-[#08080a] font-bold text-sm hover:bg-amber-300 transition-colors"
         >
           <Code2 className="w-4 h-4" />
-          Start Solving
+          Open problems
         </Link>
       </motion.div>
 

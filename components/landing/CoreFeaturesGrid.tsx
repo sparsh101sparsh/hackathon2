@@ -43,7 +43,7 @@ export const CoreFeaturesGrid: React.FC = () => {
     },
     {
       title: 'Codeforces Rated Contests',
-      desc: 'Compete in weekly timed rated contests with live scoreboard standings, penalty calculations, and Elo rating updates (800 - 3500).',
+      desc: 'Start an on-demand rated battle, invite friends, or face the AI judge with a focused problem set.',
       icon: <Trophy className="w-6 h-6 text-amber-300" />,
       badge: 'Elo Rating System',
       link: '/contests',

@@ -64,7 +64,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         onMount={handleEditorDidMount}
         options={{
           fontSize: 14,
-          fontFamily: "'Fira Code', 'JetBrains Mono', 'Courier New', monospace",
+          fontFamily: "'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
           minimap: { enabled: false },
           scrollBeyondLastLine: false,
           automaticLayout: true,

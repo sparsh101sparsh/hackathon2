@@ -2,20 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Search,
   CheckCircle,
   Circle,
-  Code2,
   ChevronLeft,
   ChevronRight,
   Filter,
   Sparkles,
-  Zap,
-  PlayCircle,
-  Brain,
-  Layers,
 } from 'lucide-react';
 import { Problem } from '@/lib/types';
 import { ProblemListSkeleton } from '@/components/ui/Skeletons';

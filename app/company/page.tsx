@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { CompanySummary } from '@/app/api/company/route';
-import { Building2, ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, Search, ShoppingBag, Monitor, Network, Smartphone, Clapperboard, Car, Store, Cloud } from 'lucide-react';
 import { CardSkeleton } from '@/components/ui/Skeletons';
 
 export default function CompanyDirectoryPage() {
@@ -38,25 +38,27 @@ export default function CompanyDirectoryPage() {
       c.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const companyIcons = [Search, ShoppingBag, Monitor, Network, Smartphone, Clapperboard, Car, Store, Cloud];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto font-sans"
+      className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-7 max-w-7xl mx-auto font-sans"
     >
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2.5 rounded-lg bg-amber-400/10 text-amber-400 border border-amber-400/20 shadow-lg shadow-amber-950/20">
-              <Building2 className="w-6 h-6" />
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-md bg-[#111115] text-amber-400 border border-white/10">
+              <Network className="w-5 h-5" aria-hidden="true" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
               Top Tech Company Interview Prep
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-400 mt-2 ml-11">
             Curated coding question banks tagged by company, topic, difficulty, and interview frequency
           </p>
         </div>
@@ -77,7 +79,7 @@ export default function CompanyDirectoryPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 border border-white/10">
           {Array.from({ length: 8 }).map((_, i) => (
             <CardSkeleton key={i} />
           ))}
@@ -94,19 +96,19 @@ export default function CompanyDirectoryPage() {
             >
               <Link
                 href={`/company/${comp.slug}`}
-                className="group bg-[#0f0f12] hover:bg-[#111115] border border-white/10 hover:border-amber-400/60 rounded-xl p-6 shadow-xl transition-all flex flex-col justify-between h-full"
+                className="group bg-[#0f0f12] hover:bg-[#151519] p-5 transition-colors flex flex-col justify-between h-full min-h-[220px]"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-3xl p-3 rounded-lg bg-[#08080a] border border-white/10 shrink-0">
-                      <Building2 className="w-7 h-7 text-amber-400" aria-hidden="true" />
+                    <span className="p-2.5 rounded-md bg-[#08080a] border border-white/10 shrink-0">
+                      {React.createElement(companyIcons[idx % companyIcons.length], { className: 'w-5 h-5 text-amber-400', 'aria-hidden': true })}
                     </span>
-                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                    <span className="px-2 py-1 rounded-md text-[10px] font-mono text-amber-300 border border-amber-400/20">
                       {comp.problemCount} Problems
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">
+                  <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">
                     {comp.name}
                   </h3>
                   <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">

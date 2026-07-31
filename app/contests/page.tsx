@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Trophy, Clock, Users, Calendar, CheckCircle, ArrowRight, Loader2, Zap, Swords, Plus, KeyRound } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
+import { Trophy, Users, ArrowRight, Zap, Swords, Plus, KeyRound, Bot, Star } from 'lucide-react';
 import { ContestScoreboardSkeleton } from '@/components/ui/Skeletons';
 import { CreateRoomModal } from '@/components/contests/CreateRoomModal';
 import { JoinRoomModal } from '@/components/contests/JoinRoomModal';
@@ -26,11 +25,9 @@ interface ContestItem {
 export default function ContestsPage() {
   const [contests, setContests] = useState<ContestItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [registeringId, setRegisteringId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isOnDemandModalOpen, setIsOnDemandModalOpen] = useState(false);
-  const { showToast } = useToast();
 
   const fetchContests = async () => {
     try {
@@ -49,30 +46,7 @@ export default function ContestsPage() {
     fetchContests();
   }, []);
 
-  const handleRegister = async (contestId: string) => {
-    setRegisteringId(contestId);
-    try {
-      const res = await fetch(`/api/contests/${contestId}/register`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (res.ok) {
-        showToast('Contest Registered Successfully!', 'success');
-        await fetchContests();
-      } else {
-        const data = await res.json();
-        showToast(data.error || 'Failed to register for contest', 'error');
-      }
-    } catch (err) {
-      console.error('Failed to register', err);
-      showToast('Error connecting to registration service', 'error');
-    } finally {
-      setRegisteringId(null);
-    }
-  };
-
   const activeContests = contests.filter((c) => c.status === 'ACTIVE');
-  const upcomingContests = contests.filter((c) => c.status === 'UPCOMING');
   const endedContests = contests.filter((c) => c.status === 'ENDED');
 
   return (
@@ -99,23 +73,23 @@ export default function ContestsPage() {
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Compete in live rated contests or create private speed battle rooms with up to 10 friends!
+            Start a rated battle when you are ready, invite friends, and get judged on the work you submit.
           </p>
         </div>
       </div>
 
-      {/* Friend Battle Arena Card */}
-      <div className="rounded-xl bg-[#0f0f12] border border-white/10 shadow-xl p-6 sm:p-8 relative overflow-hidden">
+      {/* On-demand arena */}
+      <div className="rounded-lg bg-[#0f0f12] border border-white/10 p-6 sm:p-8 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 uppercase tracking-wider">
-              <Swords className="w-3.5 h-3.5" /> Private Room (1v1 to 10 Players)
+            <div className="inline-flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-wider">
+              <Bot className="w-3.5 h-3.5" /> On-demand rated arena
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white">
-              Challenge Your Friends to a Speed Coding Battle
+              Start a battle. Get a rating.
             </h2>
             <p className="text-xs sm:text-sm text-slate-300">
-              Create a custom room with a unique 6-character code. First coder to submit accepted solutions gets bonus speed points! Maximum limit: <span className="font-bold text-amber-400">10 friends per room</span>.
+              The AI judge scores correctness, completion speed, and problem difficulty after every run. Use a bot duel for a solo rating attempt or create a private room for up to 10 players.
             </p>
           </div>
 
@@ -124,7 +98,7 @@ export default function ContestsPage() {
               onClick={() => setIsOnDemandModalOpen(true)}
               className="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/20 transition-all flex items-center justify-center gap-2"
             >
-              <span className="inline-flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" aria-hidden="true" /> Instant Duel / Blitz</span>
+              <span className="inline-flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" aria-hidden="true" /> Start rated battle</span>
             </button>
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -208,76 +182,11 @@ export default function ContestsPage() {
             </section>
           )}
 
-          {/* Upcoming Contests */}
-          <section className="space-y-4">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-amber-400" /> Upcoming Weekly Contests
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {upcomingContests.map((contest) => (
-                <motion.div
-                  key={contest.id}
-                  whileHover={{ y: -2 }}
-                  className="rounded-xl bg-[#0f0f12] border border-white/10 shadow-xl p-6 flex flex-col justify-between space-y-4"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-400/10 text-amber-300 border border-amber-400/20 uppercase">
-                        Upcoming
-                      </span>
-                      {contest.isRated && (
-                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#18181d] text-slate-300 border border-white/10 uppercase">
-                          Rated
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-base font-bold text-white">{contest.title}</h3>
-                    <p className="text-xs text-slate-400 line-clamp-2">{contest.description}</p>
-                  </div>
-
-                  <div className="space-y-3 pt-2 border-t border-slate-800/80">
-                    <div className="flex items-center justify-between text-xs text-slate-400">
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-amber-400" />
-                        {new Date(contest.startTime).toLocaleString()}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-amber-400" />
-                        {contest.participantCount} Registered
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => handleRegister(contest.id)}
-                      disabled={contest.isRegistered || registeringId === contest.id}
-                      className={
-                        contest.isRegistered
-                          ? 'w-full px-4 py-2 rounded-xl bg-slate-800/80 text-emerald-400 border border-slate-700/60 font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-default'
-                          : 'w-full px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/20 transition-all flex items-center justify-center gap-2'
-                      }
-                    >
-                      {registeringId === contest.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                      ) : contest.isRegistered ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 text-emerald-400" /> Registered
-                        </>
-                      ) : (
-                        'Register Now'
-                      )}
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-
           {/* Past Contests */}
           {endedContests.length > 0 && (
             <section className="space-y-4 pt-4">
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-400" /> Past Contests Archive
+                <Star className="w-4 h-4 text-amber-400" /> Recent battle results
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
