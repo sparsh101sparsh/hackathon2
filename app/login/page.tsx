@@ -220,7 +220,7 @@ function LoginPageInner() {
   return (
     <div className="min-h-[85vh] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       {/* Radiant Glow background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-tr from-cyan-500/15 via-indigo-500/10 to-purple-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -230,11 +230,11 @@ function LoginPageInner() {
       >
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl relative overflow-hidden">
           {/* Top subtle line accent */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-emerald-500 to-indigo-500" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-400/70" />
 
           {/* Header */}
           <div className="text-center space-y-2 mb-6">
-            <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-slate-950 border border-slate-800 text-cyan-400 shadow-inner mb-2">
+            <div className="inline-flex items-center justify-center p-3 rounded-xl bg-[#08080a] border border-amber-400/30 text-amber-300 shadow-inner mb-2">
               <Code2 className="w-8 h-8" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -293,7 +293,7 @@ function LoginPageInner() {
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
                 authMode === 'password'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700 shadow'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40 shadow'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -308,7 +308,7 @@ function LoginPageInner() {
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
                 authMode === 'code'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700 shadow'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40 shadow'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -323,7 +323,7 @@ function LoginPageInner() {
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${
                 authMode === 'forgot'
-                  ? 'bg-slate-800 text-cyan-400 border border-slate-700 shadow'
+                  ? 'bg-[#17171b] text-amber-300 border border-amber-400/40 shadow'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -384,7 +384,7 @@ function LoginPageInner() {
                       placeholder="shaswat@gmail.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-medium transition"
+                      className="w-full bg-[#08080a] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium transition"
                     />
                   </div>
                 </div>
@@ -399,7 +399,7 @@ function LoginPageInner() {
                         setAuthMode('forgot');
                         setCodeStep(1);
                       }}
-                      className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition"
+                      className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 transition"
                     >
                       Forgot Password?
                     </button>
@@ -414,7 +414,7 @@ function LoginPageInner() {
                       placeholder="••••••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-medium transition"
+                      className="w-full bg-[#08080a] border border-white/10 rounded-lg pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium transition"
                     />
                     <button
                       type="button"
@@ -431,7 +431,7 @@ function LoginPageInner() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/20 hover:shadow-cyan-500/35 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
+                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-sm shadow-xl shadow-amber-400/10 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
                 >
                   {loading ? (
                     <>
@@ -469,7 +469,7 @@ function LoginPageInner() {
                         placeholder="shaswat@gmail.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-medium transition"
+                        className="w-full bg-[#08080a] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium transition"
                       />
                     </div>
                   </div>
@@ -477,7 +477,7 @@ function LoginPageInner() {
                   <div className="space-y-3">
                     <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
                       <span>6-Digit Sign-In Code</span>
-                      <span className="text-[11px] text-cyan-400">Sent to {email}</span>
+                      <span className="text-[11px] text-amber-300">Sent to {email}</span>
                     </label>
 
                     {/* Interactive 6-Digit OTP Component */}
@@ -500,7 +500,7 @@ function LoginPageInner() {
                         type="button"
                         onClick={handleResendCode}
                         disabled={resending || cooldown > 0}
-                        className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition disabled:opacity-50"
+                        className="text-amber-300 hover:text-amber-200 flex items-center gap-1 font-semibold transition disabled:opacity-50"
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
                         <span>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Code'}</span>
@@ -512,7 +512,7 @@ function LoginPageInner() {
                 <button
                   type="submit"
                   disabled={loading || (codeStep === 2 && verificationCode.length !== 6)}
-                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/20 hover:shadow-cyan-500/35 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
+                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-sm shadow-xl shadow-amber-400/10 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
                 >
                   {loading ? (
                     <>
@@ -550,7 +550,7 @@ function LoginPageInner() {
                         placeholder="shaswat@gmail.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-medium transition"
+                        className="w-full bg-[#08080a] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium transition"
                       />
                     </div>
                   </div>
@@ -559,7 +559,7 @@ function LoginPageInner() {
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
                         <span>6-Digit Reset Code</span>
-                        <span className="text-[11px] text-cyan-400">Sent to {email}</span>
+                      <span className="text-[11px] text-amber-300">Sent to {email}</span>
                       </label>
 
                       {/* Otp Input */}
@@ -582,7 +582,7 @@ function LoginPageInner() {
                           placeholder="••••••••••••"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          className="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-medium transition"
+                          className="w-full bg-[#08080a] border border-white/10 rounded-lg pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium transition"
                         />
                         <button
                           type="button"
@@ -608,7 +608,7 @@ function LoginPageInner() {
                         type="button"
                         onClick={handleResendCode}
                         disabled={resending || cooldown > 0}
-                        className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition disabled:opacity-50"
+                        className="text-amber-300 hover:text-amber-200 flex items-center gap-1 font-semibold transition disabled:opacity-50"
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
                         <span>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Code'}</span>
@@ -620,7 +620,7 @@ function LoginPageInner() {
                 <button
                   type="submit"
                   disabled={loading || (codeStep === 2 && (verificationCode.length !== 6 || newPassword.length < 8))}
-                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/20 hover:shadow-cyan-500/35 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
+                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-sm shadow-xl shadow-amber-400/10 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
                 >
                   {loading ? (
                     <>
@@ -643,7 +643,7 @@ function LoginPageInner() {
             Don&apos;t have an account?{' '}
             <Link
               href="/register"
-              className="font-bold text-cyan-400 hover:text-cyan-300 underline underline-offset-4 transition"
+              className="font-bold text-amber-300 hover:text-amber-200 underline underline-offset-4 transition"
             >
               Create Account
             </Link>

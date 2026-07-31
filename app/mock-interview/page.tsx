@@ -220,12 +220,12 @@ export default function MockInterviewPage() {
       {stage === 'setup' && (
         <div className="flex-1 max-w-4xl mx-auto w-full p-6 flex flex-col justify-center space-y-8">
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-800 text-cyan-400 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-amber-300" />
               <span>Senior Engineer Interview Suite</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Simulate Live Tech Interviews with <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">FreeModel</span>
+              Simulate Live Tech Interviews with <span className="text-amber-300">FreeModel</span>
             </h1>
             <p className="text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
               Practice real-world coding & system design interviews under time constraints. Get instant feedback on communication, algorithm choice, and final code quality.
@@ -236,7 +236,7 @@ export default function MockInterviewPage() {
             {/* Company Selection */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-cyan-400" />
+                <Building2 className="w-4 h-4 text-amber-300" />
                 <span>Target Tech Company</span>
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -246,7 +246,7 @@ export default function MockInterviewPage() {
                     onClick={() => setSelectedCompany(comp)}
                     className={`p-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
                       selectedCompany === comp
-                        ? 'bg-slate-800 border-cyan-500 text-cyan-400 shadow-md'
+                        ? 'bg-[#17171b] border-amber-400 text-amber-300 shadow-md'
                         : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
@@ -259,7 +259,7 @@ export default function MockInterviewPage() {
             {/* Topic Selection */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-purple-400" />
+                <Code2 className="w-4 h-4 text-amber-300" />
                 <span>Interview Focus Topic</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -269,7 +269,7 @@ export default function MockInterviewPage() {
                     onClick={() => setSelectedTopic(top)}
                     className={`p-3 rounded-xl border text-xs font-semibold text-left transition ${
                       selectedTopic === top
-                        ? 'bg-slate-800 border-purple-500 text-purple-300 shadow-md'
+                        ? 'bg-[#17171b] border-amber-400 text-amber-300 shadow-md'
                         : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
@@ -283,7 +283,7 @@ export default function MockInterviewPage() {
             <button
               onClick={startInterview}
               disabled={isStarting}
-              className="w-full py-4 bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 text-slate-950 font-extrabold text-sm rounded-xl shadow-xl shadow-cyan-950/50 transition flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.01]"
+              className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-[#08080a] font-extrabold text-sm rounded-lg shadow-xl shadow-amber-400/10 transition flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-[1.01]"
             >
               {isStarting ? (
                 <>
@@ -307,7 +307,7 @@ export default function MockInterviewPage() {
           {/* Header Bar */}
           <header className="h-14 bg-slate-950 border-b border-slate-800 px-6 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold text-cyan-400">
+              <span className="px-3 py-1 rounded-lg bg-[#111115] border border-white/10 text-xs font-bold text-amber-300">
                 {selectedCompany} Interview
               </span>
               <span className="text-xs text-slate-400 font-semibold">{selectedTopic}</span>
@@ -323,7 +323,7 @@ export default function MockInterviewPage() {
             <button
               onClick={evaluateInterview}
               disabled={isEvaluating}
-              className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 text-xs font-bold rounded-lg shadow transition disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-1.5 bg-amber-400 hover:bg-amber-300 text-[#08080a] text-xs font-bold rounded-lg shadow transition disabled:opacity-50"
             >
               {isEvaluating ? (
                 <Loader2 className="w-4 h-4 animate-spin fill-slate-950" />
@@ -339,7 +339,7 @@ export default function MockInterviewPage() {
             {/* Left Column: Live Chat with Staff Engineer (5 Cols) */}
             <div className="lg:col-span-5 flex flex-col h-full border-r border-slate-800 bg-slate-900/30 overflow-hidden">
               <div className="p-3 bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-300 flex items-center gap-2">
-                <Bot className="w-4 h-4 text-cyan-400" />
+                <Bot className="w-4 h-4 text-amber-300" />
                 <span>Senior Staff Engineer Interviewer</span>
               </div>
 
@@ -351,7 +351,7 @@ export default function MockInterviewPage() {
                     className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {m.role === 'assistant' && (
-                      <div className="p-1.5 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800 h-fit shrink-0">
+                      <div className="p-1.5 rounded-lg bg-amber-400/10 text-amber-300 border border-amber-400/30 h-fit shrink-0">
                         <Bot className="w-4 h-4" />
                       </div>
                     )}
@@ -359,7 +359,7 @@ export default function MockInterviewPage() {
                     <div
                       className={`p-3.5 rounded-2xl max-w-[85%] leading-relaxed whitespace-pre-line ${
                         m.role === 'user'
-                          ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-medium rounded-tr-none'
+                          ? 'bg-amber-400 text-[#08080a] font-medium rounded-tr-none'
                           : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none'
                       }`}
                     >
@@ -375,7 +375,7 @@ export default function MockInterviewPage() {
                 ))}
                 {isSending && (
                   <div className="flex gap-2 items-center text-slate-400 text-xs italic">
-                    <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                    <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
                     <span>Interviewer is evaluating your response...</span>
                   </div>
                 )}
@@ -397,12 +397,12 @@ export default function MockInterviewPage() {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     placeholder="Speak to interviewer or explain logic..."
-                    className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    className="flex-1 bg-[#111115] border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400"
                   />
                   <button
                     type="submit"
                     disabled={isSending || !inputMessage.trim()}
-                    className="p-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow transition disabled:opacity-50"
+                    className="p-2.5 bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold rounded-lg shadow transition disabled:opacity-50"
                   >
                     <Send className="w-4 h-4 fill-slate-950" />
                   </button>
@@ -415,7 +415,7 @@ export default function MockInterviewPage() {
               <div className="flex-1 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col">
                 <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 text-slate-300 font-semibold">
-                    <Code2 className="w-4 h-4 text-cyan-400" />
+                    <Code2 className="w-4 h-4 text-amber-300" />
                     <span>Candidate Code Workspace</span>
                   </div>
                   <select
@@ -460,7 +460,7 @@ export default function MockInterviewPage() {
             {/* Modal Header */}
             <div className="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 text-emerald-400">
+                <div className="p-2 rounded-lg bg-amber-400/10 border border-amber-400/30 text-amber-300">
                   <Award className="w-6 h-6" />
                 </div>
                 <div>
@@ -488,7 +488,7 @@ export default function MockInterviewPage() {
               {/* Score & Verdict Row */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl flex items-center gap-4">
-                  <div className="text-3xl font-extrabold text-cyan-400 font-mono">
+                  <div className="text-3xl font-extrabold text-amber-300 font-mono">
                     {evalReport.score}/100
                   </div>
                   <div>
@@ -518,17 +518,17 @@ export default function MockInterviewPage() {
                     Skill Breakdown
                   </div>
                   <div className="text-xs text-slate-300 font-mono">
-                    Problem Solving: <span className="text-cyan-400">{evalReport.problemSolvingScore}%</span>
+                    Problem Solving: <span className="text-amber-300">{evalReport.problemSolvingScore}%</span>
                   </div>
                   <div className="text-xs text-slate-300 font-mono">
-                    Code Quality: <span className="text-purple-400">{evalReport.codeQualityScore}%</span>
+                    Code Quality: <span className="text-amber-200">{evalReport.codeQualityScore}%</span>
                   </div>
                 </div>
               </div>
 
               {/* Summary */}
               <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-                <div className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
+                <div className="text-xs font-bold text-amber-300 uppercase tracking-wider">
                   Executive Summary
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
@@ -538,7 +538,7 @@ export default function MockInterviewPage() {
 
               {/* Technical Communication */}
               <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-                <div className="text-xs font-bold text-purple-400 uppercase tracking-wider">
+                <div className="text-xs font-bold text-amber-200 uppercase tracking-wider">
                   Technical Communication & Thought Process
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">

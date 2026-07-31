@@ -136,7 +136,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-[85vh] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       {/* Radiant Glow background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-tr from-emerald-500/15 via-cyan-500/10 to-indigo-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -146,11 +146,11 @@ export default function RegisterPage() {
       >
         <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl relative overflow-hidden">
           {/* Top subtle line accent */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-400/70" />
 
           {/* Header */}
           <div className="text-center space-y-2 mb-6">
-            <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-slate-950 border border-slate-800 text-emerald-400 shadow-inner mb-2">
+            <div className="inline-flex items-center justify-center p-3 rounded-xl bg-[#08080a] border border-amber-400/30 text-amber-300 shadow-inner mb-2">
               <Code2 className="w-8 h-8" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -321,7 +321,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-bold text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/35 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
+                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-sm shadow-xl shadow-amber-400/10 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
                 >
                   {loading ? (
                     <>
@@ -380,7 +380,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={handleResendCode}
                     disabled={resending || cooldown > 0}
-                    className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition disabled:opacity-50"
+                    className="text-amber-300 hover:text-amber-200 flex items-center gap-1 font-semibold transition disabled:opacity-50"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
                     <span>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Code'}</span>
@@ -391,7 +391,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={loading || verificationCode.length !== 6}
-                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-bold text-sm shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/35 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
+                  className="w-full relative group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-sm shadow-xl shadow-amber-400/10 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 mt-2"
                 >
                   {loading ? (
                     <>

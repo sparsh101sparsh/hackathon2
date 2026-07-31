@@ -10,6 +10,9 @@ const files = [
   'components/dashboard/WeeklyInsights.tsx',
   'app/problems/page.tsx',
   'app/problems/[id]/page.tsx',
+  'app/login/page.tsx',
+  'app/register/page.tsx',
+  'app/mock-interview/page.tsx',
 ];
 
 const forbidden = [
