@@ -55,17 +55,17 @@ export function WeeklyInsights() {
   }, []);
 
   return (
-    <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
+    <div className="rounded-xl bg-[#0f0f12] border border-white/10 shadow-xl p-6 relative overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+          <div className="p-2 rounded-lg bg-amber-400/10 text-amber-300 border border-amber-400/30">
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               Weekly Progress Insights
             </h3>
-            <p className="text-xs text-indigo-200/70">
+            <p className="text-xs text-amber-100/50">
               Powered by FreeModel
             </p>
           </div>
@@ -85,7 +85,7 @@ export function WeeklyInsights() {
 
       {loading && (
         <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
-          <RefreshCw className="w-6 h-6 animate-spin text-indigo-400" />
+          <RefreshCw className="w-6 h-6 animate-spin text-amber-300" />
           <p className="text-xs">Analyzing submission patterns and rating trajectory...</p>
         </div>
       )}
@@ -99,7 +99,7 @@ export function WeeklyInsights() {
       {report && !loading && (
         <div className="space-y-4 text-xs">
           {/* Executive Summary */}
-          <div className="bg-indigo-950/30 border border-indigo-800/30 rounded-lg p-3 text-indigo-100 leading-relaxed font-medium">
+          <div className="bg-amber-400/5 border border-amber-400/20 rounded-lg p-3 text-amber-100/80 leading-relaxed font-medium">
             &quot;{report.summary}&quot;
           </div>
 
@@ -133,7 +133,7 @@ export function WeeklyInsights() {
             {/* Recommendations & Estimated Gain */}
             <div className="bg-slate-900/90 border border-slate-800 rounded-lg p-3 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-1.5 font-semibold text-indigo-400 mb-2">
+                <div className="flex items-center gap-1.5 font-semibold text-amber-300 mb-2">
                   <Lightbulb className="w-3.5 h-3.5" />
                   <span>Recommendations</span>
                 </div>
@@ -144,7 +144,7 @@ export function WeeklyInsights() {
                 </ul>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-slate-800 flex items-center justify-between text-indigo-300 font-semibold">
+              <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-amber-200/70 font-semibold">
                 <span>Potential Rating Gain:</span>
                 <span className="text-emerald-400 font-bold">
                   +{report.estimatedRatingGain || 45} pts

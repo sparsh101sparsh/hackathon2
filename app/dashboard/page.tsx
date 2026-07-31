@@ -44,7 +44,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+      <div className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
         <DashboardSkeleton />
       </div>
     );
@@ -52,13 +52,13 @@ export default function DashboardPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-        <div className="text-center bg-slate-900 border border-slate-800 rounded-xl p-8 max-w-md">
+      <div className="min-h-screen bg-[#08080a] text-slate-100 flex items-center justify-center p-6">
+        <div className="text-center bg-[#0f0f12] border border-white/10 rounded-lg p-8 max-w-md">
           <h2 className="text-lg font-bold text-rose-400 mb-2">Error Loading Dashboard</h2>
           <p className="text-xs text-slate-400 mb-4">{error || 'Something went wrong.'}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-xs font-bold text-white transition-colors"
+            className="px-4 py-2 bg-amber-400 hover:bg-amber-300 rounded-lg text-xs font-bold text-[#08080a] transition-colors"
           >
             Retry
           </button>
@@ -72,7 +72,7 @@ export default function DashboardPage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto font-sans"
+      className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto font-sans"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
@@ -83,7 +83,7 @@ export default function DashboardPage() {
             width={48}
             height={48}
             unoptimized
-            className="w-12 h-12 rounded-full border-2 border-cyan-500/60 bg-slate-900 shadow-md shadow-cyan-950/50"
+            className="w-12 h-12 rounded-full border-2 border-amber-400/60 bg-[#0f0f12] shadow-md shadow-amber-950/30"
           />
           <div>
             <div className="flex items-center gap-2">
@@ -103,14 +103,14 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/contests"
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/10 transition-all flex items-center gap-1.5"
           >
             <Trophy className="w-4 h-4" />
             <span>Enter Contests</span>
           </Link>
           <Link
             href="/company"
-            className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
+            className="px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
           >
             <LayoutDashboard className="w-4 h-4" />
             <span>Company Prep</span>

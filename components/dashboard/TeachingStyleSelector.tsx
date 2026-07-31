@@ -22,7 +22,7 @@ function PersonalityCard({ personality, isSelected, onSelect }: PersonalityCardP
       className={`
         relative w-full text-left rounded-xl border p-4 transition-all duration-300 cursor-pointer
         ${isSelected
-          ? `bg-gradient-to-br ${personality.color} ${personality.borderColor} shadow-lg ${personality.glowColor}`
+          ? 'bg-[#17171b] border-amber-400/50 shadow-lg shadow-amber-400/5'
           : 'bg-slate-900/60 border-slate-800/60 hover:border-slate-600/60 hover:bg-slate-800/40'
         }
       `}
@@ -88,15 +88,15 @@ export function TeachingStyleSelector() {
     <div className="w-full">
       {/* Section Header */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
-          <Bot className="w-4 h-4 text-white" />
+        <div className="w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
+          <Bot className="w-4 h-4 text-amber-300" />
         </div>
         <div>
         <h2 className="text-sm font-bold text-white">Teaching Style</h2>
         <p className="text-[11px] text-slate-500">Shapes how your tutor, hints, and reviews speak to you</p>
         </div>
         <div className="ml-auto">
-          <span className="text-[10px] bg-violet-500/20 text-violet-300 border border-violet-500/30 rounded-full px-2 py-0.5">
+            <span className="text-[10px] bg-amber-400/10 text-amber-300 border border-amber-400/30 rounded-full px-2 py-0.5">
             <Bot className="w-4 h-4 text-amber-400" aria-hidden="true" /> {personality.name}
           </span>
         </div>
@@ -112,7 +112,7 @@ export function TeachingStyleSelector() {
         whileTap={{ scale: 0.99 }}
         className={`
           w-full flex items-center gap-3 rounded-xl border p-3.5 transition-all duration-300
-          bg-gradient-to-r ${personality.color} ${personality.borderColor} shadow-md
+          bg-[#17171b] border-amber-400/40 shadow-md shadow-amber-400/5
         `}
       >
         <div className="text-2xl w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
@@ -147,9 +147,9 @@ export function TeachingStyleSelector() {
           >
             <div className="mt-3 space-y-1.5">
               {/* Info banner */}
-              <div className="flex items-center gap-2 bg-violet-950/40 border border-violet-800/30 rounded-lg px-3 py-2 mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
-                <p className="text-[11px] text-violet-300">
+              <div className="flex items-center gap-2 bg-amber-400/5 border border-amber-400/20 rounded-lg px-3 py-2 mb-3">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300 flex-shrink-0" />
+                <p className="text-[11px] text-amber-100/70">
                   Your tutor, hints, code reviews, mock interviews, and recommendations will all speak in this personality&apos;s unique voice.
                 </p>
               </div>

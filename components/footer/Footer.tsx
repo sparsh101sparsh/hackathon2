@@ -14,12 +14,12 @@ export const Footer: React.FC = () => {
   }
 
   return (
-    <footer className="w-full bg-slate-950 border-t border-slate-800/80 text-slate-400 text-xs py-12 px-6 font-sans relative z-10">
+    <footer className="w-full bg-[#0a0a0d] border-t border-white/10 text-slate-400 text-xs py-12 px-6 font-sans relative z-10">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
         {/* Brand Column */}
         <div className="md:col-span-2 space-y-4">
           <Link href="/" className="flex items-center gap-2 text-white font-black text-lg tracking-tight">
-            <div className="p-1.5 rounded-lg bg-gradient-to-tr from-cyan-500 to-emerald-500 text-slate-950 shadow-md shadow-cyan-500/20">
+            <div className="p-1.5 rounded-lg bg-amber-400 text-[#08080a] shadow-md shadow-amber-400/10">
               <Code2 className="w-5 h-5 fill-slate-950" />
             </div>
             <span>CodeForge</span>
@@ -41,27 +41,27 @@ export const Footer: React.FC = () => {
           <h4 className="text-white font-bold text-sm tracking-tight">Platform</h4>
           <ul className="space-y-2">
             <li>
-              <Link href="/problems" className="hover:text-cyan-400 transition">
+              <Link href="/problems" className="hover:text-amber-300 transition">
                 Problems Workspace
               </Link>
             </li>
             <li>
-              <Link href="/contests" className="hover:text-cyan-400 transition">
+              <Link href="/contests" className="hover:text-amber-300 transition">
                 Rated Contests
               </Link>
             </li>
             <li>
-              <Link href="/company" className="hover:text-cyan-400 transition">
+              <Link href="/company" className="hover:text-amber-300 transition">
                 Company Prep
               </Link>
             </li>
             <li>
-              <Link href="/mock-interview" className="hover:text-cyan-400 transition">
+              <Link href="/mock-interview" className="hover:text-amber-300 transition">
             Mock Interview
               </Link>
             </li>
             <li>
-              <Link href="/leaderboard" className="hover:text-cyan-400 transition">
+              <Link href="/leaderboard" className="hover:text-amber-300 transition">
                 Global Leaderboard
               </Link>
             </li>
@@ -73,22 +73,22 @@ export const Footer: React.FC = () => {
           <h4 className="text-white font-bold text-sm tracking-tight">Features</h4>
           <ul className="space-y-2">
             <li>
-              <Link href="/dashboard" className="hover:text-cyan-400 transition">
+              <Link href="/dashboard" className="hover:text-amber-300 transition">
                 Analytics Dashboard
               </Link>
             </li>
             <li>
-              <Link href="/problems" className="hover:text-cyan-400 transition">
+              <Link href="/problems" className="hover:text-amber-300 transition">
                 Judge0 Code Execution
               </Link>
             </li>
             <li>
-              <Link href="/problems" className="hover:text-cyan-400 transition">
+              <Link href="/problems" className="hover:text-amber-300 transition">
                 3-Level Progressive Hints
               </Link>
             </li>
             <li>
-              <Link href="/admin" className="hover:text-cyan-400 transition">
+              <Link href="/admin" className="hover:text-amber-300 transition">
                 Admin Panel
               </Link>
             </li>
@@ -104,7 +104,7 @@ export const Footer: React.FC = () => {
               target="_blank"
               rel="noreferrer"
               aria-label="GitHub"
-              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition"
+              className="p-2 rounded-lg bg-[#111115] border border-white/10 text-slate-400 hover:text-white hover:border-amber-400/40 transition"
             >
               <Github className="w-4 h-4" />
             </a>

@@ -55,20 +55,20 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { label: 'Problems', href: '/problems', icon: <Code className="w-4 h-4" /> },
     { label: 'Contests', href: '/contests', icon: <Trophy className="w-4 h-4" /> },
-    { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-purple-400" /> },
+    { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-amber-400" /> },
     { label: 'Company Prep', href: '/company', icon: <Building2 className="w-4 h-4" /> },
-    { label: 'Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-cyan-400" /> },
+    { label: 'Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-amber-400" /> },
     { label: 'Leaderboard', href: '/leaderboard', icon: <BarChart2 className="w-4 h-4" /> },
     { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-amber-400" /> },
   ];
 
   return (
-    <nav className="backdrop-blur-md bg-slate-950/80 border-b border-slate-800/60 sticky top-0 z-50 px-4 sm:px-6 h-16 flex items-center justify-between font-sans">
+    <nav className="bg-[#08080a]/95 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-6 h-16 flex items-center justify-between font-sans">
       {/* Left Brand Emblem & Nav Links */}
       <div className="flex items-center gap-6 lg:gap-8">
         {/* Glowing Logo Emblem */}
         <Link href="/" className="flex items-center gap-2 text-white font-extrabold text-lg tracking-tight group">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500 via-emerald-500 to-teal-400 text-slate-950 shadow-lg shadow-cyan-500/20 group-hover:scale-105 group-hover:shadow-cyan-500/40 transition duration-200">
+          <div className="p-2 rounded-lg bg-amber-400 text-[#08080a] shadow-lg shadow-amber-400/10 group-hover:scale-105 group-hover:shadow-amber-400/20 transition duration-200">
             <Code2 className="w-5 h-5 fill-slate-950 text-slate-950" />
           </div>
           <span className="text-lg font-black tracking-tight">
@@ -86,7 +86,7 @@ export const Navbar: React.FC = () => {
                 href={link.href}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-slate-800/90 text-cyan-400 border border-slate-700/80 shadow-sm'
+                    ? 'bg-[#17171b] text-amber-300 border border-amber-400/40 shadow-sm'
                     : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
                 }`}
               >
@@ -104,14 +104,14 @@ export const Navbar: React.FC = () => {
           href="https://github.com/sparsh101sparsh/hackathon2"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
+          className="px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
         >
-          <Github className="w-4 h-4 text-cyan-400" />
+          <Github className="w-4 h-4 text-amber-300" />
           <span>GitHub</span>
         </a>
 
         {user ? (
-          <div className="flex items-center gap-3 bg-slate-900/90 border border-slate-800 rounded-xl p-1 pr-3 shadow-inner hover:border-cyan-500/50 transition">
+          <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/10 rounded-lg p-1 pr-3 shadow-inner hover:border-amber-400/40 transition">
             <Link
               href="/dashboard"
               className="flex items-center gap-2.5 group cursor-pointer"
@@ -123,10 +123,10 @@ export const Navbar: React.FC = () => {
                 width={28}
                 height={28}
                 unoptimized
-                className="w-7 h-7 rounded-lg border border-slate-700 bg-slate-950 shrink-0 group-hover:border-cyan-400 transition"
+                className="w-7 h-7 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-amber-400 transition"
               />
               <div className="text-left leading-none">
-                <div className="text-xs font-bold text-slate-100 group-hover:text-cyan-400 transition">{user.name}</div>
+                <div className="text-xs font-bold text-slate-100 group-hover:text-amber-300 transition">{user.name}</div>
                 <div className="text-[10px] text-slate-400">{user.email}</div>
               </div>
             </Link>
@@ -143,14 +143,14 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
             >
-              <LogIn className="w-3.5 h-3.5 text-cyan-400" />
+              <LogIn className="w-3.5 h-3.5 text-amber-300" />
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/10 transition-all flex items-center gap-1.5"
             >
               <UserPlus className="w-3.5 h-3.5 text-slate-950" />
               <span>Sign Up</span>
@@ -184,7 +184,7 @@ export const Navbar: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="absolute top-16 left-0 w-full bg-slate-950/95 border-b border-slate-800 backdrop-blur-xl px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
+            className="absolute top-16 left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
           >
             <div className="space-y-1">
               {navLinks.map((link) => {
@@ -196,7 +196,7 @@ export const Navbar: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${
                       isActive
-                        ? 'bg-slate-800 text-cyan-400 border border-slate-700'
+                        ? 'bg-[#17171b] text-amber-300 border border-amber-400/40'
                         : 'text-slate-300 hover:bg-slate-900'
                     }`}
                   >
@@ -224,7 +224,7 @@ export const Navbar: React.FC = () => {
                       className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-cyan-400 transition"
                     />
                     <div>
-                      <div className="text-xs font-bold text-white group-hover:text-cyan-400 transition">{user.name}</div>
+                      <div className="text-xs font-bold text-white group-hover:text-amber-300 transition">{user.name}</div>
                       <div className="text-[11px] text-slate-400">{user.email}</div>
                     </div>
                   </Link>
@@ -245,15 +245,15 @@ export const Navbar: React.FC = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="py-2.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
+                    className="py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
                   >
-                    <LogIn className="w-4 h-4 text-cyan-400" />
+                    <LogIn className="w-4 h-4 text-amber-300" />
                     <span>Sign In</span>
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 flex items-center justify-center gap-2 transition font-bold"
+                    className="py-2.5 rounded-lg text-xs font-bold bg-amber-400 hover:bg-amber-300 text-[#08080a] flex items-center justify-center gap-2 transition font-bold"
                   >
                     <UserPlus className="w-4 h-4 text-slate-950" />
                     <span>Sign Up</span>
@@ -266,9 +266,9 @@ export const Navbar: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
+                className="w-full py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
               >
-                <Github className="w-4 h-4 text-cyan-400" />
+                <Github className="w-4 h-4 text-amber-300" />
                 <span>GitHub Repo</span>
               </a>
             </div>
