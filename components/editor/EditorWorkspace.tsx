@@ -189,6 +189,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       const data = await response.json();
       if (response.ok) {
         setSubmissionResult(data);
+        setIsReviewModalOpen(true);
         if (data.verdict === 'Accepted' && onSubmissionSuccess) {
           onSubmissionSuccess();
         }

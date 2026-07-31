@@ -478,7 +478,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
           </div>
 
           <div className="px-5 sm:px-8 flex-1 grid xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)] gap-5 items-stretch">
-            <div className="min-h-[440px] flex items-center justify-center border border-slate-800/80 p-4 sm:p-6 overflow-hidden bg-slate-950/90 rounded-xl">
+            <div className="min-h-[520px] flex items-center justify-center border border-slate-800/80 p-4 sm:p-6 overflow-hidden bg-slate-950/90 rounded-xl">
               <AnimatePresence mode="popLayout">
                 <VisualizerScene frame={current} step={boundedStep} />
               </AnimatePresence>

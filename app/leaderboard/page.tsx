@@ -147,9 +147,9 @@ export default function LeaderboardPage() {
                             className="w-9 h-9 rounded-full border border-slate-700 bg-slate-800 shrink-0"
                           />
                           <div>
-                            <div className="font-bold text-white group-hover:text-cyan-400 transition-colors">
+                            <a href={`/leaderboard/${u.id}`} className="font-bold text-white group-hover:text-cyan-400 transition-colors hover:underline">
                               {u.name}
-                            </div>
+                            </a>
                             <div className="text-[11px] text-slate-400">{u.ratingTier.badge}</div>
                           </div>
                         </div>

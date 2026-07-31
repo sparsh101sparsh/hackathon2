@@ -21,6 +21,7 @@ export interface LeaderboardUser {
   accuracy: number;
   country: string;
   joinedAt: string;
+  streak: number;
 }
 
 export async function GET(req: NextRequest) {
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
       30_000,
       () => prisma.$transaction([
         prisma.userProgress.findMany({
-          select: { userId: true, lastActiveDate: true },
+          select: { userId: true, lastActiveDate: true, streak: true },
         }),
         prisma.submission.groupBy({
           by: ['userId', 'status'],
@@ -139,6 +140,7 @@ export async function GET(req: NextRequest) {
           joinedAt: progressRec?.lastActiveDate
             ? new Date(progressRec.lastActiveDate).toISOString().split('T')[0]
             : new Date().toISOString().split('T')[0],
+          streak: progressRec?.streak || 0,
         });
       }
     });

@@ -6,6 +6,7 @@ import { POST as executeHandler } from '../app/api/execute/route';
 import { GET as roomHandler } from '../app/api/rooms/[code]/route';
 import { GET as contestHandler } from '../app/api/contests/[id]/route';
 import { GET as contestLeaderboardHandler } from '../app/api/contests/[id]/leaderboard/route';
+import { GET as profileHandler } from '../app/api/leaderboard/[id]/route';
 import { POST as roomJoinHandler } from '../app/api/rooms/join/route';
 import { prisma } from '../lib/prisma';
 
@@ -29,6 +30,16 @@ async function runTest() {
       ),
       'Public leaderboard does not expose account email addresses',
     );
+    const firstProfileId = leaderboard.leaderboard?.[0]?.id;
+    if (firstProfileId) {
+      const profileResponse = await profileHandler(
+        new NextRequest(`http://localhost:3000/api/leaderboard/${firstProfileId}`),
+        { params: Promise.resolve({ id: firstProfileId }) },
+      );
+      const profile = await profileResponse.json();
+      assert(profileResponse.status === 200 && profile.profile?.id === firstProfileId, 'Public profile loads from a leaderboard entry');
+      assert(!Object.prototype.hasOwnProperty.call(profile.profile || {}, 'email'), 'Public profile does not expose account email addresses');
+    }
 
     const problemsResponse = await problemsHandler(
       new NextRequest('http://localhost:3000/api/problems?page=2&limit=3'),

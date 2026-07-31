@@ -62,7 +62,7 @@ const cellTransition = { duration: 0.42, ease };
 
 function SceneFrame({ children }: { children: React.ReactNode }) {
   return (
-    <svg viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated algorithm state" className="w-full h-[300px] overflow-visible">
+    <svg viewBox="0 0 680 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated algorithm state" className="w-full h-[360px] overflow-visible">
       <defs>
         <marker id="scene-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
           <path d="M0,0 L7,3.5 L0,7 z" fill={muted} />
@@ -71,7 +71,7 @@ function SceneFrame({ children }: { children: React.ReactNode }) {
           <path d="M0,0 L7,3.5 L0,7 z" fill={accent} />
         </marker>
       </defs>
-      <rect x="0" y="0" width="680" height="300" rx="12" fill={SCENE_THEME.background} />
+      <rect x="0" y="0" width="680" height="360" rx="12" fill={SCENE_THEME.background} />
       {children}
     </svg>
   );
@@ -125,9 +125,9 @@ function MatrixScene({ frame }: SceneProps) {
   const matrix = frame.matrix || [[]];
   const rows = matrix.length;
   const cols = Math.max(...matrix.map((row) => row.length), 1);
-  const size = Math.min(52, 210 / Math.max(rows, cols));
+  const size = Math.min(72, 340 / Math.max(rows, cols));
   const left = 340 - (cols * size) / 2;
-  const top = 150 - (rows * size) / 2;
+  const top = 170 - (rows * size) / 2;
   const active = new Set(frame.active || []);
   return (
     <SceneFrame>
@@ -146,7 +146,7 @@ function MatrixScene({ frame }: SceneProps) {
             </motion.g>
           );
         }))}
-        <Label x={340} y={270} fill={SCENE_THEME.text.muted} size={11}>{rows} x {cols} STATE MATRIX</Label>
+        <Label x={340} y={330} fill={SCENE_THEME.text.muted} size={11}>{rows} x {cols} STATE MATRIX</Label>
       </g>
     </SceneFrame>
   );

@@ -107,8 +107,6 @@ export default function ContestsPage() {
 
       {/* Friend Battle Arena Card */}
       <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 sm:p-8 relative overflow-hidden">
-        <div className="absolute -top-12 -right-12 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 uppercase tracking-wider">
@@ -127,7 +125,6 @@ export default function ContestsPage() {
               onClick={() => setIsOnDemandModalOpen(true)}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
             >
-              <Zap className="w-4 h-4" />
               <span className="inline-flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" aria-hidden="true" /> Instant Duel / Blitz</span>
             </button>
             <button

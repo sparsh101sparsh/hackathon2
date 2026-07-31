@@ -22,6 +22,7 @@ import TutorDrawer from '@/components/guidance/TutorDrawer';
 import { ProblemVisualizer } from '@/components/problems/ProblemVisualizer';
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 import { Problem, Submission } from '@/lib/types';
+import { ProblemMarkdown } from '@/components/ui/ProblemMarkdown';
 
 export default function ProblemDetailPage() {
   const params = useParams();
@@ -246,9 +247,7 @@ export default function ProblemDetailPage() {
                   <h3 className="text-xs uppercase tracking-wider text-slate-400 font-bold font-sans">
                     Problem Statement
                   </h3>
-                  <div className="whitespace-pre-line text-slate-200 font-normal">
-                    {problem.statement}
-                  </div>
+                  <ProblemMarkdown content={problem.statement} className="text-slate-200 font-normal" />
                 </div>
 
                 {/* Input & Output Format */}
@@ -427,8 +426,8 @@ export default function ProblemDetailPage() {
                 <h3 className="text-xs uppercase tracking-wider text-slate-400 font-bold font-sans">
                   Solution Editorial & Analysis
                 </h3>
-                <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl text-slate-200 text-sm leading-relaxed whitespace-pre-line font-sans">
-                  {problem.editorial || 'No editorial available for this problem.'}
+                <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl text-sm font-sans">
+                  <ProblemMarkdown content={problem.editorial || 'No editorial available for this problem.'} />
                 </div>
               </div>
             )}
