@@ -16,8 +16,8 @@ const scenarioSlugs = Object.keys(problemVisualizerScenarios);
 const rawConfig = fs.readFileSync('public/data/visualizers.json', 'utf8');
 const jsonEntries = Object.values(JSON.parse(rawConfig)) as VisualizerEntry[];
 
-const duplicatePhases: { slug: string; phases: string[] }[] = [];
-const duplicateComments: { slug: string; comments: string[] }[] = [];
+const duplicatePhases: { slug: string; phases: readonly string[] }[] = [];
+const duplicateComments: { slug: string; comments: readonly string[] }[] = [];
 const runtimeExceptions: { problemId: string; slug: string; error: string }[] = [];
 const codeLineOOB: { problemId: string; slug: string; codeLine: number; codeLen: number }[] = [];
 
@@ -31,12 +31,12 @@ for (const entry of jsonEntries) {
   }
 
   // Check phase uniqueness
-  if (new Set(scenario.phases).size !== 4) {
+  if (new Set(scenario.phases).size !== scenario.phases.length) {
     duplicatePhases.push({ slug: profile.slug, phases: scenario.phases });
   }
 
   // Check comment uniqueness
-  if (new Set(scenario.comments).size !== 4) {
+  if (new Set(scenario.comments).size !== scenario.comments.length) {
     duplicateComments.push({ slug: profile.slug, comments: scenario.comments });
   }
 

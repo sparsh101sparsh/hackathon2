@@ -142,13 +142,41 @@ function scenarioData(type: VisualType, slug: string, base: number[], step: numb
 }
 
 function buildScenarioFrames(scenario: ProblemVisualizerScenario, slug: string, values: number[]): LessonFrame[] {
-  return scenario.comments.map((commentary, index) => frame(
-    scenario.visualType,
-    index + 1,
-    commentary,
-    [['phase', scenario.phases[index]], ['step', `${index + 1} / ${scenario.comments.length}`]],
-    scenarioData(scenario.visualType, slug, values, index),
-  ));
+  const sourceCount = Math.min(scenario.comments.length, scenario.phases.length);
+  if (sourceCount === 0) return [];
+
+  const frames: LessonFrame[] = [];
+  for (let sourceIndex = 0; sourceIndex < sourceCount; sourceIndex += 1) {
+    const phase = scenario.phases[sourceIndex];
+    const commentary = scenario.comments[sourceIndex];
+    const visualStep = Math.min(sourceIndex, 3);
+
+    frames.push(frame(
+      scenario.visualType,
+      Math.min(sourceIndex + 1, 5),
+      commentary,
+      [['phase', phase], ['step', 'pending'], ['focus', phase]],
+      scenarioData(scenario.visualType, slug, values, visualStep),
+    ));
+
+    const nextPhase = scenario.phases[sourceIndex + 1] || 'the result';
+    const transitionCommentary = sourceIndex + 1 < sourceCount
+      ? `${commentary} Check the visible state before advancing toward ${nextPhase}.`
+      : `${commentary} Confirm the visible state before returning the result.`;
+    frames.push(frame(
+      scenario.visualType,
+      Math.min(sourceIndex + 2, 5),
+      transitionCommentary,
+      [['phase', `${phase} -> ${nextPhase}`], ['step', 'pending'], ['focus', `transition: ${phase}`]],
+      scenarioData(scenario.visualType, slug, values, visualStep),
+    ));
+  }
+
+  const total = frames.length;
+  return frames.map((item, index) => ({
+    ...item,
+    state: item.state.map((state) => state.label === 'step' ? { ...state, value: `${index + 1} / ${total}` } : state),
+  }));
 }
 
 function buildPatternFrames(pattern: string, title: string, lessonValues = defaultValues): LessonFrame[] {

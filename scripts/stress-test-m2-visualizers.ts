@@ -72,7 +72,7 @@ for (const entry of entries) {
 
   const frames = buildVisualizerFrames(entry.pattern, entry.lessonPath, entry.lessonPath);
 
-  if (frames.length !== 4) {
+  if (frames.length < 8 || frames.length > 12) {
     issues.push({
       problemId: entry.problemId,
       pattern: entry.pattern,
@@ -80,7 +80,7 @@ for (const entry of entries) {
       step: -1,
       severity: 'HIGH',
       category: 'FRAME_COUNT',
-      details: `Expected exactly 4 frames, got ${frames.length}`,
+      details: `Expected 8-12 frames, got ${frames.length}`,
     });
   }
 
@@ -357,5 +357,5 @@ if (issues.length > 0) {
     console.log(`[${issue.severity}] ${issue.problemId} (${issue.pattern} / ${issue.visualType}) Step ${issue.step}: [${issue.category}] ${issue.details}`);
   }
 } else {
-  console.log('✅ ALL 75 PROBLEMS AND 300 FRAMES PASSED BOUNDS AND GEOMETRY CHECKS!');
+  console.log(`✅ ALL 75 PROBLEMS AND ${totalFramesTested} FRAMES PASSED BOUNDS AND GEOMETRY CHECKS!`);
 }

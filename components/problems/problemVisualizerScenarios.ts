@@ -2,17 +2,17 @@ export type ScenarioVisualType = 'array' | 'matrix' | 'stack' | 'nodes' | 'graph
 
 export interface ProblemVisualizerScenario {
   visualType: ScenarioVisualType;
-  phases: [string, string, string, string];
-  comments: [string, string, string, string];
+  phases: readonly string[];
+  comments: readonly string[];
 }
 
-type ScenarioRow = [string, ScenarioVisualType, [string, string, string, string], [string, string, string, string]];
+type ScenarioRow = [string, ScenarioVisualType, readonly string[], readonly string[]];
 
 const row = (
   slug: string,
   visualType: ScenarioVisualType,
-  phases: [string, string, string, string],
-  comments: [string, string, string, string],
+  phases: readonly string[],
+  comments: readonly string[],
 ): ScenarioRow => [slug, visualType, phases, comments];
 
 const rows: ScenarioRow[] = [

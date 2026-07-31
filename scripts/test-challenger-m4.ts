@@ -87,8 +87,8 @@ entries.forEach((entry, i) => {
   const scenario = problemVisualizerScenarios[profile.slug];
   const frames = buildVisualizerFrames(entry.pattern, entry.lessonPath, entry.lessonPath);
 
-  if (frames.length !== 4) {
-    console.error(`❌ Problem ${entry.problemId} (${profile.slug}): expected 4 frames, got ${frames.length}`);
+  if (frames.length < 8 || frames.length > 12) {
+    console.error(`❌ Problem ${entry.problemId} (${profile.slug}): expected 8-12 frames, got ${frames.length}`);
     frameErrors++;
   }
 
@@ -145,7 +145,7 @@ entries.forEach((entry, i) => {
 });
 
 if (frameErrors === 0 && nanOrNullErrors === 0) {
-  console.log('✅ All 75 problems generated perfectly valid frames for all 4 steps.');
+  console.log('✅ All 75 problems generated perfectly valid frames across 8-12 stateful steps.');
 }
 
 // 4. Testing SCENE_THEME Palette Consistency

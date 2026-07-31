@@ -2,6 +2,9 @@ import { execSync } from 'child_process';
 import path from 'path';
 
 const testFiles = [
+  'verify-visualizers.ts',
+  'verify-frame-rendering.ts',
+  'verify-visualizer-context.ts',
   'verify-db.ts',
   'test-piston-execution.ts',
   'test-auth-and-admin.ts',

@@ -5,7 +5,9 @@ import { getVisualizerLesson } from '../components/problems/visualizerLessons';
 interface VisualizerTutorPayload {
   problemTitle: string;
   currentFrame: Partial<LessonFrame> | null;
+  frameKey: string;
   step: number;
+  totalSteps: number;
   messages: Array<{ role: string; content: string }>;
   personality: string;
 }
@@ -32,6 +34,8 @@ function verifyVisualizerFrameInjection() {
     // Test step-by-step frame snapshot injection
     for (let step = 0; step < frames.length; step++) {
       const currentFrame = frames[step];
+      const phase = currentFrame.state.find((item) => item.label === 'phase')?.value || `step ${step + 1}`;
+      const frameKey = `${slug}:${slug}:${step}:${phase}:${currentFrame.codeLine}`;
       totalFramesTested++;
 
       if (!currentFrame) {
@@ -60,7 +64,9 @@ function verifyVisualizerFrameInjection() {
       const requestPayload: VisualizerTutorPayload = {
         problemTitle,
         currentFrame: framePayload,
+        frameKey,
         step,
+        totalSteps: frames.length,
         messages: [{ role: 'user', content: 'Can you explain what happens in this step?' }],
         personality: 'speedrunner',
       };
@@ -100,6 +106,12 @@ function verifyVisualizerFrameInjection() {
 
       if (typeof requestPayload.step !== 'number' || requestPayload.step !== step) {
         throw new Error(`[FAIL] Top-level payload step mismatch for ${slug} step ${step}`);
+      }
+      if (typeof requestPayload.totalSteps !== 'number' || requestPayload.totalSteps !== frames.length) {
+        throw new Error(`[FAIL] Top-level totalSteps mismatch for ${slug} step ${step}`);
+      }
+      if (typeof requestPayload.frameKey !== 'string' || !requestPayload.frameKey.includes(`${slug}:`)) {
+        throw new Error(`[FAIL] Missing or invalid frameKey for ${slug} step ${step}`);
       }
 
       totalPayloadsVerified++;

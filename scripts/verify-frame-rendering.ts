@@ -46,10 +46,10 @@ for (const entry of jsonEntries) {
   }
 
   // Check phase & comment quality
-  if (new Set(scenario.phases).size !== 4) {
+  if (new Set(scenario.phases).size !== scenario.phases.length) {
     qualityWarnings.push(`Problem ${entry.problemId} (${profile.slug}): Non-unique phases [${scenario.phases.join(', ')}]`);
   }
-  if (new Set(scenario.comments).size !== 4) {
+  if (new Set(scenario.comments).size !== scenario.comments.length) {
     qualityWarnings.push(`Problem ${entry.problemId} (${profile.slug}): Non-unique comments`);
   }
 
@@ -58,8 +58,8 @@ for (const entry of jsonEntries) {
     const frames = buildVisualizerFrames(entry.pattern, entry.lessonPath, entry.lessonPath);
     totalFramesCount += frames.length;
 
-    if (frames.length !== 4) {
-      schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Expected 4 frames, produced ${frames.length}.`);
+    if (frames.length < 8 || frames.length > 12) {
+      schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Expected 8-12 frames, produced ${frames.length}.`);
     }
 
     frames.forEach((frame: LessonFrame, stepIdx: number) => {
