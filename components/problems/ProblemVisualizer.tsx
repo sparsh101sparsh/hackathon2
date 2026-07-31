@@ -435,18 +435,18 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
   };
 
   return (
-    <div tabIndex={0} className="min-h-[640px] bg-slate-950/90 text-slate-200 border border-slate-800/80 hover:border-cyan-500/30 transition-all rounded-2xl overflow-hidden font-mono shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50">
+    <div tabIndex={0} className="min-h-[640px] bg-[#08080a] text-slate-200 border border-white/10 hover:border-amber-400/30 transition-all rounded-xl overflow-hidden font-mono shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50">
       <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] min-h-[720px]">
         <section className="flex flex-col min-w-0 bg-slate-950/90">
           <header className="px-5 sm:px-8 pt-5 pb-3 flex items-start justify-between gap-4 border-b border-slate-800/60 bg-slate-900/40">
             <div>
               <div className="text-[10px] uppercase tracking-[0.24em] text-slate-400 font-bold">{mode}</div>
               <h2 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">{problemTitle}</h2>
-              <div className="inline-flex items-center gap-2 mt-3 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300">{patternNames[pattern] || 'Algorithm'} <span className="text-cyan-400 font-semibold">{isVerified ? 'verified' : 'live'}</span></div>
+              <div className="inline-flex items-center gap-2 mt-3 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-300">{patternNames[pattern] || 'Algorithm'} <span className="text-amber-400 font-semibold">{isVerified ? 'verified' : 'live'}</span></div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <button type="button" onClick={() => setMode('concept')} className={mode === 'concept' ? 'px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all' : 'px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all'}>Concept</button>
-              <button type="button" onClick={() => setMode('practice')} className={mode === 'practice' ? 'px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs shadow-md transition-all' : 'px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all'}>Practice</button>
+              <button type="button" onClick={() => setMode('concept')} className={mode === 'concept' ? 'px-3 py-1.5 rounded-lg bg-amber-400 text-[#08080a] font-bold text-xs shadow-md shadow-amber-400/20 transition-all' : 'px-3 py-1.5 rounded-lg bg-[#111115] hover:bg-[#18181d] text-slate-200 border border-white/10 font-semibold text-xs transition-all'}>Concept</button>
+              <button type="button" onClick={() => setMode('practice')} className={mode === 'practice' ? 'px-3 py-1.5 rounded-lg bg-amber-400 text-[#08080a] font-bold text-xs shadow-md shadow-amber-400/20 transition-all' : 'px-3 py-1.5 rounded-lg bg-[#111115] hover:bg-[#18181d] text-slate-200 border border-white/10 font-semibold text-xs transition-all'}>Practice</button>
             </div>
           </header>
 
@@ -465,11 +465,11 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
                     onClick={() => { setPlaying(false); setStep(index); }}
                     className={`min-h-[58px] rounded-xl border px-3 py-2 text-left transition-all ${
                       selected
-                        ? 'border-cyan-400/60 bg-cyan-500/10 shadow-sm shadow-cyan-500/10'
+                        ? 'border-amber-400/60 bg-amber-400/10 shadow-sm shadow-amber-400/10'
                         : 'border-slate-800/80 bg-slate-900/50 hover:border-slate-700 hover:bg-slate-900'
                     }`}
                   >
-                    <span className={`block text-[10px] font-mono uppercase tracking-[0.16em] ${selected ? 'text-cyan-300' : 'text-slate-500'}`}>0{index + 1}</span>
+                    <span className={`block text-[10px] font-mono uppercase tracking-[0.16em] ${selected ? 'text-amber-300' : 'text-slate-500'}`}>0{index + 1}</span>
                     <span className={`mt-1 block font-sans text-xs font-semibold leading-snug ${selected ? 'text-slate-100' : 'text-slate-300'}`}>{phase}</span>
                   </button>
                 );
@@ -477,26 +477,26 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </div>
 
-          <div className="px-5 sm:px-8 flex-1 grid xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)] gap-5 items-stretch">
-            <div className="min-h-[520px] flex items-center justify-center border border-slate-800/80 p-4 sm:p-6 overflow-hidden bg-slate-950/90 rounded-xl">
+          <div className="px-5 sm:px-8 flex-1 space-y-5">
+            <div className="min-h-[380px] sm:min-h-[460px] flex items-center justify-center border border-white/10 p-3 sm:p-6 overflow-hidden bg-[#0c0c0f] rounded-xl">
               <AnimatePresence mode="popLayout">
                 <VisualizerScene frame={current} step={boundedStep} />
               </AnimatePresence>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)] gap-5 items-start">
               <div className="border border-slate-800/80 rounded-xl overflow-hidden bg-slate-950/90 shadow-inner">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/80"><span className="font-sans font-bold text-xs uppercase tracking-wider text-slate-200">{mode === 'concept' ? 'Concept Pseudocode' : 'Practice Pseudocode'}</span><button type="button" onClick={copyCode} title="Copy pseudocode" className="px-2.5 py-1 border border-slate-700/60 rounded-lg bg-slate-800 text-xs text-slate-200 flex items-center gap-1.5 hover:border-cyan-400/50 hover:text-cyan-300 transition-all"><Copy className="w-3.5 h-3.5" /> {copied ? 'copied' : 'copy'}</button></div>
-                <div className="p-3.5 space-y-1.5 text-xs leading-relaxed bg-slate-950/90">{code.map((line, index) => <div key={`${line}-${index}`} className={`flex gap-3 px-2.5 py-1 rounded-md transition-all ${current.codeLine === index + 1 ? 'bg-cyan-500/15 border-l-2 border-cyan-400 text-cyan-200 font-medium' : 'text-slate-400'}`}><span className="w-5 text-right text-slate-500 shrink-0 select-none">{index + 1}</span><code className="font-mono">{line}</code></div>)}</div>
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-[#111115]"><span className="font-sans font-bold text-xs uppercase tracking-wider text-slate-200">{mode === 'concept' ? 'Concept Pseudocode' : 'Practice Pseudocode'}</span><button type="button" onClick={copyCode} title="Copy pseudocode" className="px-2.5 py-1 border border-white/10 rounded-lg bg-[#18181d] text-xs text-slate-200 flex items-center gap-1.5 hover:border-amber-400/50 hover:text-amber-300 transition-all"><Copy className="w-3.5 h-3.5" /> {copied ? 'copied' : 'copy'}</button></div>
+                <div className="p-3.5 space-y-1.5 text-xs leading-relaxed bg-[#08080a]">{code.map((line, index) => <div key={`${line}-${index}`} className={`flex gap-3 px-2.5 py-1 rounded-md transition-all ${current.codeLine === index + 1 ? 'bg-amber-400/10 border-l-2 border-amber-400 text-amber-200 font-medium' : 'text-slate-400'}`}><span className="w-5 text-right text-slate-500 shrink-0 select-none">{index + 1}</span><code className="font-mono">{line}</code></div>)}</div>
               </div>
               <div className="border border-slate-800/80 rounded-xl p-3.5 grid grid-cols-2 gap-2.5 bg-slate-900/70 min-h-[80px]">
                 {current.state.map((item, idx) => (
                   <div key={`${item.label}-${item.value}`} className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800/60">
                     <div className="flex items-center justify-between gap-1">
                       <span className="text-[10px] uppercase tracking-[0.16em] text-slate-400 font-bold">{item.label}</span>
-                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${idx % 2 === 0 ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>active</span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">state</span>
                     </div>
-                    <div className="font-mono font-semibold text-sm text-cyan-300 mt-1 break-words">{item.value}</div>
+                    <div className="font-mono font-semibold text-sm text-amber-300 mt-1 break-words">{item.value}</div>
                   </div>
                 ))}
               </div>
@@ -506,11 +506,11 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
           <div className="px-5 sm:px-8 mt-6">
             <div className="border border-slate-800/80 rounded-xl p-4 bg-slate-900/70 min-h-[88px] flex flex-col justify-between gap-2.5 transition-all">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Commentary</span>
                 </div>
-                <span className="text-[10px] font-mono font-medium tracking-wider px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300">
+                <span className="text-[10px] font-mono font-medium tracking-wider px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300">
                   Commentary • Step {boundedStep + 1} of {frames.length}
                 </span>
               </div>
@@ -536,12 +536,12 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
           </div>
 
           <footer className="px-5 sm:px-8 py-4 mt-4 flex flex-wrap items-center gap-3 border-t border-slate-800/80 bg-slate-900/60 font-sans">
-            <button type="button" aria-label="Reset visualization" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-sm hover:shadow-cyan-500/20 transition-all"><RotateCcw className="w-4 h-4" /></button>
-            <button type="button" aria-label="Previous visualization step" title="Previous step" disabled={boundedStep === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronLeft className="w-4 h-4" /></button>
-            <button type="button" onClick={() => setPlaying((value) => !value)} className={`px-5 py-2.5 rounded-xl font-sans font-bold text-xs flex items-center gap-2 transition-all ${playing ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/30 ring-2 ring-cyan-400/50' : 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 shadow-lg hover:shadow-cyan-500/30'}`}>{playing ? <Pause className="w-4 h-4 fill-slate-950" /> : <Play className="w-4 h-4 fill-slate-950" />} {playing ? 'Pause' : 'Play'}</button>
-            <button type="button" aria-label="Next visualization step" title="Next step" disabled={boundedStep === frames.length - 1} onClick={() => { setPlaying(false); setStep((value) => Math.min(frames.length - 1, value + 1)); }} className="p-2.5 border border-slate-700/60 rounded-xl bg-slate-800 text-slate-200 disabled:opacity-40 hover:enabled:border-cyan-400/50 hover:enabled:text-cyan-300 hover:enabled:shadow-sm hover:enabled:shadow-cyan-500/20 transition-all"><ChevronRight className="w-4 h-4" /></button>
-            <input aria-label="Lesson progress" type="range" min="0" max={frames.length - 1} value={boundedStep} onChange={(event) => { setPlaying(false); setStep(Number(event.target.value)); }} className="flex-1 min-w-[120px] accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer" />
-            <select aria-label="Playback speed" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="bg-slate-800 border border-slate-700/60 rounded-xl px-3 py-2 text-xs text-slate-200 hover:border-cyan-400/50 transition-all"><option value="1800">0.5x</option><option value="1200">1x</option><option value="700">2x</option></select>
+            <button type="button" aria-label="Reset visualization" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2.5 border border-white/10 rounded-lg bg-[#111115] text-slate-200 hover:border-amber-400/50 hover:text-amber-300 hover:shadow-sm hover:shadow-amber-400/20 transition-all"><RotateCcw className="w-4 h-4" /></button>
+            <button type="button" aria-label="Previous visualization step" title="Previous step" disabled={boundedStep === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2.5 border border-white/10 rounded-lg bg-[#111115] text-slate-200 disabled:opacity-40 hover:enabled:border-amber-400/50 hover:enabled:text-amber-300 hover:enabled:shadow-sm hover:enabled:shadow-amber-400/20 transition-all"><ChevronLeft className="w-4 h-4" /></button>
+            <button type="button" onClick={() => setPlaying((value) => !value)} className={`px-5 py-2.5 rounded-lg font-sans font-bold text-xs flex items-center gap-2 transition-all ${playing ? 'bg-amber-300 text-[#08080a] shadow-lg shadow-amber-400/30 ring-2 ring-amber-400/50' : 'bg-amber-400 text-[#08080a] shadow-lg shadow-amber-400/20 hover:bg-amber-300'}`}>{playing ? <Pause className="w-4 h-4 fill-[#08080a]" /> : <Play className="w-4 h-4 fill-[#08080a]" />} {playing ? 'Pause' : 'Play'}</button>
+            <button type="button" aria-label="Next visualization step" title="Next step" disabled={boundedStep === frames.length - 1} onClick={() => { setPlaying(false); setStep((value) => Math.min(frames.length - 1, value + 1)); }} className="p-2.5 border border-white/10 rounded-lg bg-[#111115] text-slate-200 disabled:opacity-40 hover:enabled:border-amber-400/50 hover:enabled:text-amber-300 hover:enabled:shadow-sm hover:enabled:shadow-amber-400/20 transition-all"><ChevronRight className="w-4 h-4" /></button>
+            <input aria-label="Lesson progress" type="range" min="0" max={frames.length - 1} value={boundedStep} onChange={(event) => { setPlaying(false); setStep(Number(event.target.value)); }} className="flex-1 min-w-[120px] accent-amber-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer" />
+            <select aria-label="Playback speed" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="bg-[#111115] border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 hover:border-amber-400/50 transition-all"><option value="1800">0.5x</option><option value="1200">1x</option><option value="700">2x</option></select>
             <span className="text-[10px] text-slate-400 w-10 text-right font-mono">{Math.round(progress)}%</span>
           </footer>
         </section>

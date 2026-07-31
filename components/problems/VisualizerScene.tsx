@@ -62,7 +62,7 @@ const cellTransition = { duration: 0.42, ease };
 
 function SceneFrame({ children }: { children: React.ReactNode }) {
   return (
-    <svg viewBox="0 0 680 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated algorithm state" className="w-full h-[360px] overflow-visible">
+    <svg viewBox="0 0 680 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated algorithm state" className="w-full h-auto min-h-[360px] max-h-[520px] overflow-visible">
       <defs>
         <marker id="scene-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
           <path d="M0,0 L7,3.5 L0,7 z" fill={muted} />
