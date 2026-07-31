@@ -2,8 +2,10 @@ import fs from 'node:fs';
 
 const visualizerPath = 'components/problems/ProblemVisualizer.tsx';
 const scenePath = 'components/problems/VisualizerScene.tsx';
+const libraryPath = 'app/visualizer/page.tsx';
 const visualizer = fs.readFileSync(visualizerPath, 'utf8');
 const scene = fs.readFileSync(scenePath, 'utf8');
+const library = fs.readFileSync(libraryPath, 'utf8');
 
 const requiredVisualizerMarkers = [
   'className="px-5 sm:px-8 flex-1 space-y-5"',
@@ -23,6 +25,10 @@ if (visualizer.includes('xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)]')) 
 
 if (!scene.includes('min-h-[360px]')) {
   throw new Error('Visualizer scene must retain a stable minimum render height.');
+}
+
+if (!library.includes('titleFromPath(selected.lessonPath)')) {
+  throw new Error('Visualizer workspace links must fall back to the canonical lesson slug.');
 }
 
 console.log('Visualizer layout verification: full-width scene and stable render height are preserved.');

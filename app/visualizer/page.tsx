@@ -103,7 +103,7 @@ export default function VisualizerLibraryPage() {
 
           <section className="min-w-0">
             {selected ? <ProblemVisualizer key={selected.problemId} problemId={selected.problemId} problemTitle={selectedTitle} topicTags={JSON.stringify([selected.pattern])} verified={selected.hasVisualizer} /> : <div className="border border-slate-800 rounded-2xl p-10 text-center text-slate-500">No lessons match this filter.</div>}
-            {selected && <div className="flex flex-wrap justify-between items-center gap-3 mt-4 text-xs text-slate-400"><span>Interactive lesson: {selected.lessonPath}</span><Link href={`/problems/${problemMeta[selected.problemId]?.slug || selected.problemId}`} className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-semibold">Open coding workspace <ChevronRight className="w-3.5 h-3.5" /></Link></div>}
+            {selected && <div className="flex flex-wrap justify-between items-center gap-3 mt-4 text-xs text-slate-400"><span>Interactive lesson: {selected.lessonPath}</span><Link href={`/problems/${problemMeta[selected.problemId]?.slug || titleFromPath(selected.lessonPath).toLowerCase().replaceAll(' ', '-')}`} className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-semibold">Open coding workspace <ChevronRight className="w-3.5 h-3.5" /></Link></div>}
           </section>
         </div>
       </div>
