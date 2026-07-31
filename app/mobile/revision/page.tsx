@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   AlertCircle,
-  ArrowLeft,
   BookOpenCheck,
   CalendarClock,
   CheckCircle2,
@@ -12,6 +11,7 @@ import {
   Loader2,
   RefreshCw,
   RotateCw,
+  User,
 } from 'lucide-react';
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 import type { RevisionCardDTO, RevisionDeckResponse, RevisionDeckStats } from '@/lib/types';
@@ -172,11 +172,11 @@ export default function MobileRevisionPage() {
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-5 pt-[max(1rem,env(safe-area-inset-top))]">
         <header className="flex items-center justify-between gap-3 py-2">
           <Link
-            href="/dashboard"
+            href="/mobile/profile"
             className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-slate-200 active:bg-white/10"
-            aria-label="Back to dashboard"
+            aria-label="Open profile"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <User className="h-5 w-5" />
           </Link>
           <div className="min-w-0 flex-1 text-center">
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-300">CodeForge</p>
@@ -216,7 +216,7 @@ export default function MobileRevisionPage() {
               <AlertCircle className="mt-0.5 h-5 w-5 flex-none text-rose-300" />
               <div>
                 <p className="text-sm font-bold text-rose-100">{error}</p>
-                <Link href="/login?next=/mobile/revision" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-rose-200">
+                <Link href="/mobile/login" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-rose-200">
                   Sign in <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -330,10 +330,10 @@ export default function MobileRevisionPage() {
             </p>
             <div className="mt-6 flex w-full flex-col gap-3">
               <Link
-                href="/problems"
+                href="/mobile/profile"
                 className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-amber-300 px-4 text-sm font-black text-black active:bg-amber-200"
               >
-                Practice Problems <ChevronRight className="h-4 w-4" />
+                Open Profile <ChevronRight className="h-4 w-4" />
               </Link>
               <button
                 type="button"

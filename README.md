@@ -77,6 +77,15 @@ The local application runs at `http://localhost:3000`.
 | `GOOGLE_CLIENT_SECRET` | Optional | Google sign-in client secret. |
 | `GOOGLE_REDIRECT_URI` | Optional | Google callback URL. |
 
+Email OTP verification uses Resend from server-side route handlers. For
+production, create a Resend API key, verify your sending domain in Resend, and
+set `RESEND_FROM_EMAIL` to that verified sender. Check the configuration with:
+
+```bash
+npm run verify:email
+VERIFY_EMAIL_TO=you@example.com npm run verify:email
+```
+
 Never commit `.env`, `.env.local`, provider keys, database credentials, or OAuth
 secrets. Use platform-managed secrets in deployed environments.
 

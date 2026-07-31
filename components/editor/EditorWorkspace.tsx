@@ -75,6 +75,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
   const [isTutorOpen, setIsTutorOpen] = useState<boolean>(false);
   const [bottomPanelHeight, setBottomPanelHeight] = useState<number>(256);
+  const [tutorWidth, setTutorWidth] = useState<number>(400);
   const codeRef = useRef<string>('');
   const appliedTemplateRef = useRef<{ language: string; code: string } | null>(null);
   const workspaceRef = useRef<HTMLDivElement | null>(null);
@@ -277,6 +278,43 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     setBottomPanelHeight((current) => Math.min(maxHeight, Math.max(140, current + direction * 16)));
   };
 
+  const handleTutorResizeStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!workspaceRef.current) return;
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!workspaceRef.current) return;
+      const rect = workspaceRef.current.getBoundingClientRect();
+      const nextWidth = rect.right - moveEvent.clientX;
+      const maxWidth = Math.max(250, rect.width - 300); // 300px min for editor
+      setTutorWidth(Math.min(maxWidth, Math.max(250, nextWidth)));
+    };
+
+    const stopResize = () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', stopResize);
+      window.removeEventListener('pointercancel', stopResize);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', stopResize);
+    window.addEventListener('pointercancel', stopResize);
+  };
+
+  const handleTutorResizeKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!workspaceRef.current || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return;
+
+    event.preventDefault();
+    const maxWidth = Math.max(250, workspaceRef.current.getBoundingClientRect().width - 300);
+    const direction = event.key === 'ArrowRight' ? -1 : 1;
+    setTutorWidth((current) => Math.min(maxWidth, Math.max(250, current + direction * 16)));
+  };
+
   return (
     <div ref={workspaceRef} className="flex flex-col h-full w-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
       {/* Top Bar / Toolbar */}
@@ -363,6 +401,17 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             onSubmit={handleSubmitCode}
           />
         </div>
+        {isTutorOpen && (
+          <div
+            aria-label="Resize tutor panel"
+            role="separator"
+            aria-orientation="vertical"
+            tabIndex={0}
+            onPointerDown={handleTutorResizeStart}
+            onKeyDown={handleTutorResizeKeyDown}
+            className="w-2 shrink-0 cursor-col-resize bg-slate-950 border-x border-slate-800 hover:bg-amber-400/10 focus:bg-amber-400/10 focus:outline-none z-40 transition-colors"
+          />
+        )}
         <TutorDrawer
           variant="side-panel"
           problemId={problemId}
@@ -371,6 +420,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           userCode={code}
           language={selectedLanguage}
           isOpen={isTutorOpen}
+          width={tutorWidth}
           onToggle={() => setIsTutorOpen((current) => !current)}
         />
       </div>

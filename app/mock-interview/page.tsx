@@ -215,7 +215,7 @@ export default function MockInterviewPage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans"
+      className="min-h-[calc(100svh-56px)] bg-slate-950 text-slate-100 flex flex-col font-sans"
     >
       {/* SETUP STAGE */}
       {stage === 'setup' && (
@@ -304,14 +304,14 @@ export default function MockInterviewPage() {
 
       {/* INTERVIEW STAGE */}
       {stage === 'interview' && (
-        <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden">
+        <div className="h-[calc(100svh-56px)] w-full flex flex-col bg-slate-950 overflow-hidden">
           {/* Header Bar */}
-          <header className="h-14 bg-slate-950 border-b border-slate-800 px-6 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
+          <header className="min-h-14 bg-slate-950 border-b border-slate-800 px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div className="flex min-w-0 items-center gap-3">
               <span className="px-3 py-1 rounded-lg bg-[#111115] border border-white/10 text-xs font-bold text-amber-300">
                 {selectedCompany} Interview
               </span>
-              <span className="text-xs text-slate-400 font-semibold">{selectedTopic}</span>
+              <span className="truncate text-xs text-slate-400 font-semibold">{selectedTopic}</span>
             </div>
 
             {/* Timer */}
@@ -336,9 +336,9 @@ export default function MockInterviewPage() {
           </header>
 
           {/* Main Interview Body: 2 Columns */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
+          <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-y-auto lg:overflow-hidden">
             {/* Left Column: Live Chat with Staff Engineer (5 Cols) */}
-            <div className="lg:col-span-5 flex flex-col h-full border-r border-slate-800 bg-slate-900/30 overflow-hidden">
+            <div className="min-h-[420px] lg:min-h-0 lg:col-span-5 flex flex-col h-full border-b lg:border-b-0 lg:border-r border-slate-800 bg-slate-900/30 overflow-hidden">
               <div className="p-3 bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-300 flex items-center gap-2">
                 <Bot className="w-4 h-4 text-amber-300" />
                 <span>Senior Staff Engineer Interviewer</span>
@@ -416,7 +416,7 @@ export default function MockInterviewPage() {
             </div>
 
             {/* Right Column: Code Workspace (7 Cols) */}
-            <div className="lg:col-span-7 h-full flex flex-col p-3 bg-slate-950 overflow-hidden">
+            <div className="min-h-[520px] lg:min-h-0 lg:col-span-7 h-full flex flex-col p-3 bg-slate-950 overflow-hidden">
               <div className="flex-1 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col">
                 <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 text-slate-300 font-semibold">

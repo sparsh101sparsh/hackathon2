@@ -41,6 +41,27 @@ GOOGLE_CLIENT_SECRET=<optional-client-secret>
 GOOGLE_REDIRECT_URI=https://<production-domain>/api/auth/google/callback
 ```
 
+Email OTP requires a Resend API key and a sender address on a Resend-verified
+domain. Do not use `onboarding@resend.dev` or `auth@yourdomain.com` in
+production. Before promoting, validate the secret shape and send a real
+operator-owned smoke email:
+
+```bash
+npm run verify:email
+VERIFY_EMAIL_TO=operator@example.com npm run verify:email
+```
+
+For the linked Vercel project, add the two production secrets with:
+
+```bash
+vercel env add RESEND_API_KEY production
+vercel env add RESEND_FROM_EMAIL production
+vercel env ls production
+```
+
+The `vercel env ls production` output must include both `RESEND_API_KEY` and
+`RESEND_FROM_EMAIL` before deploying or redeploying production.
+
 Generate a session secret outside the repository, for example:
 
 ```bash
@@ -97,13 +118,14 @@ curl -i https://<production-domain>/api/problems?page=1\&limit=3
 curl -i https://<production-domain>/api/company
 ```
 
-`/api/health` must return HTTP `200`, `status: "ok"`, and database status
-`"ok"`. It deliberately disables caching and never returns connection strings
-or provider error details.
+`/api/health` must return HTTP `200`, `status: "ok"`, database status `"ok"`,
+and email verification status `"configured"` in production. It deliberately
+disables caching and never returns connection strings, provider keys, sender
+addresses, or provider error details.
 
-Then manually verify register OTP, login, password reset, Google OAuth (if
-enabled), code execution, a deterministic fallback, contest registration/submission, and
-room join/leave in staging before production.
+Then manually verify register OTP, login OTP, password reset OTP, Google OAuth
+(if enabled), code execution, a deterministic fallback, contest
+registration/submission, and room join/leave in staging before production.
 
 ## 6. Rollback
 

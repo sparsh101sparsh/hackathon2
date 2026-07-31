@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
+    "verify:email": "tsx scripts/verify-email-config.ts",
     "android:add": "cap add android",
     "android:sync": "cap sync android",
     "android:build:debug": "bash scripts/android/build-debug-apk.sh",

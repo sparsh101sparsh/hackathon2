@@ -168,9 +168,9 @@ export default function VisualizerLibraryPage() {
   );
 
   return (
-    <main className="h-[calc(100svh-56px)] overflow-hidden bg-[#08080a] text-slate-200 px-3 sm:px-5 lg:px-6 py-4 font-mono">
+    <main className="h-[calc(100svh-56px)] overflow-hidden bg-[#08080a] text-slate-200 px-3 sm:px-5 lg:px-6 py-3 font-mono">
       <div className="mx-auto flex h-full max-w-[1800px] flex-col">
-        <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="mb-2 flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-start gap-3">
             <button
               type="button"
@@ -178,18 +178,17 @@ export default function VisualizerLibraryPage() {
               aria-expanded={menuOpen}
               aria-controls="visualizer-question-menu"
               title="Open questions"
-              className="mt-1 inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 font-sans text-sm font-bold text-amber-200 transition hover:border-amber-300 hover:bg-amber-400/15"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 font-sans text-sm font-bold text-amber-200 transition hover:border-amber-300 hover:bg-amber-400/15"
             >
               <Menu className="h-4 w-4" />
               Questions
             </button>
             <div className="min-w-0">
-              <div className="retro-label mb-1.5"><span>$ visualizer --catalog=75</span></div>
-              <h1 className="truncate font-mono text-2xl sm:text-4xl font-medium tracking-normal phosphor-glow">Watch the algorithm think<span className="text-amber-400">_</span></h1>
-              <p className="hidden text-slate-400 mt-1.5 max-w-2xl leading-relaxed lg:block">Interactive visual lessons for every mapped problem. Choose a pattern, step through its state, and inspect the invariant.</p>
+              <div className="retro-label mb-0.5 text-[11px]"><span>$ visualizer --catalog=75</span></div>
+              <h1 className="truncate font-mono text-xl sm:text-2xl font-medium tracking-normal phosphor-glow">Watch the algorithm think<span className="text-amber-400">_</span></h1>
             </div>
           </div>
-          <div className="hidden shrink-0 items-center gap-3 pt-3 sm:flex">
+          <div className="hidden shrink-0 items-center gap-3 sm:flex">
             <div className="text-sm text-slate-400"><span className="text-slate-100 font-bold">{entries.length || 75}</span> verified lessons</div>
             {selected && (
               <Link href={`/problems/${problemMeta[selected.problemId]?.slug || titleFromPath(selected.lessonPath).toLowerCase().replaceAll(' ', '-')}`} className="flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 font-semibold">

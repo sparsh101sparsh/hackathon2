@@ -19,6 +19,7 @@ interface TutorDrawerProps {
   problemStatement?: string;
   userCode: string;
   language: string;
+  width?: number;
 }
 
 const QUICK_PROMPTS = [
@@ -59,6 +60,7 @@ export const TutorDrawer: React.FC<TutorDrawerProps> = ({
   problemStatement = '',
   userCode,
   language,
+  width,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>('');
@@ -161,11 +163,12 @@ export const TutorDrawer: React.FC<TutorDrawerProps> = ({
       {/* Drawer Overlay Panel */}
       {isOpen && (
         <div
-          className={`z-50 bg-slate-950/95 border-l border-slate-800 shadow-2xl flex flex-col backdrop-blur-xl font-sans ${
+          className={`z-50 bg-slate-950/95 shadow-2xl flex flex-col backdrop-blur-xl font-sans ${
             isSidePanel
-              ? 'h-full w-full lg:w-[360px] xl:w-[400px] shrink-0'
-              : 'fixed bottom-0 right-0 top-0 w-full sm:w-[420px]'
+              ? 'h-full shrink-0 max-w-full'
+              : 'fixed bottom-0 right-0 top-0 w-full sm:w-[420px] border-l border-slate-800'
           }`}
+          style={isSidePanel ? { width: width ? `${width}px` : '400px' } : undefined}
         >
           {/* Header */}
           <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">

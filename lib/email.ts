@@ -12,6 +12,23 @@ export interface SendVerificationEmailResult {
   devCode?: string;
 }
 
+const RESEND_DEFAULT_FROM = 'CodeForge <onboarding@resend.dev>';
+const RESEND_FROM_PLACEHOLDER = 'CodeForge <auth@yourdomain.com>';
+
+export function hasConfiguredEmailSender(): boolean {
+  const fromAddress = process.env.RESEND_FROM_EMAIL || RESEND_DEFAULT_FROM;
+  return (
+    Boolean(process.env.RESEND_FROM_EMAIL) &&
+    fromAddress !== RESEND_DEFAULT_FROM &&
+    fromAddress !== RESEND_FROM_PLACEHOLDER &&
+    !fromAddress.includes('yourdomain.com')
+  );
+}
+
+export function hasConfiguredEmailVerification(): boolean {
+  return Boolean(process.env.RESEND_API_KEY?.trim()) && hasConfiguredEmailSender();
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => {
     const entities: Record<string, string> = {
@@ -34,8 +51,9 @@ export async function sendVerificationEmail(
   const { email, code, purpose, name } = options;
   const safeName = name ? escapeHtml(name) : '';
   const resendApiKey = process.env.RESEND_API_KEY || '';
-  const fromAddress = process.env.RESEND_FROM_EMAIL || 'CodeForge <onboarding@resend.dev>';
+  const fromAddress = process.env.RESEND_FROM_EMAIL || RESEND_DEFAULT_FROM;
   const isProduction = process.env.NODE_ENV === 'production';
+  const hasConfiguredSender = hasConfiguredEmailSender();
 
   let subject = `${code} is your CodeForge Verification Code`;
   let purposeDescription = 'verification';
@@ -81,6 +99,14 @@ export async function sendVerificationEmail(
     </div>
   `;
 
+  if (isProduction && !resendApiKey) {
+    return { success: false, error: 'Email verification is not configured yet. Missing RESEND_API_KEY.' };
+  }
+
+  if (isProduction && !hasConfiguredSender) {
+    return { success: false, error: 'Email verification is not configured yet. Set RESEND_FROM_EMAIL to a verified sender.' };
+  }
+
   if (resendApiKey) {
     try {
       const response = await fetch('https://api.resend.com/emails', {
@@ -95,6 +121,7 @@ export async function sendVerificationEmail(
           to: [email],
           subject,
           html: htmlContent,
+          text: `Your CodeForge ${purposeDescription} verification code is ${code}. This code expires in 10 minutes.`,
         }),
       });
 
