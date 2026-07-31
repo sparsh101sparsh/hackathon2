@@ -63,15 +63,15 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-8 h-16 flex items-center justify-between font-sans">
+    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-7 h-14 flex items-center justify-between font-sans">
       {/* Left Brand Emblem & Nav Links */}
-      <div className="flex items-center gap-5 lg:gap-7">
+      <div className="flex items-center gap-4 lg:gap-6">
         {/* Glowing Logo Emblem */}
-        <Link href="/" className="flex items-center gap-2.5 text-white font-extrabold text-lg tracking-tight group">
-          <div className="p-2 rounded-lg bg-cyan-200 text-[#08080a] group-hover:bg-cyan-100 transition duration-200">
-            <Code2 className="w-5 h-5" aria-hidden="true" />
+        <Link href="/" className="flex items-center gap-2 text-white font-extrabold text-base tracking-tight group">
+          <div className="p-1.5 rounded-md bg-cyan-200 text-[#08080a] group-hover:bg-cyan-100 transition duration-200">
+            <Code2 className="w-4 h-4" aria-hidden="true" />
           </div>
-          <span className="text-lg font-black tracking-tight">
+          <span className="text-base font-black tracking-tight">
             CodeForge<span className="text-cyan-200">_</span>
           </span>
         </Link>
@@ -84,7 +84,7 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1.5 ${
+                className={`px-2.5 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-[#17171b] text-cyan-100 border border-cyan-300/25'
                     : 'text-slate-400 hover:text-white hover:bg-[#111115]'
@@ -104,7 +104,7 @@ export const Navbar: React.FC = () => {
           href="https://github.com/sparsh101sparsh/hackathon2"
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2.5 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
+          className="px-3 py-2 rounded-md bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
         >
           <Github className="w-4 h-4 text-cyan-200" />
           <span>GitHub</span>
@@ -143,14 +143,14 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="px-4 py-2.5 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-sm transition-all flex items-center gap-2"
+              className="px-3 py-2 rounded-md bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
             >
               <LogIn className="w-3.5 h-3.5 text-cyan-200" />
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="px-5 py-2.5 rounded-lg bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-sm transition-all flex items-center gap-2"
+              className="px-4 py-2 rounded-md bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-xs transition-all flex items-center gap-1.5"
             >
               <UserPlus className="w-3.5 h-3.5 text-slate-950" />
               <span>Sign Up</span>
@@ -168,7 +168,7 @@ export const Navbar: React.FC = () => {
           aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-navigation-menu"
-          className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
+          className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
         >
           {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -184,7 +184,7 @@ export const Navbar: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="absolute top-16 left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
+            className="absolute top-14 left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
           >
             <div className="space-y-1">
               {navLinks.map((link) => {
