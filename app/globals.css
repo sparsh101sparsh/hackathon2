@@ -81,6 +81,22 @@ body,
 .bg-purple-950\/40,
 .bg-indigo-950\/30 { background-color: rgba(120, 78, 8, 0.14) !important; }
 
+/* Keep older route surfaces inside the same restrained geometry. */
+.rounded-xl { border-radius: 8px !important; }
+.rounded-2xl,
+.rounded-3xl { border-radius: 10px !important; }
+.shadow-xl,
+.shadow-2xl { box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24) !important; }
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-xl,
+.backdrop-blur-2xl { backdrop-filter: none !important; }
+
+/* Decorative blur blobs read as noise in a coding workspace. */
+[class*="blur-[120px]"],
+[class*="blur-[140px]"],
+[class*="blur-3xl"] { display: none !important; }
+
 @layer components {
   .surface-panel { background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; }
   .eyebrow { color: #a8a29e; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }

@@ -48,9 +48,6 @@ export const HeroSection: React.FC = () => {
 
   return (
     <section className="relative pt-20 pb-16 px-6 max-w-7xl mx-auto flex flex-col items-center text-center overflow-hidden">
-      {/* Radiant Background Glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-amber-400/5 rounded-full blur-[140px] pointer-events-none -z-10" />
-
       {/* Feature Badge */}
       <motion.div
         initial={{ opacity: 0, y: -15 }}
@@ -68,7 +65,7 @@ export const HeroSection: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white max-w-5xl leading-[1.1]"
+        className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white max-w-5xl leading-[1.1]"
       >
         Master Coding & Crack Tech Interviews with{' '}
         <span className="text-amber-300 underline decoration-amber-400/30 underline-offset-8">
@@ -122,7 +119,7 @@ export const HeroSection: React.FC = () => {
             key={item.label}
             whileHover={{ y: -4, scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="rounded-xl bg-[#0f0f12] border border-white/10 shadow-xl p-6 text-left flex flex-col justify-between"
+            className="rounded-lg bg-[#0f0f12] border border-white/10 p-5 text-left flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="p-2 rounded-xl bg-slate-950/80 border border-slate-800">{item.icon}</span>

@@ -130,7 +130,7 @@ export default function DashboardPage() {
 
       {/* 2. Teaching style selector */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
-        className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-5"
+        className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-5"
       >
         <TeachingStyleSelector />
       </motion.div>

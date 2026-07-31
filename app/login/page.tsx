@@ -219,16 +219,13 @@ function LoginPageInner() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Radiant Glow background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-400/5 rounded-full blur-[120px] pointer-events-none -z-10" />
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl relative overflow-hidden">
+        <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-6 sm:p-8 shadow-2xl relative overflow-hidden">
           {/* Top subtle line accent */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-amber-400/70" />
 

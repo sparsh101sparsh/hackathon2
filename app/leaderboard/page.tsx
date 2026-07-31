@@ -75,7 +75,7 @@ export default function LeaderboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-2.5 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 shadow-lg shadow-yellow-950/40">
+            <div className="p-2 rounded-md bg-[#111115] text-amber-400 border border-white/10">
               <Trophy className="w-6 h-6" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
@@ -104,7 +104,7 @@ export default function LeaderboardPage() {
       {loading ? (
         <ContestScoreboardSkeleton />
       ) : (
-        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden shadow-xl backdrop-blur-xl">
+        <div className="bg-slate-900/70 border border-slate-800 rounded-lg overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-slate-950/80 text-slate-400 uppercase tracking-wider text-[11px] font-bold border-b border-slate-800">
