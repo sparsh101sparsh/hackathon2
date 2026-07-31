@@ -29,6 +29,22 @@ if (!scene.includes('min-h-[360px]')) {
   throw new Error('Visualizer scene must retain a stable minimum render height.');
 }
 
+if (scene.includes('animate={{ y, height') || scene.includes('animate={{ y: y')) {
+  throw new Error('Bar rectangles must not animate SVG y through Framer Motion; it double-applies browser transforms.');
+}
+
+if (!scene.includes('React.useId()') || !scene.includes('scene-arrow-${reactId}')) {
+  throw new Error('Node/graph SVG marker ids must be scoped per scene instance.');
+}
+
+if (!scene.includes('function graphPositions') || scene.includes('|| [340, 150]')) {
+  throw new Error('Graph scene must compute fallback positions instead of overlapping extra nodes at the center.');
+}
+
+if (!scene.includes('bitFontSize') || !scene.includes('indexFontSize')) {
+  throw new Error('Bits scene must scale text for longer bit strings.');
+}
+
 if (!library.includes('titleFromPath(selected.lessonPath)')) {
   throw new Error('Visualizer workspace links must fall back to the canonical lesson slug.');
 }

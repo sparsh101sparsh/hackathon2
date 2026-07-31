@@ -11,7 +11,12 @@ const config = [
     },
   },
   {
-    ignores: ['.agents/**'],
+    ignores: [
+      '.agents/**',
+      'android/**/build/**',
+      'android/.gradle/**',
+      'android/app/src/main/assets/**',
+    ],
   },
 ];
 

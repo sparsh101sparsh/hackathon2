@@ -26,13 +26,15 @@ function LoginPageInner() {
   const router = useRouter();
   const { user, login, sendCode, verifyCode, resetPassword } = useAuth();
   const searchParams = useSearchParams();
+  const nextPath = searchParams.get('next');
+  const safeNextPath = nextPath?.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/dashboard';
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      router.push(safeNextPath);
     }
-  }, [user, router]);
+  }, [safeNextPath, user, router]);
 
   // Auth Mode: 'password' | 'code' | 'forgot'
   const [authMode, setAuthMode] = useState<'password' | 'code' | 'forgot'>('password');
@@ -106,7 +108,7 @@ function LoginPageInner() {
     setLoading(false);
 
     if (result.success) {
-      router.push('/dashboard');
+      router.push(safeNextPath);
     } else {
       setError(result.error || 'Failed to sign in');
     }
@@ -162,7 +164,7 @@ function LoginPageInner() {
     setLoading(false);
 
     if (result.success) {
-      router.push('/dashboard');
+      router.push(safeNextPath);
     } else {
       setError(result.error || 'Invalid or expired verification code');
     }
@@ -189,7 +191,7 @@ function LoginPageInner() {
     setLoading(false);
 
     if (result.success) {
-      router.push('/dashboard');
+      router.push(safeNextPath);
     } else {
       setError(result.error || 'Failed to reset password');
     }

@@ -58,8 +58,6 @@ async function loadProfile(id: string) {
     where: { id },
     select: { id: true, name: true, createdAt: true },
   });
-  if (!user && id !== 'guest') return null;
-  const displayUser = user || { id: 'guest', name: 'Guest Coder', createdAt: new Date(0) };
 
   const [progress, submissions, totalSubmissionCount, acceptedSubmissionCount, accepted] = await prisma.$transaction([
     prisma.userProgress.findUnique({ where: { userId: id }, select: { streak: true, lastActiveDate: true } }),
@@ -78,6 +76,28 @@ async function loadProfile(id: string) {
     }),
   ]);
 
+  const ratingHistory = await prisma.userRating.findMany({
+    where: { userId: id },
+    select: { rating: true, delta: true, timestamp: true },
+    orderBy: { timestamp: 'desc' },
+    take: 20,
+  });
+
+  const hasPublicActivity =
+    Boolean(user) ||
+    id === 'guest' ||
+    Boolean(progress) ||
+    totalSubmissionCount > 0 ||
+    ratingHistory.length > 0;
+
+  if (!hasPublicActivity) return null;
+
+  const displayUser = user || {
+    id,
+    name: id === 'guest' ? 'Guest Coder' : `Coder (${id.slice(0, 6)})`,
+    createdAt: new Date(0),
+  };
+
   const accuracy = totalSubmissionCount ? Math.round((acceptedSubmissionCount / totalSubmissionCount) * 1000) / 10 : 0;
   const solved = { easy: 0, medium: 0, hard: 0, total: accepted.length };
   accepted.forEach(({ problem }) => {
@@ -86,12 +106,6 @@ async function loadProfile(id: string) {
     if (problem.difficulty === 'HARD') solved.hard += 1;
   });
 
-  const ratingHistory = await prisma.userRating.findMany({
-    where: { userId: id },
-    select: { rating: true, delta: true, timestamp: true },
-    orderBy: { timestamp: 'desc' },
-    take: 20,
-  });
   const rating = ratingHistory[0]?.rating || 0;
 
   return {

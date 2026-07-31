@@ -116,6 +116,7 @@ export default function BattleRoomPage() {
   const [lastEvent, setLastEvent] = useState<string>('JOIN');
   const prevTopLeaderRef = React.useRef<{ id: string; score: number } | null>(null);
   const editorTemplateKeyRef = useRef<string | null>(null);
+  const hostUserId = room?.participants.find((participant) => participant.userName === room.hostName)?.userId;
 
   const currentUserId = user?.id || battleUserId || `guest_local`;
   const currentUserName = user?.name || 'Guest Coder';
@@ -444,7 +445,7 @@ export default function BattleRoomPage() {
   const seconds = (remainingSeconds % 60).toString().padStart(2, '0');
   const viewerParticipant = room.participants.find((participant) => participant.userId === currentUserId);
   const winner = room.winnerId ? room.participants.find((participant) => participant.userId === room.winnerId) : null;
-  const isHost = (user?.name && user.name === room.hostName) || (room.participants.length > 0 && room.participants[0].userId === currentUserId);
+  const isHost = hostUserId ? hostUserId === currentUserId : Boolean(user?.name && user.name === room.hostName);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -700,6 +701,8 @@ export default function BattleRoomPage() {
             language={language}
             codeSnippet={code}
             linesOfCode={code.split('\n').filter((l) => l.trim().length > 0).length}
+            timeRemainingSeconds={remainingSeconds}
+            privacyMode
             executionResult={executionResult ?? undefined}
             userName={currentUserName}
             lastEvent={lastEvent}

@@ -51,6 +51,43 @@ async function runTest() {
       assert(typeof profile.profile?.accuracy === 'number' && typeof profile.profile?.consistency === 'number', 'Public profile exposes aggregate performance metrics');
     }
 
+    const profileProblem = await prisma.problem.findFirst({ select: { id: true } });
+    if (profileProblem) {
+      const activityOnlyUserId = `activity-only-${Date.now()}`;
+      let activitySubmissionId: string | null = null;
+      try {
+        const activitySubmission = await prisma.submission.create({
+          data: {
+            userId: activityOnlyUserId,
+            problemId: profileProblem.id,
+            code: 'print("ok")',
+            language: 'python',
+            status: 'Accepted',
+          },
+          select: { id: true },
+        });
+        activitySubmissionId = activitySubmission.id;
+
+        const activityProfileResponse = await profileHandler(
+          new NextRequest(`http://localhost:3000/api/leaderboard/${activityOnlyUserId}`),
+          { params: Promise.resolve({ id: activityOnlyUserId }) },
+        );
+        const activityProfile = await activityProfileResponse.json();
+        assert(
+          activityProfileResponse.status === 200 && activityProfile.profile?.id === activityOnlyUserId,
+          'Public profile loads for activity-only leaderboard identities',
+        );
+        assert(
+          activityProfile.profile?.name === `Coder (${activityOnlyUserId.slice(0, 6)})`,
+          'Activity-only public profiles use generated display names',
+        );
+      } finally {
+        if (activitySubmissionId) {
+          await prisma.submission.delete({ where: { id: activitySubmissionId } }).catch(() => undefined);
+        }
+      }
+    }
+
     const problemsResponse = await problemsHandler(
       new NextRequest('http://localhost:3000/api/problems?page=2&limit=3'),
     );

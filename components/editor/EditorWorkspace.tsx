@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ExecuteApiResponse, SubmissionApiResponse, TestCaseResult } from '@/lib/types';
 import CodeReviewModal from '@/components/guidance/CodeReviewModal';
+import TutorDrawer from '@/components/guidance/TutorDrawer';
 import { useAuth } from '@/context/AuthContext';
 
 interface CodeTemplateItem {
@@ -72,8 +73,11 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   const [executeResult, setExecuteResult] = useState<ExecuteApiResponse | null>(null);
   const [submissionResult, setSubmissionResult] = useState<SubmissionApiResponse | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
+  const [isTutorOpen, setIsTutorOpen] = useState<boolean>(false);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState<number>(256);
   const codeRef = useRef<string>('');
   const appliedTemplateRef = useRef<{ language: string; code: string } | null>(null);
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
 
   // Load a template when entering a language, but never overwrite edits when
   // the parent refreshes problem data and creates a new templates array.
@@ -236,8 +240,45 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
   const currentVerdict = submissionResult?.verdict || executeResult?.verdict;
 
+  const handleBottomResizeStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!workspaceRef.current) return;
+
+    const workspace = workspaceRef.current;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const rect = workspace.getBoundingClientRect();
+      const nextHeight = rect.bottom - moveEvent.clientY;
+      const maxHeight = Math.max(160, rect.height - 260);
+      setBottomPanelHeight(Math.min(maxHeight, Math.max(140, nextHeight)));
+    };
+
+    const stopResize = () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', stopResize);
+      window.removeEventListener('pointercancel', stopResize);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', stopResize);
+    window.addEventListener('pointercancel', stopResize);
+  };
+
+  const handleBottomResizeKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!workspaceRef.current || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+
+    event.preventDefault();
+    const maxHeight = Math.max(160, workspaceRef.current.getBoundingClientRect().height - 260);
+    const direction = event.key === 'ArrowUp' ? 1 : -1;
+    setBottomPanelHeight((current) => Math.min(maxHeight, Math.max(140, current + direction * 16)));
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+    <div ref={workspaceRef} className="flex flex-col h-full w-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
       {/* Top Bar / Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 bg-slate-950/80 border-b border-slate-800 backdrop-blur-sm">
         {/* Language Selector */}
@@ -309,21 +350,46 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       </div>
 
       {/* Editor Body */}
-      <div className="flex-1 relative min-h-[300px]">
-        <CodeEditor
+      <div className="flex-1 relative min-h-[300px] flex overflow-hidden">
+        <div className="min-w-0 flex-1">
+          <CodeEditor
+            language={selectedLanguage}
+            value={code}
+            onChange={(val) => {
+              codeRef.current = val;
+              setCode(val);
+            }}
+            onRun={handleRunCode}
+            onSubmit={handleSubmitCode}
+          />
+        </div>
+        <TutorDrawer
+          variant="side-panel"
+          problemId={problemId}
+          problemTitle={problemTitle}
+          problemStatement={problemStatement}
+          userCode={code}
           language={selectedLanguage}
-          value={code}
-          onChange={(val) => {
-            codeRef.current = val;
-            setCode(val);
-          }}
-          onRun={handleRunCode}
-          onSubmit={handleSubmitCode}
+          isOpen={isTutorOpen}
+          onToggle={() => setIsTutorOpen((current) => !current)}
         />
       </div>
 
+      <div
+        aria-label="Resize editor and test panel"
+        role="separator"
+        aria-orientation="horizontal"
+        tabIndex={0}
+        onPointerDown={handleBottomResizeStart}
+        onKeyDown={handleBottomResizeKeyDown}
+        className="h-2 shrink-0 cursor-row-resize bg-slate-950 border-y border-slate-800 hover:bg-amber-400/10 focus:bg-amber-400/10 focus:outline-none"
+      />
+
       {/* Bottom Panel (Test Cases & Results) */}
-      <div className="h-64 flex flex-col bg-slate-950 border-t border-slate-800">
+      <div
+        className="flex shrink-0 flex-col bg-slate-950"
+        style={{ height: `${bottomPanelHeight}px` }}
+      >
         {/* Panel Tabs Header */}
         <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/60 border-b border-slate-800/80">
           <div className="flex items-center gap-1">
@@ -603,6 +669,16 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                       <pre className="p-2.5 bg-slate-900 border border-rose-900/50 rounded-md text-rose-300 overflow-x-auto">
                         {executeResult.stderr}
                       </pre>
+                    </div>
+                  )}
+
+                  {executeResult.learning && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-400/5 border border-amber-400/20 rounded-lg">
+                      <Brain className="w-4 h-4 text-amber-300 mt-0.5 shrink-0" />
+                      <div className="text-[11px] text-amber-100/80 font-sans">
+                        <span className="font-bold text-amber-300">Revision Deck learned this stuck point.</span>{' '}
+                        Your {executeResult.learning.failureType} on {executeResult.learning.pattern} is due for review now with the failing run details.
+                      </div>
                     </div>
                   )}
 

@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { executeCode, isSupportedLanguage } from '@/lib/piston';
 import { ExecutionVerdict, TestCaseResult } from '@/lib/types';
-import { normalizeOutput } from '@/lib/output';
+import { outputsEquivalent } from '@/lib/output';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { getSessionFromRequest } from '@/lib/auth';
+import { learnFromFailedAttempt } from '@/lib/revisionLearning';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +18,7 @@ export async function POST(request: NextRequest) {
     }
     const body = await request.json();
     const { problemId, language, code, customInput } = body;
+    const session = getSessionFromRequest(request);
 
     if (typeof language !== 'string' || typeof code !== 'string' || !language.trim() || !code.trim()) {
       return NextResponse.json(
@@ -56,12 +59,34 @@ export async function POST(request: NextRequest) {
     // Scenario 1: Custom input execution
     if (customInput !== undefined && customInput !== null) {
       const result = await executeCode(language, code, customInput, problem?.slug);
+      const failedAttempt = result.verdict !== 'Accepted'
+        ? {
+            input: customInput,
+            expectedOutput: 'N/A (Custom Run)',
+            actualOutput: result.stdout,
+            error: result.stderr,
+          }
+        : null;
+      const learning = session?.userId && problem
+        ? await learnFromFailedAttempt({
+            prisma,
+            userId: session.userId,
+            problem,
+            verdict: result.verdict,
+            failedTestCase: failedAttempt,
+          }).catch((error: unknown) => {
+            console.error('Error learning from failed custom run:', error);
+            return null;
+          })
+        : null;
+
       return NextResponse.json({
         verdict: result.verdict,
         stdout: result.stdout,
         stderr: result.stderr,
         executionTime: result.executionTime,
         memory: result.memory,
+        learning,
         testResults: [
           {
             passed: result.verdict === 'Accepted',
@@ -103,6 +128,12 @@ export async function POST(request: NextRequest) {
       const testResults: TestCaseResult[] = [];
       let firstStdout = '';
       let firstStderr = '';
+      let failedTestCaseInfo: {
+        input: string;
+        expectedOutput: string;
+        actualOutput: string;
+        error?: string;
+      } | null = null;
 
       for (const tc of sampleTestCases) {
         const execResult = await executeCode(language, code, tc.input, selectedProblem.slug);
@@ -117,6 +148,12 @@ export async function POST(request: NextRequest) {
 
         if (execResult.verdict === 'Compilation Error') {
           overallVerdict = 'Compilation Error';
+          failedTestCaseInfo = {
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            actualOutput: execResult.stdout,
+            error: execResult.stderr,
+          };
           testResults.push({
             testCaseId: tc.id,
             passed: false,
@@ -132,15 +169,28 @@ export async function POST(request: NextRequest) {
         } else if (execResult.verdict === 'Runtime Error') {
           overallVerdict = 'Runtime Error';
           tcPassed = false;
+          if (!failedTestCaseInfo) {
+            failedTestCaseInfo = {
+              input: tc.input,
+              expectedOutput: tc.expectedOutput,
+              actualOutput: execResult.stdout,
+              error: execResult.stderr,
+            };
+          }
         } else if (execResult.verdict === 'TLE') {
           overallVerdict = 'TLE';
           tcPassed = false;
+          if (!failedTestCaseInfo) {
+            failedTestCaseInfo = {
+              input: tc.input,
+              expectedOutput: tc.expectedOutput,
+              actualOutput: execResult.stdout,
+              error: 'Time Limit Exceeded',
+            };
+          }
         } else {
           // Compare outputs stripping trailing whitespace/newlines
-          const normActual = normalizeOutput(execResult.stdout);
-          const normExpected = normalizeOutput(tc.expectedOutput);
-
-          if (normActual === normExpected) {
+          if (outputsEquivalent(execResult.stdout, tc.expectedOutput)) {
             tcPassed = true;
             tcVerdict = 'Accepted';
           } else {
@@ -148,6 +198,14 @@ export async function POST(request: NextRequest) {
             tcVerdict = 'Wrong Answer';
             if (overallVerdict === 'Accepted') {
               overallVerdict = 'Wrong Answer';
+            }
+            if (!failedTestCaseInfo) {
+              failedTestCaseInfo = {
+                input: tc.input,
+                expectedOutput: tc.expectedOutput,
+                actualOutput: execResult.stdout,
+                error: execResult.stderr,
+              };
             }
           }
         }
@@ -166,6 +224,18 @@ export async function POST(request: NextRequest) {
       }
 
       const avgTime = Number((totalExecutionTime / sampleTestCases.length).toFixed(3));
+      const learning = session?.userId
+        ? await learnFromFailedAttempt({
+            prisma,
+            userId: session.userId,
+            problem: selectedProblem,
+            verdict: overallVerdict,
+            failedTestCase: failedTestCaseInfo,
+          }).catch((error: unknown) => {
+            console.error('Error learning from failed sample run:', error);
+            return null;
+          })
+        : null;
 
       return NextResponse.json({
         verdict: overallVerdict,
@@ -173,6 +243,7 @@ export async function POST(request: NextRequest) {
         stderr: firstStderr,
         executionTime: avgTime,
         memory: maxMemory,
+        learning,
         testResults,
       });
     }

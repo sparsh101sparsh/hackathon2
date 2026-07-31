@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, BarChart3, CheckCircle2, Flame, Search, Trophy, Users } from 'lucide-react';
 
 interface Profile {
@@ -30,7 +31,8 @@ export default function PublicProfilePage() {
   const [compareId, setCompareId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const id = typeof window !== 'undefined' ? window.location.pathname.split('/').pop() || '' : '';
+  const params = useParams<{ id: string }>();
+  const id = typeof params.id === 'string' ? params.id : '';
 
   const load = useCallback(async (requestedCompare = '') => {
     setLoading(true); setError('');

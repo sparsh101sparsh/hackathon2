@@ -63,6 +63,8 @@ function validateIndexes(entry: VisualizerEntry, frame: LessonFrame, stepIdx: nu
         schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bars frame missing bars.`);
         return;
       }
+      if (frame.bars.length > 12) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bars frame exceeds the renderer limit.`);
+      if (!frame.bars.every((value) => Number.isFinite(value))) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bars must be finite values.`);
       if (active.some((index) => index >= frame.bars!.length)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bars active index out of bounds.`);
       return;
     case 'bits':
@@ -112,6 +114,27 @@ for (const entry of jsonEntries) {
     // Invoke buildVisualizerFrames, which invokes buildScenarioFrames internally
     const frames = buildVisualizerFrames(entry.pattern, entry.lessonPath, entry.lessonPath);
     totalFramesCount += frames.length;
+
+    if (profile.slug === 'longest-increasing-subsequence') {
+      const firstBars = frames.find((frame) => frame.visualType === 'bars')?.bars || [];
+      if (firstBars.join(',') !== '10,9,2,5,3,7,101,18') {
+        schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Bars must match the LIS lesson input, found [${firstBars.join(',')}].`);
+      }
+    }
+
+    if (profile.slug === 'sliding-window-maximum') {
+      const firstBars = frames.find((frame) => frame.visualType === 'bars')?.bars || [];
+      if (firstBars.join(',') !== '1,3,-1,-3,5,3,6,7') {
+        schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Bars must preserve the negative lesson input, found [${firstBars.join(',')}].`);
+      }
+    }
+
+    if (profile.slug === 'trapping-rain-water') {
+      const firstBars = frames.find((frame) => frame.visualType === 'bars')?.bars || [];
+      if (!firstBars.includes(0)) {
+        schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Bars must preserve zero-height walls.`);
+      }
+    }
 
     if (frames.length < 8 || frames.length > 12) {
       schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Expected 8-12 frames, produced ${frames.length}.`);

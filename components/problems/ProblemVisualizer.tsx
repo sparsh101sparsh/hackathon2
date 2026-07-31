@@ -45,6 +45,7 @@ interface ProblemVisualizerProps {
   problemTitle: string;
   topicTags?: string | string[];
   verified?: boolean;
+  embedded?: boolean;
 }
 
 const patternNames: Record<string, string> = {
@@ -95,10 +96,11 @@ function sampleValues(slug: string, fallback: number[]) {
     'non-overlapping-intervals': [1, 2, 1, 3, 2, 3],
     'gas-station': [1, 2, 3, 4, 5],
     'task-scheduler': [3, 3, 2, 1, 1, 1],
-    'longest-increasing-subsequence': [10, 9, 2, 5, 3, 7, 18],
+    'longest-increasing-subsequence': [10, 9, 2, 5, 3, 7, 101, 18],
     'merge-k-sorted-lists': [1, 1, 2, 3, 4, 4],
     'group-anagrams': [3, 3, 3, 2, 2, 1],
     'valid-anagram': [1, 3, 1, 7, 1, 13],
+    'sliding-window-maximum': [1, 3, -1, -3, 5, 3, 6, 7],
   };
   return samples[slug] || fallback;
 }
@@ -164,6 +166,41 @@ function frame(
   extra: Partial<LessonFrame> = {},
 ): LessonFrame {
   return { visualType, codeLine, commentary, state: state.map(([label, value]) => ({ label, value })), ...extra };
+}
+
+function currentIndexForStep(length: number, step: number, totalSteps: number) {
+  const maxIndex = Math.max(0, length - 1);
+  const progress = totalSteps <= 1 ? 1 : step / (totalSteps - 1);
+  return Math.min(maxIndex, Math.floor(progress * maxIndex));
+}
+
+function lowerBound(values: number[], target: number) {
+  let left = 0;
+  let right = values.length;
+  while (left < right) {
+    const mid = Math.floor((left + right) / 2);
+    if (values[mid] < target) left = mid + 1;
+    else right = mid;
+  }
+  return left;
+}
+
+function lisState(values: number[], currentIndex: number, includeCurrent: boolean): [string, string][] {
+  const tails: number[] = [];
+  const end = includeCurrent ? currentIndex : currentIndex - 1;
+  for (let index = 0; index <= end; index += 1) {
+    const value = values[index];
+    const position = lowerBound(tails, value);
+    tails[position] = value;
+  }
+
+  const currentValue = values[currentIndex];
+  const position = lowerBound(tails, currentValue);
+  return [
+    ['current', `${currentIndex}:${currentValue}`],
+    ['position', String(position)],
+    ['tails', `[${tails.join(',')}]`],
+  ];
 }
 
 function scenarioData(type: VisualType, slug: string, base: number[], step: number, totalSteps = 8): Partial<LessonFrame> {
@@ -234,8 +271,11 @@ function scenarioData(type: VisualType, slug: string, base: number[], step: numb
   }
 
   if (type === 'bars') {
-    const bars = values.slice(0, 12).map((value) => Math.max(1, Math.abs(value)));
-    return { bars, active };
+    const bars = values.slice(0, 12);
+    const barActive = slug === 'longest-increasing-subsequence'
+      ? [currentIndexForStep(bars.length, step, totalSteps)]
+      : active;
+    return { bars, active: barActive };
   }
 
   const bits = ((hash >>> 0).toString(2).padStart(8, '0').slice(-8));
@@ -306,6 +346,10 @@ function buildScenarioFrames(scenario: ProblemVisualizerScenario, slug: string, 
     const mode = index % 2 === 0 ? 'inspect' : 'apply';
     const payload = scenarioData(scenario.visualType, slug, values, index, total);
     const payloadSummary = describePayload(scenario.visualType, payload);
+    const state = visualState(scenario.visualType, payload, index);
+    const semanticState = slug === 'longest-increasing-subsequence'
+      ? lisState(payload.bars || values, payload.active?.[0] ?? 0, mode === 'apply')
+      : state;
     const frameCommentary = mode === 'inspect'
       ? `${commentary} The frame highlights ${payloadSummary}.`
       : `${phase} is applied to ${payloadSummary}, keeping the ${slug.replaceAll('-', ' ')} invariant visible.`;
@@ -313,7 +357,7 @@ function buildScenarioFrames(scenario: ProblemVisualizerScenario, slug: string, 
       scenario.visualType,
       Math.min(sourceIndex + 1 + (mode === 'apply' ? 1 : 0), 5),
       frameCommentary,
-      [['phase', `${mode}: ${phase}`], ['step', `${index + 1} / ${total}`], ['focus', phase], ...visualState(scenario.visualType, payload, index)],
+      [['phase', `${mode}: ${phase}`], ['step', `${index + 1} / ${total}`], ['focus', phase], ...semanticState],
       payload,
     ));
   }
@@ -499,7 +543,7 @@ function stateValue(frameItem: LessonFrame | undefined, label: string) {
   return frameItem?.state.find((item) => item.label === label)?.value;
 }
 
-export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId, problemTitle, topicTags, verified = false }) => {
+export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId, problemTitle, topicTags, verified = false, embedded = false }) => {
   const [config, setConfig] = useState<VisualizerConfig | null>(null);
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -526,6 +570,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
   const currentPhase = stateValue(current, 'phase') || `step ${boundedStep + 1}`;
   const frameKey = `${problemId}:${lessonPath}:${boundedStep}:${currentPhase}:${current.codeLine}`;
   const progress = (boundedStep / Math.max(frames.length - 1, 1)) * 100;
+  const shellGridClass = embedded ? 'grid min-h-[720px]' : 'grid lg:grid-cols-[minmax(0,1fr)_320px] min-h-[720px]';
 
   useEffect(() => {
     if (!playing) return;
@@ -605,7 +650,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
 
   return (
     <div tabIndex={0} className="min-h-[640px] bg-[#08080a] text-slate-200 border border-white/10 hover:border-amber-400/30 transition-all rounded-xl overflow-hidden font-mono shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50">
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] min-h-[720px]">
+      <div className={shellGridClass}>
         <section className="flex flex-col min-w-0 bg-slate-950/90">
           <header className="px-5 sm:px-8 pt-5 pb-3 flex items-start justify-between gap-4 border-b border-slate-800/60 bg-slate-900/40">
             <div>
@@ -698,7 +743,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </div>
 
-          <div className="lg:hidden px-5 sm:px-8 mt-5">
+          <div className={`${embedded ? '' : 'lg:hidden'} px-5 sm:px-8 mt-5`}>
             <div className="h-[520px] overflow-hidden rounded-xl border border-slate-800/80">
               <VisualizerTutor currentFrame={current} problemTitle={problemTitle} step={boundedStep} totalSteps={frames.length} frameKey={frameKey} />
             </div>
@@ -716,7 +761,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
         </section>
 
         {/* Tutor sidebar */}
-        <aside className="hidden lg:block border-l border-slate-800/80">
+        <aside className={`${embedded ? 'hidden' : 'hidden lg:block'} border-l border-slate-800/80`}>
           <VisualizerTutor currentFrame={current} problemTitle={problemTitle} step={boundedStep} totalSteps={frames.length} frameKey={frameKey} />
         </aside>
       </div>

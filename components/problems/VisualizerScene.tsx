@@ -19,6 +19,12 @@ export interface VisualizerSceneFrame {
 type SceneProps = {
   frame: VisualizerSceneFrame;
   step: number;
+  markerIds?: MarkerIds;
+};
+
+type MarkerIds = {
+  arrow: string;
+  activeArrow: string;
 };
 
 export const SCENE_THEME = {
@@ -60,17 +66,19 @@ const amber = SCENE_THEME.visited.stroke;
 const ease = [0.22, 1, 0.36, 1] as const;
 const cellTransition = { duration: 0.42, ease };
 
-function SceneFrame({ children }: { children: React.ReactNode }) {
+function SceneFrame({ children, markerIds }: { children: React.ReactNode; markerIds?: MarkerIds }) {
   return (
     <svg viewBox="0 0 680 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated algorithm state" className="w-full h-auto min-h-[360px] max-h-[520px] overflow-visible">
-      <defs>
-        <marker id="scene-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-          <path d="M0,0 L7,3.5 L0,7 z" fill={muted} />
-        </marker>
-        <marker id="scene-arrow-active" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-          <path d="M0,0 L7,3.5 L0,7 z" fill={accent} />
-        </marker>
-      </defs>
+      {markerIds && (
+        <defs>
+          <marker id={markerIds.arrow} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 z" fill={muted} />
+          </marker>
+          <marker id={markerIds.activeArrow} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 z" fill={accent} />
+          </marker>
+        </defs>
+      )}
       <rect x="0" y="0" width="680" height="360" rx="12" fill={SCENE_THEME.background} />
       {children}
     </svg>
@@ -176,15 +184,17 @@ function StackScene({ frame }: SceneProps) {
   );
 }
 
-function NodeScene({ frame }: SceneProps) {
+function NodeScene({ frame, markerIds }: SceneProps) {
   const nodes = frame.nodes || [];
   const active = new Set(frame.active || []);
   const gap = Math.min(104, 560 / Math.max(nodes.length, 1));
   const startX = 340 - ((nodes.length - 1) * gap) / 2;
+  const arrowId = markerIds?.arrow || 'scene-arrow';
+  const activeArrowId = markerIds?.activeArrow || 'scene-arrow-active';
   return (
-    <SceneFrame>
+    <SceneFrame markerIds={markerIds}>
       <g>
-        {nodes.slice(0, -1).map((_, index) => <motion.line key={`edge-${index}`} x1={startX + index * gap + 31} y1="150" x2={startX + (index + 1) * gap - 31} y2="150" stroke={active.has(index) ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="4" markerEnd={active.has(index) ? 'url(#scene-arrow-active)' : 'url(#scene-arrow)'} animate={{ stroke: active.has(index) ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />)}
+        {nodes.slice(0, -1).map((_, index) => <motion.line key={`edge-${index}`} x1={startX + index * gap + 31} y1="150" x2={startX + (index + 1) * gap - 31} y2="150" stroke={active.has(index) ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="4" markerEnd={active.has(index) ? `url(#${activeArrowId})` : `url(#${arrowId})`} animate={{ stroke: active.has(index) ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />)}
         {nodes.map((node, index) => {
           const x = startX + index * gap;
           const isActive = active.has(index);
@@ -201,18 +211,34 @@ function NodeScene({ frame }: SceneProps) {
   );
 }
 
-function GraphScene({ frame }: SceneProps) {
+function graphPositions(count: number) {
+  const fixed = [[150, 150], [310, 78], [310, 222], [510, 78], [510, 222]];
+  if (count <= fixed.length) return fixed.slice(0, count);
+
+  const radius = 118;
+  return Array.from({ length: count }, (_, index) => {
+    const angle = -Math.PI / 2 + (index / count) * Math.PI * 2;
+    return [
+      340 + Math.cos(angle) * radius,
+      170 + Math.sin(angle) * radius,
+    ];
+  });
+}
+
+function GraphScene({ frame, markerIds }: SceneProps) {
   const nodes = frame.nodes || [];
   const active = new Set(frame.active || []);
-  const positions = nodes.map((_, index) => [[150, 150], [310, 78], [310, 222], [510, 78], [510, 222]][index] || [340, 150]);
+  const positions = graphPositions(nodes.length);
+  const arrowId = markerIds?.arrow || 'scene-arrow';
+  const activeArrowId = markerIds?.activeArrow || 'scene-arrow-active';
   return (
-    <SceneFrame>
+    <SceneFrame markerIds={markerIds}>
       <g>
         {(frame.edges || []).map(([from, to], index) => {
           const [x1, y1] = positions[from] || positions[0];
           const [x2, y2] = positions[to] || positions[0];
           const edgeActive = active.has(from) && (active.has(to) || index < active.size);
-          return <motion.line key={`${from}-${to}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={edgeActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth={edgeActive ? 4 : 3} markerEnd={edgeActive ? 'url(#scene-arrow-active)' : 'url(#scene-arrow)'} animate={{ stroke: edgeActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />;
+          return <motion.line key={`${from}-${to}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={edgeActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth={edgeActive ? 4 : 3} markerEnd={edgeActive ? `url(#${activeArrowId})` : `url(#${arrowId})`} animate={{ stroke: edgeActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />;
         })}
         {nodes.map((node, index) => {
           const [x, y] = positions[index];
@@ -233,24 +259,37 @@ function GraphScene({ frame }: SceneProps) {
 function BarsScene({ frame }: SceneProps) {
   const bars = frame.bars || [];
   const active = new Set(frame.active || []);
-  const width = Math.min(54, 500 / Math.max(bars.length, 1));
+  const width = Math.min(54, 520 / Math.max(bars.length, 1));
   const startX = 340 - (bars.length * width) / 2;
-  const max = Math.max(...bars, 1);
+  const hasNegative = bars.some((value) => value < 0);
+  const positiveMax = Math.max(...bars.filter((value) => value > 0), 1);
+  const negativeMax = Math.max(...bars.filter((value) => value < 0).map((value) => Math.abs(value)), 1);
+  const baseline = hasNegative ? 218 : 268;
+  const positivePlotHeight = hasNegative ? 128 : 168;
+  const negativePlotHeight = hasNegative ? 76 : 0;
+  const indexY = hasNegative ? baseline + negativePlotHeight + 28 : baseline + 22;
   return (
     <SceneFrame>
       <g>
-        <line x1="80" y1="238" x2="600" y2="238" stroke={SCENE_THEME.default.stroke} strokeWidth="4" />
+        <line x1="70" y1={baseline} x2="610" y2={baseline} stroke={SCENE_THEME.default.stroke} strokeWidth="4" />
+        <Label x={610} y={baseline - 12} anchor="end" fill={SCENE_THEME.text.muted} size={10}>VALUE SCALE</Label>
         {bars.map((value, index) => {
-          const height = Math.max((value / max) * 170, 10);
+          const valueMagnitude = Math.abs(value);
+          const max = value < 0 ? negativeMax : positiveMax;
+          const scaled = valueMagnitude === 0 ? 0 : Math.sqrt(valueMagnitude / max);
+          const height = valueMagnitude === 0 ? 4 : Math.max(scaled * (value < 0 ? negativePlotHeight : positivePlotHeight), 12);
           const x = startX + index * width + 4;
-          const y = 238 - height;
+          const y = value < 0 ? baseline + 4 : baseline - height;
           const isActive = active.has(index);
           const boxWidth = width - 8;
+          const labelSize = String(value).length > 3 ? 10 : 12;
+          const valueLabelY = value < 0 ? y + height + 14 : Math.max(34, y - 8);
           return (
             <motion.g key={`${value}-${index}`} animate={{ x: 0, y: 0 }} transition={cellTransition}>
-              <motion.rect x={x + 3} y={y + 3} width={boxWidth} height={height} rx="4" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} animate={{ y: y + 3, height: height }} transition={cellTransition} />
-              <motion.rect x={x} y={y} width={boxWidth} height={height} rx="4" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ y, height, fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x + boxWidth / 2} y={257} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={12} fontWeight="900" fontFamily="sans-serif">{index}</text>
+              <motion.rect x={x + 3} y={y + 3} width={boxWidth} height={height} rx="4" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} animate={{ fill: isActive ? SCENE_THEME.active.fill : 'transparent' }} transition={cellTransition} />
+              <motion.rect x={x} y={y} width={boxWidth} height={height} rx="4" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
+              <text x={x + boxWidth / 2} y={valueLabelY} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={labelSize} fontWeight="900" fontFamily="sans-serif">{value}</text>
+              <text x={x + boxWidth / 2} y={indexY} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={12} fontWeight="900" fontFamily="sans-serif">{index}</text>
             </motion.g>
           );
         })}
@@ -266,6 +305,8 @@ function BitsScene({ frame }: SceneProps) {
   const total = cellWidth * bits.length;
   const startX = (680 - total) / 2;
   const active = new Set(frame.active || []);
+  const bitFontSize = Math.max(8, Math.min(24, boxSize * 0.68));
+  const indexFontSize = bits.length > 16 ? 7 : 11;
 
   return (
     <SceneFrame>
@@ -277,8 +318,8 @@ function BitsScene({ frame }: SceneProps) {
             <motion.g key={`${index}-${bit}`} animate={{ x: 0, y: 0 }} transition={cellTransition} style={{ transformOrigin: `${x + boxSize / 2}px 145px` }}>
               <motion.rect x={x} y={100 + 4} width={boxSize} height={boxSize} rx="8" fill={isActive ? SCENE_THEME.active.fill : 'transparent'} animate={{ fill: isActive ? SCENE_THEME.active.fill : 'transparent' }} transition={cellTransition} />
               <motion.rect x={x} y={100} width={boxSize} height={boxSize} rx="8" fill={isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill} stroke={isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="2" animate={{ fill: isActive ? SCENE_THEME.active.fillGradient : SCENE_THEME.default.fill, stroke: isActive ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />
-              <text x={x + boxSize / 2} y={100 + boxSize / 2 + 10} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={24} fontWeight="900" fontFamily="sans-serif">{bit}</text>
-              <Label x={x + boxSize / 2} y={100 + boxSize + 22} size={11}>{bits.length - index - 1}</Label>
+              <text x={x + boxSize / 2} y={100 + boxSize / 2 + bitFontSize / 3} textAnchor="middle" fill={isActive ? SCENE_THEME.text.amber300 : SCENE_THEME.text.slate100} fontSize={bitFontSize} fontWeight="900" fontFamily="sans-serif">{bit}</text>
+              <Label x={x + boxSize / 2} y={100 + boxSize + 18} size={indexFontSize}>{bits.length - index - 1}</Label>
             </motion.g>
           );
         })}
@@ -289,13 +330,15 @@ function BitsScene({ frame }: SceneProps) {
 
 export function VisualizerScene({ frame, step }: SceneProps) {
   const key = `${frame.visualType}-${step}`;
+  const reactId = React.useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  const markerIds = { arrow: `scene-arrow-${reactId}`, activeArrow: `scene-arrow-active-${reactId}` };
   return (
     <motion.div key={key} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.24 }} className="w-full">
       {frame.visualType === 'array' && <ArrayScene frame={frame} step={step} />}
       {frame.visualType === 'matrix' && <MatrixScene frame={frame} step={step} />}
       {frame.visualType === 'stack' && <StackScene frame={frame} step={step} />}
-      {frame.visualType === 'nodes' && <NodeScene frame={frame} step={step} />}
-      {frame.visualType === 'graph' && <GraphScene frame={frame} step={step} />}
+      {frame.visualType === 'nodes' && <NodeScene frame={frame} step={step} markerIds={markerIds} />}
+      {frame.visualType === 'graph' && <GraphScene frame={frame} step={step} markerIds={markerIds} />}
       {frame.visualType === 'bars' && <BarsScene frame={frame} step={step} />}
       {frame.visualType === 'bits' && <BitsScene frame={frame} step={step} />}
     </motion.div>

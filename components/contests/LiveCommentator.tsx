@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Volume2, VolumeX, RefreshCw, Radio, Flame, Zap, ShieldAlert, History, UserCheck } from 'lucide-react';
+import { Sparkles, Volume2, VolumeX, RefreshCw, Radio, Flame, Zap, ShieldAlert, History } from 'lucide-react';
 
 export interface ParticipantInfo {
   id?: string;
@@ -25,6 +25,21 @@ export interface ExecutionResultInfo {
   [key: string]: unknown;
 }
 
+export interface CodeAnalysisInfo {
+  lineCount: number;
+  nonEmptyLineCount: number;
+  functionCount: number;
+  loopCount: number;
+  conditionalCount: number;
+  hasInputParsing: boolean;
+  hasReturn: boolean;
+  hasConsoleOutput: boolean;
+  hasTodo: boolean;
+  possibleIssue: string;
+  phase: string;
+  signature: string;
+}
+
 export interface LiveCommentatorProps {
   roomCode?: string;
   roomName?: string;
@@ -38,6 +53,8 @@ export interface LiveCommentatorProps {
   language?: string;
   codeSnippet?: string;
   linesOfCode?: number;
+  timeRemainingSeconds?: number;
+  privacyMode?: boolean;
   executionResult?: ExecutionResultInfo;
   userName?: string;
   className?: string;
@@ -58,6 +75,81 @@ function stripEmojis(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+function normalizeCommentaryText(value: unknown, fallback: string): string {
+  if (typeof value !== 'string') return fallback;
+
+  const normalized = value
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 220);
+
+  return normalized.length >= 8 ? normalized : fallback;
+}
+
+function normalizeHypeLevel(value: unknown): CommentaryMessage['hypeLevel'] {
+  return value === 'high' || value === 'medium' || value === 'low' ? value : 'medium';
+}
+
+function cheapHash(value: string): string {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = ((hash << 5) - hash + value.charCodeAt(index)) | 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function analyzeCodeSnapshot(code: string, language: string): CodeAnalysisInfo {
+  const normalizedCode = typeof code === 'string' ? code : '';
+  const lines = normalizedCode.split(/\r?\n/);
+  const nonEmptyLines = lines.filter((line) => line.trim().length > 0);
+  const withoutStrings = normalizedCode
+    .replace(/(["'`])(?:\\.|(?!\1)[\s\S])*\1/g, '""')
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const lowerLanguage = language.toLowerCase();
+  const functionMatches = withoutStrings.match(/\b(function|def|func)\b|(?:^|\s)[A-Za-z_][\w:<>,\s*&]*\s+[A-Za-z_]\w*\s*\([^;{}]*\)\s*\{/g) || [];
+  const loopMatches = withoutStrings.match(/\b(for|while|do)\b/g) || [];
+  const conditionalMatches = withoutStrings.match(/\b(if|else\s+if|switch|case)\b/g) || [];
+  const hasInputParsing = /\b(input|cin|scanf|readLine|readline|Scanner|BufferedReader|fmt\.Scan|process\.stdin)\b/.test(withoutStrings);
+  const hasReturn = /\breturn\b/.test(withoutStrings);
+  const hasConsoleOutput = /\b(console\.log|cout|printf|System\.out|print|fmt\.Print)\b/.test(withoutStrings);
+  const hasTodo = /\b(TODO|FIXME|placeholder|write your|implement)\b/i.test(normalizedCode);
+
+  let phase = 'drafting';
+  if (nonEmptyLines.length >= 35 || (loopMatches.length > 0 && conditionalMatches.length > 1 && hasReturn)) {
+    phase = 'implementation';
+  }
+  if (hasConsoleOutput || hasReturn) {
+    phase = nonEmptyLines.length >= 8 ? 'testing-ready' : phase;
+  }
+
+  let possibleIssue = 'No obvious issue spotted';
+  if (nonEmptyLines.length === 0 || hasTodo) {
+    possibleIssue = 'Solution still looks like a placeholder';
+  } else if ((lowerLanguage === 'cpp' || lowerLanguage === 'java' || lowerLanguage === 'go') && !hasReturn && !hasConsoleOutput) {
+    possibleIssue = 'No return or output path detected yet';
+  } else if (nonEmptyLines.length > 10 && loopMatches.length === 0 && conditionalMatches.length === 0) {
+    possibleIssue = 'Core branching or iteration is not visible yet';
+  } else if (nonEmptyLines.length > 20 && !hasInputParsing && ['cpp', 'java', 'go', 'javascript'].includes(lowerLanguage)) {
+    possibleIssue = 'Input parsing is not visible yet';
+  }
+
+  return {
+    lineCount: Math.min(lines.length, 100_000),
+    nonEmptyLineCount: Math.min(nonEmptyLines.length, 100_000),
+    functionCount: Math.min(functionMatches.length, 10_000),
+    loopCount: Math.min(loopMatches.length, 10_000),
+    conditionalCount: Math.min(conditionalMatches.length, 10_000),
+    hasInputParsing,
+    hasReturn,
+    hasConsoleOutput,
+    hasTodo,
+    possibleIssue,
+    phase,
+    signature: `${nonEmptyLines.length}:${functionMatches.length}:${loopMatches.length}:${conditionalMatches.length}:${cheapHash(normalizedCode.slice(-2000))}`,
+  };
+}
+
 export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
   roomCode,
   roomName = 'Battle Arena',
@@ -71,6 +163,8 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
   language = 'cpp',
   codeSnippet = '',
   linesOfCode = 0,
+  timeRemainingSeconds,
+  privacyMode = false,
   executionResult,
   userName,
   className = '',
@@ -87,23 +181,49 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
   const [isMuted, setIsMuted] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [analysisBeat, setAnalysisBeat] = useState(0);
 
-  const codeSnippetRef = useRef(codeSnippet);
   const participantsRef = useRef(participants);
   const executionResultRef = useRef(executionResult);
   const linesOfCodeRef = useRef(linesOfCode);
   const userNameRef = useRef(userName);
+  const timeRemainingSecondsRef = useRef(timeRemainingSeconds);
+  const codeAnalysisRef = useRef<CodeAnalysisInfo>(analyzeCodeSnapshot(codeSnippet, language));
+  const requestIdRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const lastRequestSignatureRef = useRef('');
+  const analysisBeatRef = useRef(0);
   useEffect(() => {
-    codeSnippetRef.current = codeSnippet;
     participantsRef.current = participants;
     executionResultRef.current = executionResult;
     linesOfCodeRef.current = linesOfCode;
     userNameRef.current = userName;
-  }, [codeSnippet, participants, executionResult, linesOfCode, userName]);
+    timeRemainingSecondsRef.current = timeRemainingSeconds;
+  }, [participants, executionResult, linesOfCode, userName, timeRemainingSeconds]);
 
   const effectiveProblemTitle = problemTitle || activeProblemTitle || 'DSA Challenge';
   const effectiveEvent = eventType || lastEvent || 'TICK';
   const effectiveRoomCode = roomCode || roomName || 'ARENA-1';
+  const participantScoreSignature = useMemo(
+    () =>
+      participants
+        .map((participant) => `${participant.id || participant.userId || participant.name || participant.userName}:${participant.score ?? participant.scores ?? 0}:${participant.solved ?? 0}:${participant.progress || ''}`)
+        .join('|'),
+    [participants]
+  );
+  const typingMilestone = Math.floor(Math.max(0, linesOfCode) / 10);
+  const executionSignature = `${executionResult?.verdict || ''}:${executionResult?.stderr || ''}`;
+  const clockBucket = timeRemainingSeconds === undefined ? 'na' : Math.floor(Math.max(0, timeRemainingSeconds) / 30);
+  const codeAnalysis = useMemo(() => analyzeCodeSnapshot(codeSnippet, language), [codeSnippet, language]);
+  const codeAnalysisSignature = codeAnalysis.signature;
+
+  useEffect(() => {
+    codeAnalysisRef.current = codeAnalysis;
+  }, [codeAnalysis]);
+
+  useEffect(() => {
+    analysisBeatRef.current = analysisBeat;
+  }, [analysisBeat]);
 
   // Voice Selection setup
   const loadBestVoice = useCallback(() => {
@@ -183,14 +303,34 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
   // Fetch commentary from API route
   const fetchCommentary = useCallback(
     async (evtOverride?: string) => {
-      setLoading(true);
       const targetEvent = evtOverride || effectiveEvent;
+      const stateSignature = [
+        targetEvent,
+        effectiveProblemTitle,
+        participantScoreSignature,
+        typingMilestone,
+        executionSignature,
+        targetEvent === 'CODE_ANALYSIS' ? codeAnalysisRef.current.signature : 'analysis',
+        targetEvent === 'TICK' ? clockBucket : 'event',
+        targetEvent === 'CODE_ANALYSIS' ? analysisBeatRef.current : 'beat',
+      ].join('::');
+
+      if (stateSignature === lastRequestSignatureRef.current && targetEvent !== 'MANUAL_REFRESH') return;
+      lastRequestSignatureRef.current = stateSignature;
+      setLoading(true);
+
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
         const res = await fetch('/api/ai/commentator', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
+          signal: controller.signal,
           body: JSON.stringify({
             roomCode: effectiveRoomCode,
             roomName,
@@ -200,49 +340,84 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
             problemTitle: effectiveProblemTitle,
             activeProblemTitle: effectiveProblemTitle,
             language,
-            codeSnippet: codeSnippetRef.current,
             linesOfCode: linesOfCodeRef.current,
+            timeRemainingSeconds: timeRemainingSecondsRef.current,
+            codeAnalysis: codeAnalysisRef.current,
             executionResult: executionResultRef.current,
             userName: userNameRef.current,
             mode,
             status,
+            privacyMode: privacyMode ? 'private_room' : false,
           }),
         });
 
+        if (requestId !== requestIdRef.current) return;
+
         if (res.ok) {
           const data = await res.json();
-          let text = ' Battle action intensifying in the arena!';
-          let hype: 'high' | 'medium' | 'low' = 'medium';
+          let text = 'Battle action intensifying in the arena!';
+          let hype: CommentaryMessage['hypeLevel'] = 'medium';
           let ts = Date.now();
-          let spk: 'Shoutcaster' = 'Shoutcaster';
 
           if (data.commentary) {
             if (typeof data.commentary === 'string') {
-              text = data.commentary;
+              text = normalizeCommentaryText(data.commentary, text);
             } else if (typeof data.commentary === 'object') {
-              text = data.commentary.text || data.commentary.commentary || text;
+              text = normalizeCommentaryText(data.commentary.text || data.commentary.commentary, text);
             }
           }
-          if (data.hypeLevel) hype = data.hypeLevel;
-          if (data.timestamp) ts = data.timestamp;
-          if (data.speaker) spk = data.speaker;
+          hype = normalizeHypeLevel(data.hypeLevel);
+          if (Number.isFinite(data.timestamp)) ts = data.timestamp;
 
           const msgObj: CommentaryMessage = {
             id: `comm_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             text,
             timestamp: ts,
             hypeLevel: hype,
-            speaker: spk,
+            speaker: 'Shoutcaster',
           };
 
           setCurrentMessage(msgObj);
           setHistory((prev) => [msgObj, ...prev.slice(0, 7)]);
           speakCommentary(text);
+        } else {
+          const analysis = codeAnalysisRef.current;
+          const text = targetEvent === 'CODE_ANALYSIS'
+            ? `CODE READ: ${userNameRef.current || 'Coder'} has ${analysis.nonEmptyLineCount} active lines; ${analysis.possibleIssue.toLowerCase()}.`
+            : 'Battle action continues while the commentator reconnects.';
+          const msgObj: CommentaryMessage = {
+            id: `comm_local_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            text,
+            timestamp: Date.now(),
+            hypeLevel: targetEvent === 'CODE_ANALYSIS' && analysis.possibleIssue !== 'No obvious issue spotted' ? 'medium' : 'low',
+            speaker: 'Shoutcaster',
+          };
+          setCurrentMessage(msgObj);
+          setHistory((prev) => [msgObj, ...prev.slice(0, 7)]);
+          speakCommentary(text);
         }
       } catch (err) {
-              console.error('[LiveCommentator Error]:', err);
+        if (!(err instanceof DOMException && err.name === 'AbortError')) {
+          console.error('[LiveCommentator Error]:', err);
+          const analysis = codeAnalysisRef.current;
+          const text = targetEvent === 'CODE_ANALYSIS'
+            ? `CODE READ: ${userNameRef.current || 'Coder'} is in ${analysis.phase} with ${analysis.nonEmptyLineCount} active lines.`
+            : 'Battle action continues while the commentator reconnects.';
+          const msgObj: CommentaryMessage = {
+            id: `comm_recover_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            text,
+            timestamp: Date.now(),
+            hypeLevel: 'low',
+            speaker: 'Shoutcaster',
+          };
+          setCurrentMessage(msgObj);
+          setHistory((prev) => [msgObj, ...prev.slice(0, 7)]);
+          speakCommentary(text);
+        }
       } finally {
-        setLoading(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+        }
       }
     },
     [
@@ -253,14 +428,48 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
       language,
       mode,
       status,
+      privacyMode,
       speakCommentary,
+      participantScoreSignature,
+      typingMilestone,
+      executionSignature,
+      clockBucket,
     ]
   );
 
   // Trigger fetch on event or prop changes
   useEffect(() => {
     fetchCommentary(effectiveEvent);
-  }, [fetchCommentary, effectiveEvent, effectiveProblemTitle, participants.length]);
+  }, [
+    fetchCommentary,
+    effectiveEvent,
+    effectiveProblemTitle,
+    participantScoreSignature,
+    typingMilestone,
+    executionSignature,
+    clockBucket,
+  ]);
+
+  useEffect(() => {
+    if (status !== 'IN_PROGRESS') return;
+    const interval = setInterval(() => {
+      setAnalysisBeat((beat) => beat + 1);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== 'IN_PROGRESS') return;
+    if (codeAnalysis.nonEmptyLineCount === 0) return;
+    fetchCommentary('CODE_ANALYSIS');
+  }, [
+    analysisBeat,
+    codeAnalysisSignature,
+    codeAnalysis.nonEmptyLineCount,
+    fetchCommentary,
+    status,
+  ]);
 
   // Periodic interval tick
   useEffect(() => {
@@ -270,6 +479,10 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
 
     return () => clearInterval(interval);
   }, [fetchCommentary]);
+
+  useEffect(() => {
+    return () => abortControllerRef.current?.abort();
+  }, []);
 
   const toggleTTS = () => {
     const nextMute = !isMuted;
@@ -332,6 +545,12 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
             {hypeProps.icon}
             <span>{hypeProps.label}</span>
           </span>
+          {privacyMode && (
+            <span className="flex items-center gap-1.5 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border bg-emerald-500/10 text-emerald-300 border-emerald-500/30">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>PRIVATE ROOM</span>
+            </span>
+          )}
         </div>
 
         {/* Action Button Controls */}

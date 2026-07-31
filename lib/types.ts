@@ -38,6 +38,11 @@ export interface ExecuteApiResponse {
   stderr: string;
   executionTime: number;
   memory: number;
+  learning?: {
+    failureCount: number;
+    failureType: ExecutionVerdict;
+    pattern: string;
+  } | null;
   testResults?: TestCaseResult[];
 }
 
@@ -115,4 +120,50 @@ export interface Submission {
     title: string;
     slug: string;
   };
+}
+
+export interface RevisionProblemData {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: string;
+  topicTags: string;
+  statement: string;
+  editorial: string;
+}
+
+export interface RevisionCardDTO {
+  id: string;
+  problemId: string;
+  pattern: string;
+  keyTakeaway: string;
+  timeComplexity: string;
+  spaceComplexity: string;
+  interval: number;
+  repetitions: number;
+  dueDate: string;
+  lastReviewedAt: string | null;
+  failureCount: number;
+  lastFailureType: string | null;
+  lastError: string | null;
+  lastFailedInput: string | null;
+  lastExpectedOutput: string | null;
+  lastActualOutput: string | null;
+  learnedAt: string | null;
+  createdAt: string;
+  problem: RevisionProblemData;
+}
+
+export interface RevisionDeckStats {
+  totalCards: number;
+  dueTodayCount: number;
+  masteredCount: number;
+  learnedMistakeCount: number;
+  nextDueDate: string | null;
+}
+
+export interface RevisionDeckResponse {
+  cards: RevisionCardDTO[];
+  dueCards: RevisionCardDTO[];
+  stats: RevisionDeckStats;
 }

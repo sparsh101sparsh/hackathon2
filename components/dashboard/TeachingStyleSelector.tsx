@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Check, ChevronDown, ChevronUp, Bot } from 'lucide-react';
 import { useTeachingStyle } from '@/hooks/useTeachingStyle';
@@ -10,6 +11,35 @@ interface PersonalityCardProps {
   personality: TeachingStyle;
   isSelected: boolean;
   onSelect: (id: TeachingStyleId) => void;
+}
+
+function PersonalityAvatar({
+  personality,
+  size = 'md',
+}: {
+  personality: TeachingStyle;
+  size?: 'sm' | 'md' | 'lg';
+}) {
+  const sizeClass = size === 'sm' ? 'w-5 h-5' : size === 'lg' ? 'w-11 h-11' : 'w-10 h-10';
+  const imageSize = size === 'sm' ? 20 : size === 'lg' ? 44 : 40;
+  const iconClass = size === 'sm' ? 'w-3 h-3' : 'w-4 h-4';
+
+  return (
+    <div className={`${sizeClass} rounded-lg bg-slate-950/80 border border-white/10 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-inner`}>
+      {personality.avatar ? (
+        <Image
+          src={personality.avatar}
+          alt=""
+          width={imageSize}
+          height={imageSize}
+          className="h-full w-full object-cover"
+          aria-hidden="true"
+        />
+      ) : (
+        <Bot className={`${iconClass} text-sky-300`} aria-hidden="true" />
+      )}
+    </div>
+  );
 }
 
 function PersonalityCard({ personality, isSelected, onSelect }: PersonalityCardProps) {
@@ -22,7 +52,7 @@ function PersonalityCard({ personality, isSelected, onSelect }: PersonalityCardP
       className={`
         relative w-full text-left rounded-xl border p-4 transition-all duration-300 cursor-pointer
         ${isSelected
-          ? 'bg-[#17171b] border-amber-400/50 shadow-lg shadow-amber-400/5'
+          ? 'bg-[#17171b] border-cyan-300/35'
           : 'bg-slate-900/60 border-slate-800/60 hover:border-slate-600/60 hover:bg-slate-800/40'
         }
       `}
@@ -39,13 +69,7 @@ function PersonalityCard({ personality, isSelected, onSelect }: PersonalityCardP
       )}
 
       <div className="flex items-start gap-3">
-        {/* Semantic teaching-style avatar */}
-        <div className={`
-          text-2xl w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0
-          ${isSelected ? 'bg-white/10' : 'bg-slate-800/80'}
-        `}>
-          <Bot className="w-4 h-4 text-amber-400" aria-hidden="true" />
-        </div>
+        <PersonalityAvatar personality={personality} size="lg" />
 
         {/* Info */}
         <div className="flex-1 min-w-0">
@@ -88,16 +112,16 @@ export function TeachingStyleSelector() {
     <div className="w-full">
       {/* Section Header */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-          <Bot className="w-4 h-4 text-amber-300" />
+        <div className="w-7 h-7 rounded-lg bg-cyan-300/10 border border-cyan-300/20 flex items-center justify-center flex-shrink-0">
+          <Bot className="w-4 h-4 text-sky-300" />
         </div>
         <div>
         <h2 className="text-sm font-bold text-white">Teaching Style</h2>
         <p className="text-[11px] text-slate-500">Shapes how your tutor, hints, and reviews speak to you</p>
         </div>
         <div className="ml-auto">
-            <span className="text-[10px] bg-amber-400/10 text-amber-300 border border-amber-400/30 rounded-full px-2 py-0.5">
-            <Bot className="w-4 h-4 text-amber-400" aria-hidden="true" /> {personality.name}
+            <span className="text-[10px] bg-cyan-300/10 text-cyan-100 border border-cyan-300/20 rounded-full px-2 py-0.5 inline-flex items-center gap-1">
+            <PersonalityAvatar personality={personality} size="sm" /> {personality.name}
           </span>
         </div>
       </div>
@@ -112,12 +136,10 @@ export function TeachingStyleSelector() {
         whileTap={{ scale: 0.99 }}
         className={`
           w-full flex items-center gap-3 rounded-xl border p-3.5 transition-all duration-300
-          bg-[#17171b] border-amber-400/40 shadow-md shadow-amber-400/5
+          bg-[#17171b] border-cyan-300/25
         `}
       >
-        <div className="text-2xl w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-          <Bot className="w-4 h-4 text-amber-400" aria-hidden="true" />
-        </div>
+        <PersonalityAvatar personality={personality} />
         <div className="flex-1 text-left">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-white">{personality.name}</span>
@@ -147,9 +169,9 @@ export function TeachingStyleSelector() {
           >
             <div className="mt-3 space-y-1.5">
               {/* Info banner */}
-              <div className="flex items-center gap-2 bg-amber-400/5 border border-amber-400/20 rounded-lg px-3 py-2 mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300 flex-shrink-0" />
-                <p className="text-[11px] text-amber-100/70">
+              <div className="flex items-center gap-2 bg-cyan-300/5 border border-cyan-300/15 rounded-lg px-3 py-2 mb-3">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-200 flex-shrink-0" />
+                <p className="text-[11px] text-slate-400">
                   Your tutor, hints, code reviews, mock interviews, and recommendations will all speak in this personality&apos;s unique voice.
                 </p>
               </div>

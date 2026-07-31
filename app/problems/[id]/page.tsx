@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import EditorWorkspace from '@/components/editor/EditorWorkspace';
 import ProgressiveHints from '@/components/guidance/ProgressiveHints';
-import TutorDrawer from '@/components/guidance/TutorDrawer';
 import { ProblemVisualizer } from '@/components/problems/ProblemVisualizer';
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
 import { Problem, Submission } from '@/lib/types';
@@ -37,7 +36,8 @@ export default function ProblemDetailPage() {
 
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(false);
-  const [isTutorOpen, setIsTutorOpen] = useState<boolean>(false);
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(43);
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
 
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
@@ -106,6 +106,41 @@ export default function ProblemDetailPage() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  const handleMainResizeStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!workspaceRef.current || window.innerWidth < 1024) return;
+
+    const workspace = workspaceRef.current;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const rect = workspace.getBoundingClientRect();
+      const rawPercentage = ((moveEvent.clientX - rect.left) / rect.width) * 100;
+      setLeftPanelWidth(Math.min(68, Math.max(28, rawPercentage)));
+    };
+
+    const stopResize = () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', stopResize);
+      window.removeEventListener('pointercancel', stopResize);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', stopResize);
+    window.addEventListener('pointercancel', stopResize);
+  };
+
+  const handleMainResizeKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    event.preventDefault();
+    const direction = event.key === 'ArrowRight' ? 1 : -1;
+    setLeftPanelWidth((current) => Math.min(68, Math.max(28, current + direction * 2)));
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
@@ -171,9 +206,13 @@ export default function ProblemDetailPage() {
       </header>
 
       {/* Split Workspace View */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden bg-slate-950">
+      <div
+        ref={workspaceRef}
+        className="problem-workspace-split flex-1 overflow-hidden bg-slate-950"
+        style={{ '--problem-left': `${leftPanelWidth}%` } as React.CSSProperties}
+      >
         {/* LEFT PANEL: Problem Details & Tabs (5 Columns on Large Screens) */}
-        <div className="lg:col-span-5 flex flex-col h-full border-r border-slate-800 bg-slate-900/40 overflow-hidden">
+        <div className="flex flex-col h-full bg-slate-900/40 overflow-hidden">
           {/* Navigation Tabs */}
           <div className="flex items-center gap-1 p-2 bg-slate-950 border-b border-slate-800 shrink-0">
             <button
@@ -439,14 +478,27 @@ export default function ProblemDetailPage() {
                   problemId={problem.id}
                   problemTitle={problem.title}
                   topicTags={problem.topicTags}
+                  embedded
                 />
               </div>
             )}
           </div>
         </div>
 
+        <div
+          aria-label="Resize problem and code panels"
+          role="separator"
+          aria-orientation="vertical"
+          tabIndex={0}
+          onPointerDown={handleMainResizeStart}
+          onKeyDown={handleMainResizeKeyDown}
+          className="hidden lg:flex w-2 cursor-col-resize items-center justify-center bg-slate-950 hover:bg-amber-400/10 focus:bg-amber-400/10 focus:outline-none"
+        >
+          <span className="h-12 w-px rounded-full bg-white/20" />
+        </div>
+
         {/* RIGHT PANEL: Code Editor & Execution Workspace (7 Columns on Large Screens) */}
-        <div className="lg:col-span-7 h-full flex flex-col p-3 bg-slate-950 overflow-hidden">
+        <div className="h-full flex flex-col p-3 bg-slate-950 overflow-hidden">
           <EditorWorkspace
             problemId={problem.id}
             problemTitle={problem.title}
@@ -459,17 +511,6 @@ export default function ProblemDetailPage() {
           />
         </div>
       </div>
-
-      {/* Floating tutor drawer */}
-      <TutorDrawer
-        problemId={problem.id}
-        problemTitle={problem.title}
-        problemStatement={problem.statement}
-        userCode=""
-        language="cpp"
-        isOpen={isTutorOpen}
-        onToggle={() => setIsTutorOpen(!isTutorOpen)}
-      />
     </div>
   );
 }

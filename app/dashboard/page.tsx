@@ -58,7 +58,7 @@ export default function DashboardPage() {
           <p className="text-xs text-slate-400 mb-4">{error || 'Something went wrong.'}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-amber-400 hover:bg-amber-300 rounded-lg text-xs font-bold text-[#08080a] transition-colors"
+            className="px-4 py-2 bg-cyan-200 hover:bg-cyan-100 rounded-lg text-xs font-bold text-[#08080a] transition-colors"
           >
             Retry
           </button>
@@ -69,10 +69,10 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto font-sans"
+      className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-7 max-w-7xl mx-auto font-sans"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
@@ -83,7 +83,7 @@ export default function DashboardPage() {
             width={48}
             height={48}
             unoptimized
-            className="w-12 h-12 rounded-full border-2 border-amber-400/60 bg-[#0f0f12] shadow-md shadow-amber-950/30"
+            className="w-12 h-12 rounded-full border-2 border-cyan-300/35 bg-[#0f0f12]"
           />
           <div>
             <div className="flex items-center gap-2">
@@ -103,7 +103,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/contests"
-            className="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/10 transition-all flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-lg bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5"
           >
             <Trophy className="w-4 h-4" />
             <span>Enter Contests</span>
@@ -119,7 +119,7 @@ export default function DashboardPage() {
       </div>
 
       {/* 1. Solved Count Summary Cards */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
         <SolvedSummaryCards
           user={data.user}
           solved={data.solved}
@@ -129,20 +129,20 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* 2. Teaching style selector */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
-        className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-5"
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}
+        className="rounded-lg p-1"
       >
         <TeachingStyleSelector />
       </motion.div>
 
       {/* 3. Weekly insights */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
         <WeeklyInsights />
       </motion.div>
 
       {/* 4. Recharts Section: Topic Radar + Rating Line Chart */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6"
@@ -152,12 +152,12 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* 5. GitHub-style Activity Streak Calendar */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}>
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}>
         <ActivityCalendar matrix={data.activityMatrix} streak={data.user.streak} />
       </motion.div>
 
       {/* 6. Achievement Badges Grid */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}>
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}>
         <BadgesGrid badges={data.badges} />
       </motion.div>
     </motion.div>

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Sparkles, User, Loader2, MessageSquare, Zap } from 'lucide-react';
+import Image from 'next/image';
+import { Bot, X, Send, Sparkles, User, Loader2, Zap } from 'lucide-react';
 import { TEACHING_STYLE_STORAGE_KEY, getTeachingStyle } from '@/lib/teachingStyles';
 
 interface Message {
@@ -12,6 +13,7 @@ interface Message {
 interface TutorDrawerProps {
   isOpen: boolean;
   onToggle: () => void;
+  variant?: 'fixed' | 'side-panel';
   problemId?: string;
   problemTitle: string;
   problemStatement?: string;
@@ -26,9 +28,32 @@ const QUICK_PROMPTS = [
   'Give me a hint without giving solution',
 ];
 
+function TutorAvatar({ avatar, name, size = 28 }: { avatar: string; name: string; size?: number }) {
+  return (
+    <div
+      className="rounded-lg bg-slate-950/80 border border-white/10 overflow-hidden flex items-center justify-center shrink-0"
+      style={{ width: size, height: size }}
+    >
+      {avatar ? (
+        <Image
+          src={avatar}
+          alt=""
+          width={size}
+          height={size}
+          className="h-full w-full object-cover"
+          aria-hidden="true"
+        />
+      ) : (
+        <Bot className="w-4 h-4" aria-label={name} />
+      )}
+    </div>
+  );
+}
+
 export const TutorDrawer: React.FC<TutorDrawerProps> = ({
   isOpen,
   onToggle,
+  variant = 'fixed',
   problemId,
   problemTitle,
   problemStatement = '',
@@ -39,6 +64,7 @@ export const TutorDrawer: React.FC<TutorDrawerProps> = ({
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isSidePanel = variant === 'side-panel';
 
   // Read personality from localStorage
   const personality = getTeachingStyle(
@@ -123,25 +149,31 @@ export const TutorDrawer: React.FC<TutorDrawerProps> = ({
           type="button"
           aria-label="Open DSA tutor"
           onClick={onToggle}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold rounded-lg shadow-2xl shadow-amber-400/10 transition-all transform hover:scale-105"
+          className={`z-40 flex items-center gap-2 px-4 py-3 bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold rounded-lg shadow-2xl shadow-amber-400/10 transition-all transform hover:scale-105 ${
+            isSidePanel ? 'absolute bottom-4 right-4' : 'fixed bottom-6 right-6'
+          }`}
         >
           <Sparkles className="w-5 h-5 fill-slate-950" />
-          <span className="text-xs tracking-wide font-sans">Socratic Tutor</span>
+          <span className="text-xs tracking-wide font-sans">DSA Tutor</span>
         </button>
       )}
 
       {/* Drawer Overlay Panel */}
       {isOpen && (
-        <div className="fixed bottom-0 right-0 top-0 z-50 w-full sm:w-[420px] bg-slate-950/95 border-l border-slate-800 shadow-2xl flex flex-col backdrop-blur-xl font-sans">
+        <div
+          className={`z-50 bg-slate-950/95 border-l border-slate-800 shadow-2xl flex flex-col backdrop-blur-xl font-sans ${
+            isSidePanel
+              ? 'h-full w-full lg:w-[360px] xl:w-[400px] shrink-0'
+              : 'fixed bottom-0 right-0 top-0 w-full sm:w-[420px]'
+          }`}
+        >
           {/* Header */}
           <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-400/10 border border-amber-400/30 text-amber-300">
-                <Bot className="w-5 h-5" />
-              </div>
+              <TutorAvatar avatar={personality.avatar} name={personality.name} size={36} />
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  DSA Socratic Tutor
+                  {personality.name} Tutor
                   <span className="px-2 py-0.2 text-[9px] uppercase font-bold rounded bg-amber-400/10 text-amber-300 border border-amber-400/30">
                     FreeModel
                   </span>
@@ -183,8 +215,8 @@ export const TutorDrawer: React.FC<TutorDrawerProps> = ({
                 className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="p-1.5 rounded-lg bg-amber-400/10 text-amber-300 border border-amber-400/30 h-fit shrink-0">
-                    <Bot className="w-4 h-4" />
+                  <div className="h-7 w-7 h-fit shrink-0">
+                    <TutorAvatar avatar={personality.avatar} name={personality.name} size={28} />
                   </div>
                 )}
 
@@ -208,8 +240,8 @@ export const TutorDrawer: React.FC<TutorDrawerProps> = ({
 
             {isLoading && (
               <div className="flex gap-3 justify-start items-center text-slate-400 text-xs">
-                <div className="p-1.5 rounded-lg bg-amber-400/10 text-amber-300 border border-amber-400/30">
-                  <Bot className="w-4 h-4" />
+                <div className="h-7 w-7">
+                  <TutorAvatar avatar={personality.avatar} name={personality.name} size={28} />
                 </div>
                 <div className="p-3 bg-slate-900 border border-slate-800 rounded-2xl rounded-tl-none flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-amber-300" />

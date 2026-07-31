@@ -55,17 +55,17 @@ export function WeeklyInsights() {
   }, []);
 
   return (
-    <div className="rounded-xl bg-[#0f0f12] border border-white/10 shadow-xl p-6 relative overflow-hidden">
+    <div className="rounded-lg bg-[#101114] border border-white/10 p-6 relative overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-amber-400/10 text-amber-300 border border-amber-400/30">
-            <Sparkles className="w-5 h-5 animate-pulse" />
+          <div className="p-2 rounded-lg bg-cyan-300/10 text-cyan-100 border border-cyan-300/20">
+            <Sparkles className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               Weekly Progress Insights
             </h3>
-            <p className="text-xs text-amber-100/50">
+            <p className="text-xs text-slate-500">
               Powered by FreeModel
             </p>
           </div>
@@ -85,7 +85,7 @@ export function WeeklyInsights() {
 
       {loading && (
         <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
-          <RefreshCw className="w-6 h-6 animate-spin text-amber-300" />
+          <RefreshCw className="w-6 h-6 animate-spin text-cyan-200" />
           <p className="text-xs">Analyzing submission patterns and rating trajectory...</p>
         </div>
       )}
@@ -99,13 +99,13 @@ export function WeeklyInsights() {
       {report && !loading && (
         <div className="space-y-4 text-xs">
           {/* Executive Summary */}
-          <div className="bg-amber-400/5 border border-amber-400/20 rounded-lg p-3 text-amber-100/80 leading-relaxed font-medium">
+          <div className="border-l border-cyan-300/30 pl-3 text-slate-300 leading-relaxed font-medium">
             &quot;{report.summary}&quot;
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Strengths */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-lg p-3">
+            <div className="border-l border-emerald-400/30 pl-3">
               <div className="flex items-center gap-1.5 font-semibold text-emerald-400 mb-2">
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>Key Strengths</span>
@@ -118,8 +118,8 @@ export function WeeklyInsights() {
             </div>
 
             {/* Focus Areas */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-lg p-3">
-              <div className="flex items-center gap-1.5 font-semibold text-amber-400 mb-2">
+            <div className="border-l border-sky-400/30 pl-3">
+              <div className="flex items-center gap-1.5 font-semibold text-sky-300 mb-2">
                 <Target className="w-3.5 h-3.5" />
                 <span>Focus Areas</span>
               </div>
@@ -131,9 +131,9 @@ export function WeeklyInsights() {
             </div>
 
             {/* Recommendations & Estimated Gain */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-lg p-3 flex flex-col justify-between">
+            <div className="border-l border-violet-400/30 pl-3 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-1.5 font-semibold text-amber-300 mb-2">
+                <div className="flex items-center gap-1.5 font-semibold text-violet-300 mb-2">
                   <Lightbulb className="w-3.5 h-3.5" />
                   <span>Recommendations</span>
                 </div>
@@ -144,7 +144,7 @@ export function WeeklyInsights() {
                 </ul>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-amber-200/70 font-semibold">
+              <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-slate-400 font-semibold">
                 <span>Potential Rating Gain:</span>
                 <span className="text-emerald-400 font-bold">
                   +{report.estimatedRatingGain || 45} pts

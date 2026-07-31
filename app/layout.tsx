@@ -1,10 +1,17 @@
 import type { Metadata } from 'next';
+import { Lexend } from 'next/font/google';
 import { MotionConfig } from 'framer-motion';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthProvider } from '@/context/AuthContext';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
+
+const lexend = Lexend({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 export const metadata: Metadata = {
   title: 'CodeForge — DSA & Competitive Programming',
@@ -30,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className="bg-[#08080a] text-stone-100 min-h-screen antialiased flex flex-col font-sans"
+        className={`${lexend.variable} bg-[#08080a] text-stone-100 min-h-screen antialiased flex flex-col font-sans`}
       >
         <AuthProvider>
           <MotionConfig reducedMotion="user">

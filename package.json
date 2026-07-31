@@ -6,6 +6,9 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
+    "android:add": "cap add android",
+    "android:sync": "cap sync android",
+    "android:build:debug": "bash scripts/android/build-debug-apk.sh",
     "lint": "eslint .",
     "verify:visualizers": "tsx scripts/verify-visualizers.ts",
     "ensure:visualizer-problems": "tsx scripts/ensure-visualizer-problems.ts",
@@ -34,6 +37,7 @@
     "test:leaderboard-comparison": "tsx scripts/test-leaderboard-comparison.ts",
     "test:contest-surface": "tsx scripts/test-contest-surface.ts",
     "test:shared-surface": "tsx scripts/test-shared-surface.ts",
+    "test:ai-commentator": "tsx scripts/test-ai-commentator.ts",
     "test:ui-content": "tsx scripts/test-ui-content.ts",
     "test:contest-submission": "tsx scripts/test-contest-submission.ts",
     "test:room-integrity": "tsx scripts/test-room-integrity.ts",
@@ -54,6 +58,8 @@
     "sharp": "^0.35.3"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@monaco-editor/react": "^4.6.0",
     "@prisma/client": "^5.22.0",
     "clsx": "^2.1.1",
@@ -67,6 +73,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
     "@types/node": "^20.17.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

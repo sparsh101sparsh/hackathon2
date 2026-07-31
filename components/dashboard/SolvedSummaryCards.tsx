@@ -33,9 +33,9 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
   const totalSystemProblems = solved.totalEasy + solved.totalMedium + solved.totalHard;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px rounded-lg border border-white/10 overflow-hidden bg-white/10">
       {/* 1. Rating & Tier Badge Card */}
-      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
+      <div className="bg-[#101114] p-6 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Contest Rating
@@ -62,7 +62,7 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
       </div>
 
       {/* 2. Total Solved Progress Card */}
-      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
+      <div className="bg-[#101114] p-6 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Problems Solved
@@ -87,7 +87,7 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
             title={`Easy: ${solved.easy}`}
           />
           <div
-            className="bg-amber-500 h-full transition-all duration-500"
+            className="bg-sky-400 h-full transition-all duration-500"
             style={{ width: `${(solved.medium / Math.max(1, solved.total)) * 100}%` }}
             title={`Medium: ${solved.medium}`}
           />
@@ -107,7 +107,7 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
       </div>
 
       {/* 3. Difficulty Breakdown Card */}
-      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
+      <div className="bg-[#101114] p-6 relative overflow-hidden">
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
           Difficulty Breakdown
         </span>
@@ -118,9 +118,9 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
             <div className="text-lg font-bold text-emerald-300">{solved.easy}</div>
             <div className="text-[10px] text-slate-400">/{solved.totalEasy}</div>
           </div>
-          <div className="bg-amber-950/40 border border-amber-800/40 rounded-lg p-2">
-            <div className="text-xs font-medium text-amber-400">Med</div>
-            <div className="text-lg font-bold text-amber-300">{solved.medium}</div>
+          <div className="bg-sky-950/30 border border-sky-800/35 rounded-lg p-2">
+            <div className="text-xs font-medium text-sky-300">Med</div>
+            <div className="text-lg font-bold text-sky-200">{solved.medium}</div>
             <div className="text-[10px] text-slate-400">/{solved.totalMedium}</div>
           </div>
           <div className="bg-rose-950/40 border border-rose-800/40 rounded-lg p-2">
@@ -132,16 +132,16 @@ export function SolvedSummaryCards({ user, solved, accuracy, avgTime }: SolvedSu
       </div>
 
       {/* 4. Accuracy & Efficiency Card */}
-      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 relative overflow-hidden">
+      <div className="bg-[#101114] p-6 relative overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Accuracy & Speed
           </span>
-          <Clock className="w-5 h-5 text-amber-400" />
+          <Clock className="w-5 h-5 text-cyan-200" />
         </div>
 
         <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-3xl font-extrabold text-amber-400 tracking-tight">
+          <span className="text-3xl font-extrabold text-cyan-100 tracking-tight">
             {accuracy}%
           </span>
           <span className="text-xs text-slate-400">AC Rate</span>

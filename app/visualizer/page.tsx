@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Search, Sparkles } from 'lucide-react';
+import { ChevronRight, Menu, Search, Sparkles, X } from 'lucide-react';
 import { ProblemVisualizer } from '@/components/problems/ProblemVisualizer';
 import visualizerData from '../../public/data/visualizers.json';
 
@@ -47,6 +47,7 @@ export default function VisualizerLibraryPage() {
   const [selectedId, setSelectedId] = useState(catalogEntries[0]?.problemId || '');
   const [query, setQuery] = useState('');
   const [pattern, setPattern] = useState('all');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const ids = entries.map((entry) => entry.problemId).join(',');
@@ -76,36 +77,139 @@ export default function VisualizerLibraryPage() {
   const selectedTitle = selected ? (problemMeta[selected.problemId]?.title || titleFromPath(selected.lessonPath)) : 'Choose a lesson';
   const patterns = Array.from(new Set(entries.map((entry) => entry.pattern)));
 
+  const selectLesson = (problemId: string) => {
+    setSelectedId(problemId);
+    setMenuOpen(false);
+  };
+
   useEffect(() => {
     if (selected && !filteredEntries.some((entry) => entry.problemId === selected.problemId)) {
       setSelectedId(filteredEntries[0]?.problemId || '');
     }
   }, [filteredEntries, selected]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [menuOpen]);
+
+  const catalogPanel = (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.24em] text-amber-300 font-bold">Question Menu</div>
+          <p className="mt-1 font-sans text-sm text-slate-400">{filteredEntries.length} lessons found</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setMenuOpen(false)}
+          aria-label="Close question menu"
+          title="Close menu"
+          className="rounded-lg border border-white/10 bg-[#111115] p-2 text-slate-200 transition hover:border-amber-400/50 hover:text-amber-300"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="mb-4 flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-slate-400">
+        <Search className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+        <input
+          aria-label="Search visualizer lessons"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="search questions..."
+          className="w-full bg-transparent text-slate-200 outline-none placeholder:text-slate-500"
+        />
+      </div>
+
+      <select
+        value={pattern}
+        onChange={(event) => setPattern(event.target.value)}
+        aria-label="Filter visualizer patterns"
+        className="mb-4 w-full rounded-lg border border-white/10 bg-[#111115] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+      >
+        <option value="all">All patterns</option>
+        {patterns.map((item) => (
+          <option key={item} value={item}>{patternLabels[item] || item}</option>
+        ))}
+      </select>
+
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+        {filteredEntries.map((entry) => {
+          const title = problemMeta[entry.problemId]?.title || titleFromPath(entry.lessonPath);
+          const isSelected = entry.problemId === selected?.problemId;
+          return (
+            <button
+              key={entry.problemId}
+              type="button"
+              onClick={() => selectLesson(entry.problemId)}
+              className={`w-full rounded-lg border p-3 text-left transition ${
+                isSelected
+                  ? 'border-amber-400/50 bg-amber-400/10 text-amber-300 font-semibold'
+                  : 'border-transparent hover:border-white/10 hover:bg-[#18181d]'
+              }`}
+            >
+              <div className="font-sans text-sm leading-snug text-slate-200">{title}</div>
+              <div className="mt-1 text-[10px] text-slate-400">{patternLabels[entry.pattern] || entry.pattern}</div>
+            </button>
+          );
+        })}
+        {filteredEntries.length === 0 && (
+          <div className="rounded-lg border border-white/10 bg-[#111115] p-4 text-sm text-slate-500">
+            No lessons match this search.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <main className="min-h-screen bg-[#08080a] text-slate-200 px-4 sm:px-6 lg:px-8 py-8 font-mono">
-      <div className="max-w-[1500px] mx-auto">
+      <div className="mx-auto max-w-[1800px]">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-8">
           <div>
             <div className="retro-label mb-3"><span>$ visualizer --catalog=75</span></div>
             <h1 className="font-mono text-3xl sm:text-5xl font-medium tracking-normal phosphor-glow">Watch the algorithm think<span className="text-amber-400">_</span></h1>
             <p className="text-slate-400 mt-3 max-w-2xl leading-relaxed">Interactive visual lessons for every mapped problem. Choose a pattern, step through its state, and inspect the invariant.</p>
           </div>
-          <div className="text-sm text-slate-400"><span className="text-slate-100 font-bold">{entries.length || 75}</span> verified lessons</div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-expanded={menuOpen}
+              aria-controls="visualizer-question-menu"
+              className="inline-flex items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 font-sans text-sm font-bold text-amber-200 transition hover:border-amber-300 hover:bg-amber-400/15"
+            >
+              <Menu className="h-4 w-4" />
+              Questions
+            </button>
+            <div className="text-sm text-slate-400"><span className="text-slate-100 font-bold">{entries.length || 75}</span> verified lessons</div>
+          </div>
         </div>
 
-        <div className="grid xl:grid-cols-[280px_minmax(0,1fr)] gap-6 items-start">
-          <aside className="border border-white/10 bg-[#0f0f12] rounded-xl p-4 xl:sticky xl:top-24">
-            <div className="flex items-center gap-2 px-3 py-2 border border-white/10 rounded-lg text-xs text-slate-400 mb-4"><Search className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /><input aria-label="Search visualizer lessons" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="search lessons..." className="bg-transparent outline-none w-full placeholder:text-slate-500 text-slate-200" /></div>
-            <select value={pattern} onChange={(event) => setPattern(event.target.value)} aria-label="Filter visualizer patterns" className="w-full bg-[#111115] border border-white/10 rounded-lg px-3 py-2 text-xs mb-4 text-slate-200"><option value="all">All patterns</option>{patterns.map((item) => <option key={item} value={item}>{patternLabels[item] || item}</option>)}</select>
-            <div className="max-h-[55vh] overflow-y-auto space-y-1 pr-1">{filteredEntries.map((entry) => { const title = problemMeta[entry.problemId]?.title || titleFromPath(entry.lessonPath); return <button key={entry.problemId} type="button" onClick={() => setSelectedId(entry.problemId)} className={`w-full text-left p-3 rounded-lg transition border ${entry.problemId === selected?.problemId ? 'bg-amber-400/10 border-amber-400/50 text-amber-300 font-semibold' : 'border-transparent hover:border-white/10 hover:bg-[#18181d]'}`}><div className="font-sans text-sm text-slate-200 leading-snug">{title}</div><div className="text-[10px] text-slate-400 mt-1">{patternLabels[entry.pattern] || entry.pattern}</div></button>; })}</div>
-          </aside>
+        <section className="min-w-0">
+          {selected ? <ProblemVisualizer key={selected.problemId} problemId={selected.problemId} problemTitle={selectedTitle} topicTags={JSON.stringify([selected.pattern])} verified={selected.hasVisualizer} /> : <div className="border border-slate-800 rounded-2xl p-10 text-center text-slate-500">No lessons match this filter.</div>}
+          {selected && <div className="flex flex-wrap justify-between items-center gap-3 mt-4 text-xs text-slate-400"><span>Interactive lesson: {selected.lessonPath}</span><Link href={`/problems/${problemMeta[selected.problemId]?.slug || titleFromPath(selected.lessonPath).toLowerCase().replaceAll(' ', '-')}`} className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-semibold">Open coding workspace <ChevronRight className="w-3.5 h-3.5" /></Link></div>}
+        </section>
+      </div>
 
-          <section className="min-w-0">
-            {selected ? <ProblemVisualizer key={selected.problemId} problemId={selected.problemId} problemTitle={selectedTitle} topicTags={JSON.stringify([selected.pattern])} verified={selected.hasVisualizer} /> : <div className="border border-slate-800 rounded-2xl p-10 text-center text-slate-500">No lessons match this filter.</div>}
-            {selected && <div className="flex flex-wrap justify-between items-center gap-3 mt-4 text-xs text-slate-400"><span>Interactive lesson: {selected.lessonPath}</span><Link href={`/problems/${problemMeta[selected.problemId]?.slug || titleFromPath(selected.lessonPath).toLowerCase().replaceAll(' ', '-')}`} className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-semibold">Open coding workspace <ChevronRight className="w-3.5 h-3.5" /></Link></div>}
-          </section>
-        </div>
+      <div className={`fixed inset-0 z-50 ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`} aria-hidden={!menuOpen}>
+        <button
+          type="button"
+          aria-label="Close question menu"
+          onClick={() => setMenuOpen(false)}
+          className={`absolute inset-0 bg-black/60 transition-opacity ${menuOpen ? 'opacity-100' : 'opacity-0'}`}
+        />
+        <aside
+          id="visualizer-question-menu"
+          className={`absolute left-0 top-0 h-full w-[min(92vw,380px)] border-r border-white/10 bg-[#0f0f12] p-4 shadow-2xl shadow-black/50 transition-transform duration-300 ease-out ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        >
+          {catalogPanel}
+        </aside>
       </div>
     </main>
   );

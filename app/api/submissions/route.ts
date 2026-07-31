@@ -4,8 +4,8 @@ import { Prisma } from '@prisma/client';
 import { executeCode, isSupportedLanguage } from '@/lib/piston';
 import { ExecutionVerdict, TestCaseResult } from '@/lib/types';
 import { getSessionFromRequest } from '@/lib/auth';
-import { buildRevisionLearning, snapshotForRevision } from '@/lib/revisionLearning';
-import { normalizeOutput } from '@/lib/output';
+import { learnFromFailedAttempt } from '@/lib/revisionLearning';
+import { outputsEquivalent } from '@/lib/output';
 import { syncAcceptedProgress } from '@/lib/progress';
 import { rateLimitResponse } from '@/lib/rateLimit';
 
@@ -158,10 +158,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Check string output matching
-      const normActual = normalizeOutput(execResult.stdout);
-      const normExpected = normalizeOutput(tc.expectedOutput);
-
-      if (normActual === normExpected) {
+      if (outputsEquivalent(execResult.stdout, tc.expectedOutput)) {
         passedCount++;
         testResults.push({
           testCaseId: tc.id,
@@ -246,7 +243,6 @@ export async function POST(request: NextRequest) {
           },
           update: {
             dueDate: nextDueDate,
-            keyTakeaway: `Mastered ${problem.title}. Review the learned edge cases and optimal approach.`,
           },
         });
       } catch (error: unknown) {
@@ -262,46 +258,23 @@ export async function POST(request: NextRequest) {
 
     if (overallVerdict !== 'Accepted' && failedTestCaseInfo) {
       try {
-        const revision = buildRevisionLearning(overallVerdict, problem.topicTags, failedTestCaseInfo);
-        const snapshot = snapshotForRevision(failedTestCaseInfo);
-        const learnedCard = await prisma.revisionCard.upsert({
-          where: {
-            userId_problemId: {
-              userId: activeUserId,
-              problemId: problem.id,
-            },
-          },
-          create: {
-            userId: activeUserId,
-            problemId: problem.id,
-            pattern: revision.pattern,
-            keyTakeaway: revision.keyTakeaway,
-            interval: 1,
-            repetitions: 0,
-            dueDate: new Date(),
-            failureCount: 1,
-            lastFailureType: revision.failureType,
-            ...snapshot,
-            learnedAt: new Date(),
-          },
-          update: {
-            pattern: revision.pattern,
-            keyTakeaway: revision.keyTakeaway,
-            interval: 1,
-            repetitions: 0,
-            dueDate: new Date(),
-            failureCount: { increment: 1 },
-            lastFailureType: revision.failureType,
-            ...snapshot,
-            learnedAt: new Date(),
-          },
-        });
+        const failedTestCaseIsSample = testCases.find((testCase) => testCase.id === failedTestCaseId)?.isSample ?? false;
+        const revisionFailedCase = failedTestCaseIsSample
+          ? failedTestCaseInfo
+          : {
+              input: '[hidden test case]',
+              expectedOutput: '[hidden test case]',
+              actualOutput: failedTestCaseInfo.actualOutput,
+              error: failedTestCaseInfo.error,
+            };
 
-        learning = {
-          failureCount: learnedCard.failureCount,
-          failureType: revision.failureType,
-          pattern: revision.pattern,
-        };
+        learning = await learnFromFailedAttempt({
+          prisma,
+          userId: activeUserId,
+          problem,
+          verdict: overallVerdict,
+          failedTestCase: revisionFailedCase,
+        });
       } catch (error: unknown) {
         console.error('Error learning from failed submission:', error);
       }

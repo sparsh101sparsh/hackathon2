@@ -12,7 +12,7 @@ export default function Home() {
       className="min-h-screen text-slate-100 overflow-x-hidden relative"
       style={{
         background:
-          'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(251,191,36,0.08) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 60%, rgba(245,158,11,0.035) 0%, transparent 60%), #08080a',
+          'linear-gradient(180deg, rgba(14,22,28,0.8) 0%, rgba(8,8,10,0) 42%), #08080a',
       }}
     >
       {/* 1. Hero Section */}

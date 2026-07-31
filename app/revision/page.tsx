@@ -19,57 +19,43 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
+import type { RevisionCardDTO, RevisionDeckResponse, RevisionDeckStats } from '@/lib/types';
+import { nextRevisionInterval } from '@/lib/revisionSchedule';
 
-interface ProblemData {
-  id: string;
-  title: string;
-  slug: string;
-  difficulty: string;
-  topicTags: string;
-  statement: string;
-  editorial: string;
-}
-
-interface RevisionCardItem {
-  id: string;
-  problemId: string;
-  pattern: string;
-  keyTakeaway: string;
-  timeComplexity: string;
-  spaceComplexity: string;
-  interval: number;
-  repetitions: number;
-  dueDate: string;
-  failureCount: number;
-  lastFailureType?: string | null;
-  lastError?: string | null;
-  lastFailedInput?: string | null;
-  lastExpectedOutput?: string | null;
-  lastActualOutput?: string | null;
-  problem: ProblemData;
-}
+const EMPTY_STATS: RevisionDeckStats = {
+  totalCards: 0,
+  dueTodayCount: 0,
+  masteredCount: 0,
+  learnedMistakeCount: 0,
+  nextDueDate: null,
+};
 
 export default function RevisionPage() {
-  const [cards, setCards] = useState<RevisionCardItem[]>([]);
-  const [dueCards, setDueCards] = useState<RevisionCardItem[]>([]);
-  const [stats, setStats] = useState({ totalCards: 0, dueTodayCount: 0, masteredCount: 0, learnedMistakeCount: 0 });
+  const [cards, setCards] = useState<RevisionCardDTO[]>([]);
+  const [dueCards, setDueCards] = useState<RevisionCardDTO[]>([]);
+  const [stats, setStats] = useState<RevisionDeckStats>(EMPTY_STATS);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedQuality, setSelectedQuality] = useState<'HARD' | 'GOOD' | 'EASY' | null>(null);
   const { showToast } = useToast();
+  const activeDueCardId = dueCards[currentIdx]?.id;
 
   const fetchRevisionData = async (signal?: AbortSignal) => {
     try {
       const res = await fetch('/api/revision', { signal });
       if (!res.ok) throw new Error('Failed to fetch revision deck');
-      const data = await res.json();
+      const data = (await res.json()) as RevisionDeckResponse;
       setCards(data.cards || []);
       setDueCards(data.dueCards || []);
-      setStats(data.stats || { totalCards: 0, dueTodayCount: 0, masteredCount: 0, learnedMistakeCount: 0 });
+      setStats(data.stats || EMPTY_STATS);
+      setLoadError(null);
     } catch (err: unknown) {
       if (!(err instanceof DOMException && err.name === 'AbortError')) {
         console.error('Error fetching revision data:', err);
+        setLoadError('Could not load your revision deck. Please try again.');
       }
     } finally {
       if (!signal?.aborted) setLoading(false);
@@ -83,11 +69,20 @@ export default function RevisionPage() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    if (currentIdx >= dueCards.length) setCurrentIdx(0);
+  }, [currentIdx, dueCards.length]);
+
+  useEffect(() => {
+    setIsFlipped(false);
+  }, [activeDueCardId]);
+
   const handleRateCard = async (quality: 'HARD' | 'GOOD' | 'EASY') => {
     const card = dueCards[currentIdx];
-    if (!card) return;
+    if (!card || submitting) return;
 
     setSubmitting(true);
+    setSelectedQuality(quality);
     try {
       const res = await fetch('/api/revision', {
         method: 'POST',
@@ -101,12 +96,14 @@ export default function RevisionPage() {
       if (res.ok) {
         showToast(`Card rated ${quality}! Next review scheduled.`, 'success');
         setIsFlipped(false);
-        if (currentIdx < dueCards.length - 1) {
-          setCurrentIdx((prev) => prev + 1);
-        } else {
-          await fetchRevisionData();
-          setCurrentIdx(0);
-        }
+        const remainingDueCards = dueCards.filter((dueCard) => dueCard.id !== card.id);
+        setDueCards(remainingDueCards);
+        setStats((previous) => ({
+          ...previous,
+          dueTodayCount: Math.max(0, previous.dueTodayCount - 1),
+        }));
+        setCurrentIdx((previous) => Math.min(previous, Math.max(remainingDueCards.length - 1, 0)));
+        fetchRevisionData();
       } else {
         const data = await res.json().catch(() => null);
         showToast(data?.error || 'Failed to record rating', 'error');
@@ -115,6 +112,7 @@ export default function RevisionPage() {
       showToast('Failed to record rating', 'error');
     } finally {
       setSubmitting(false);
+      setSelectedQuality(null);
     }
   };
 
@@ -128,6 +126,10 @@ export default function RevisionPage() {
   }
 
   const currentCard = dueCards[currentIdx];
+  const hasAnyCards = cards.length > 0;
+  const nextDueLabel = stats.nextDueDate
+    ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(stats.nextDueDate))
+    : null;
 
   return (
     <div className="min-h-screen bg-[#08080a] text-slate-100 p-4 sm:p-6 lg:p-8 font-sans max-w-6xl mx-auto space-y-8">
@@ -148,7 +150,7 @@ export default function RevisionPage() {
         </div>
 
         {/* Stats Pill Strip */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="px-4 py-2 bg-[#111115] border border-white/10 rounded-lg flex items-center gap-2">
             <Clock className="w-4 h-4 text-amber-400" />
             <div>
@@ -181,7 +183,27 @@ export default function RevisionPage() {
       </div>
 
       {/* Main Flashcard Interactive Arena */}
-      {dueCards.length > 0 && currentCard ? (
+      {loadError ? (
+        <div className="bg-[#0f0f12] border border-rose-500/30 rounded-xl p-8 text-center max-w-xl mx-auto space-y-4 shadow-2xl">
+          <div className="inline-flex items-center justify-center p-4 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/30 shadow-lg">
+            <Zap className="w-10 h-10" />
+          </div>
+          <h2 className="text-2xl font-black text-white">Revision Deck Could Not Load</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Your learned mistakes are still saved, but this view could not fetch them right now.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              fetchRevisionData();
+            }}
+            className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs rounded-lg shadow-lg transition"
+          >
+            Retry
+          </button>
+        </div>
+      ) : dueCards.length > 0 && currentCard ? (
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Progress Bar */}
           <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
@@ -321,7 +343,10 @@ export default function RevisionPage() {
                 disabled={submitting}
                 className="py-3 px-4 rounded-lg bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 font-bold text-xs transition flex flex-col items-center gap-0.5"
               >
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-400" aria-hidden="true" /> Hard</span>
+                <span className="flex items-center gap-1">
+                  {selectedQuality === 'HARD' ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="w-2 h-2 rounded-full bg-rose-400" aria-hidden="true" />}
+                  Hard
+                </span>
                 <span className="text-[10px] text-rose-500 font-normal">Review in 1 Day</span>
               </button>
               <button
@@ -329,29 +354,43 @@ export default function RevisionPage() {
                 disabled={submitting}
                 className="py-3 px-4 rounded-lg bg-amber-400/10 border border-amber-400/30 hover:bg-amber-400/20 text-amber-300 font-bold text-xs transition flex flex-col items-center gap-0.5"
               >
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" /> Good</span>
-                <span className="text-[10px] text-amber-500 font-normal">Review in 3 Days</span>
+                <span className="flex items-center gap-1">
+                  {selectedQuality === 'GOOD' ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="w-2 h-2 rounded-full bg-amber-400" aria-hidden="true" />}
+                  Good
+                </span>
+                <span className="text-[10px] text-amber-500 font-normal">
+                  Review in {nextRevisionInterval(currentCard.interval, 'GOOD')} Days
+                </span>
               </button>
               <button
                 onClick={() => handleRateCard('EASY')}
                 disabled={submitting}
                 className="py-3 px-4 rounded-lg bg-[#111115] border border-white/10 hover:border-amber-400/40 text-slate-200 font-bold text-xs transition flex flex-col items-center gap-0.5"
               >
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-300" aria-hidden="true" /> Easy</span>
-                <span className="text-[10px] text-slate-400 font-normal">Review in 7 Days</span>
+                <span className="flex items-center gap-1">
+                  {selectedQuality === 'EASY' ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="w-2 h-2 rounded-full bg-slate-300" aria-hidden="true" />}
+                  Easy
+                </span>
+                <span className="text-[10px] text-slate-400 font-normal">
+                  Review in {nextRevisionInterval(currentCard.interval, 'EASY')} Days
+                </span>
               </button>
             </div>
           </div>
         </div>
       ) : (
-        /* Deck Completed View */
+        /* Deck Empty or Completed View */
         <div className="bg-[#0f0f12] border border-white/10 rounded-xl p-8 text-center max-w-xl mx-auto space-y-4 shadow-2xl">
           <div className="inline-flex items-center justify-center p-4 rounded-lg bg-amber-400/10 text-amber-400 border border-amber-400/30 shadow-lg">
-            <CheckCircle2 className="w-10 h-10" />
+            {hasAnyCards ? <CheckCircle2 className="w-10 h-10" /> : <Brain className="w-10 h-10" />}
           </div>
-          <h2 className="text-2xl font-black text-white">All Revisions Completed Today</h2>
+          <h2 className="text-2xl font-black text-white">
+            {hasAnyCards ? 'All Revisions Completed Today' : 'No Learned Mistakes Yet'}
+          </h2>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Great job! You have revised all due DSA flashcards for today. Spaced repetition ensures long-term memory retention for FAANG interviews.
+            {hasAnyCards
+              ? `Great job! You have revised all due DSA flashcards for today.${nextDueLabel ? ` Next review: ${nextDueLabel}.` : ' The next cards will return when their memory interval is due.'}`
+              : 'Submit code or run sample cases while signed in. When the platform catches a wrong answer, runtime error, timeout, or compile error, it will turn that stuck point into a due revision card.'}
           </p>
           <div className="pt-2 flex justify-center gap-3">
             <Link
