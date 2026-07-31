@@ -8,7 +8,7 @@ const originalEnv = {
   gemini2: process.env.GEMINI_API_KEY_2,
 };
 const originalFetch = globalThis.fetch;
-const requests: string[] = [];
+  const requests: string[] = [];
 
 async function main() {
 try {
@@ -21,22 +21,34 @@ try {
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     requests.push(url);
-    if (url.includes('freemodel.dev')) return new Response('unavailable', { status: 503 });
     const key = new URL(url).searchParams.get('key');
-    if (key === 'gemini-primary-test') return new Response('unauthorized', { status: 401 });
-    return Response.json({ candidates: [{ content: { parts: [{ text: 'gemini-secondary-success' }] } }] });
+    if (url.includes('generativelanguage.googleapis.com')) {
+      return Response.json({ candidates: [{ content: { parts: [{ text: 'gemini-primary-success' }] } }] });
+    }
+    return new Response('unexpected FreeModel call', { status: 500 });
   }) as typeof fetch;
 
-  const reply = await callFreeModelText({
+  let reply = await callFreeModelText({
     messages: [{ role: 'user', content: 'test fallback' }],
     timeoutMs: 5_000,
   });
 
-  if (reply !== 'gemini-secondary-success') throw new Error(`Unexpected Gemini fallback reply: ${reply}`);
-  if (requests.length !== 4 || !requests[2].includes('key=gemini-primary-test') || !requests[3].includes('key=gemini-secondary-test')) {
-    throw new Error(`Unexpected provider order: ${requests.join(', ')}`);
+  if (reply !== 'gemini-primary-success' || requests.length !== 1 || !requests[0].includes('key=gemini-primary-test')) {
+    throw new Error(`Gemini should be primary, got ${reply} after ${requests.join(', ')}`);
   }
-  console.log('Gemini failover verification passed: FreeModel keys -> Gemini keys in order.');
+
+  requests.length = 0;
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    requests.push(url);
+    if (url.includes('generativelanguage.googleapis.com')) return new Response('Gemini unavailable', { status: 503 });
+    return Response.json({ choices: [{ message: { content: 'freemodel-secondary-success' } }] });
+  }) as typeof fetch;
+  reply = await callFreeModelText({ messages: [{ role: 'user', content: 'test fallback' }], timeoutMs: 5_000 });
+  if (reply !== 'freemodel-secondary-success' || requests.length !== 3 || !requests[0].includes('key=gemini-primary-test') || !requests[1].includes('key=gemini-secondary-test') || !requests[2].includes('freemodel.dev')) {
+    throw new Error(`FreeModel fallback order was incorrect: ${reply} after ${requests.join(', ')}`);
+  }
+  console.log('Provider order verification passed: Gemini primary -> FreeModel fallback.');
 } finally {
   globalThis.fetch = originalFetch;
   process.env.FREEMODEL_API_KEY = originalEnv.free1;

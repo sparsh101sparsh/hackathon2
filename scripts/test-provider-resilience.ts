@@ -46,10 +46,13 @@ async function run() {
     process.env.FREEMODEL_API_KEY_2,
     process.env.FREEMODEL_API_KEY_3,
   ];
+  const originalGeminiKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2];
 
   process.env.FREEMODEL_API_KEY = 'primary-test-key';
   process.env.FREEMODEL_API_KEY_2 = 'secondary-test-key';
   process.env.FREEMODEL_API_KEY_3 = 'tertiary-test-key';
+  process.env.GEMINI_API_KEY = '';
+  process.env.GEMINI_API_KEY_2 = '';
 
   try {
     const freemodel = await import(`../lib/freemodel.ts?resilience=${Date.now()}`);
@@ -131,6 +134,7 @@ async function run() {
   } finally {
     globalThis.fetch = originalFetch;
     [process.env.FREEMODEL_API_KEY, process.env.FREEMODEL_API_KEY_2, process.env.FREEMODEL_API_KEY_3] = originalKeys;
+    [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2] = originalGeminiKeys;
   }
 
   console.log('Provider resilience verification: 6 steps passed.');

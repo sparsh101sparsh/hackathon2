@@ -85,6 +85,20 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
     ? null
     : Date.now() + Math.max(1, options.timeoutMs);
 
+  // Gemini is the preferred provider. FreeModel is deliberately attempted
+  // only after every configured Gemini key fails.
+  try {
+    const geminiText = await callGeminiText(messages, {
+      temperature,
+      maxTokens: max_tokens,
+      timeoutMs: requestDeadline === null ? GEMINI_TIMEOUT_MS : Math.max(1, requestDeadline - Date.now()),
+    });
+    if (geminiText) return geminiText;
+  } catch (error: unknown) {
+    lastError = error instanceof Error ? error : new Error('Gemini provider request failed.');
+    console.warn('[Gemini provider unavailable] trying FreeModel providers.');
+  }
+
   for (const [index, apiKey] of apiKeys.entries()) {
     try {
       const remainingTimeout = requestDeadline === null
@@ -127,18 +141,6 @@ export async function callFreeModelText(options: FreeModelOptions): Promise<stri
       lastError = error instanceof Error ? error : new Error('FreeModel provider request failed.');
       console.warn(`[FreeModel API Unavailable] provider ${index + 1}/${apiKeys.length}; trying next provider.`);
     }
-  }
-
-  try {
-    const geminiText = await callGeminiText(messages, {
-      temperature,
-      maxTokens: max_tokens,
-      timeoutMs: requestDeadline === null ? GEMINI_TIMEOUT_MS : Math.max(1, requestDeadline - Date.now()),
-    });
-    if (geminiText) return geminiText;
-  } catch (error: unknown) {
-    lastError = error instanceof Error ? error : new Error('Gemini provider request failed.');
-    console.warn('[Gemini provider unavailable] trying deterministic fallback.');
   }
 
   if (fallbackString !== undefined) {
