@@ -31,11 +31,11 @@ export function BadgesGrid({ badges }: BadgesGridProps) {
       case 'Platinum':
         return 'border-emerald-600/60 bg-emerald-950/20 text-emerald-400';
       case 'Diamond':
-        return 'border-cyan-600/60 bg-cyan-950/20 text-cyan-400';
+        return 'border-amber-400/50 bg-amber-400/10 text-amber-300';
       case 'Master':
-        return 'border-purple-600/60 bg-purple-950/20 text-purple-400 font-bold';
+        return 'border-amber-300/60 bg-amber-300/10 text-amber-200 font-bold';
       default:
-        return 'border-indigo-600/60 bg-indigo-950/20 text-indigo-400';
+        return 'border-amber-500/40 bg-amber-500/10 text-amber-300';
     }
   };
 
@@ -50,7 +50,7 @@ export function BadgesGrid({ badges }: BadgesGridProps) {
             Unlock ranks from Bronze to Master by solving problems & competing
           </p>
         </div>
-        <span className="text-xs font-semibold text-indigo-400 bg-indigo-950/50 border border-indigo-800/60 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-semibold text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2.5 py-1 rounded-lg">
           {badges.filter((b) => b.unlocked).length} / {badges.length} Unlocked
         </span>
       </div>

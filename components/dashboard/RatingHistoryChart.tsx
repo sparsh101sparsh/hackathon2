@@ -42,7 +42,7 @@ export function RatingHistoryChart({ history, currentRating }: RatingHistoryChar
         </div>
         <div className="text-right">
           <span className="text-xs text-slate-400">Current Rating</span>
-          <div className="text-lg font-bold text-indigo-400">{currentRating}</div>
+          <div className="text-lg font-bold text-amber-300">{currentRating}</div>
         </div>
       </div>
 
@@ -69,7 +69,7 @@ export function RatingHistoryChart({ history, currentRating }: RatingHistoryChar
                       <p className="font-bold text-white">{data.contestTitle}</p>
                       <p className="text-slate-400">{data.date}</p>
                       <div className="mt-1 flex items-center gap-2">
-                        <span className="font-bold text-indigo-400">Rating: {data.rating}</span>
+                        <span className="font-bold text-amber-300">Rating: {data.rating}</span>
                         <span
                           className={`font-semibold ${
                             data.delta >= 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -87,10 +87,10 @@ export function RatingHistoryChart({ history, currentRating }: RatingHistoryChar
             <Line
               type="monotone"
               dataKey="rating"
-              stroke="#818cf8"
+              stroke="#fbbf24"
               strokeWidth={3}
-              dot={{ fill: '#6366f1', r: 4 }}
-              activeDot={{ r: 6, fill: '#38bdf8' }}
+              dot={{ fill: '#f59e0b', r: 4 }}
+              activeDot={{ r: 6, fill: '#fde68a' }}
             />
           </LineChart>
           </ResponsiveContainer>

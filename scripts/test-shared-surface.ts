@@ -16,6 +16,11 @@ const files = [
   'components/editor/EditorWorkspace.tsx',
   'components/guidance/ProgressiveHints.tsx',
   'components/guidance/TutorDrawer.tsx',
+  'components/landing/HeroSection.tsx',
+  'components/landing/CoreFeaturesGrid.tsx',
+  'app/leaderboard/page.tsx',
+  'components/dashboard/BadgesGrid.tsx',
+  'components/dashboard/RatingHistoryChart.tsx',
 ];
 
 const forbidden = [

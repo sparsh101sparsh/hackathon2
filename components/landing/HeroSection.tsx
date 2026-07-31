@@ -20,45 +20,45 @@ export const HeroSection: React.FC = () => {
       label: 'DSA Problems',
       value: '600+',
       sub: 'Arrays to Dynamic Programming',
-      icon: <Code2 className="w-5 h-5 text-cyan-400" />,
-      color: 'from-cyan-500/20 to-blue-500/10 border-cyan-500/30',
+      icon: <Code2 className="w-5 h-5 text-amber-300" />,
+      color: 'border-amber-400/30',
     },
     {
       label: 'Tech Companies',
       value: '8',
       sub: 'Google, Meta, Amazon, Apple...',
-      icon: <Building2 className="w-5 h-5 text-emerald-400" />,
-      color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30',
+      icon: <Building2 className="w-5 h-5 text-amber-300" />,
+      color: 'border-amber-400/30',
     },
     {
       label: 'Judge0 Execution',
       value: 'CE',
       sub: 'Isolated Sandbox Code Runner',
       icon: <Zap className="w-5 h-5 text-amber-400" />,
-      color: 'from-amber-500/20 to-orange-500/10 border-amber-500/30',
+      color: 'border-amber-400/30',
     },
     {
       label: 'Guided Practice',
       value: 'FreeModel',
       sub: 'Instant Tutor & Hints',
-      icon: <Bot className="w-5 h-5 text-purple-400" />,
-      color: 'from-purple-500/20 to-indigo-500/10 border-purple-500/30',
+      icon: <Bot className="w-5 h-5 text-amber-300" />,
+      color: 'border-amber-400/30',
     },
   ];
 
   return (
     <section className="relative pt-20 pb-16 px-6 max-w-7xl mx-auto flex flex-col items-center text-center overflow-hidden">
       {/* Radiant Background Glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-cyan-500/20 via-indigo-500/15 to-purple-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-amber-400/5 rounded-full blur-[140px] pointer-events-none -z-10" />
 
       {/* Feature Badge */}
       <motion.div
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl text-cyan-300 text-xs font-semibold shadow-lg shadow-cyan-950/30 mb-8"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111115] border border-amber-400/30 text-amber-300 text-xs font-semibold shadow-lg shadow-amber-950/20 mb-8"
       >
-        <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+        <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
         <span>Focused Competitive Coding & Interview Platform</span>
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
       </motion.div>
@@ -71,7 +71,7 @@ export const HeroSection: React.FC = () => {
         className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white max-w-5xl leading-[1.1]"
       >
         Master Coding & Crack Tech Interviews with{' '}
-        <span className="bg-gradient-to-r from-cyan-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent underline decoration-cyan-500/30 underline-offset-8">
+        <span className="text-amber-300 underline decoration-amber-400/30 underline-offset-8">
           CodeForge
         </span>
       </motion.h1>
@@ -95,7 +95,7 @@ export const HeroSection: React.FC = () => {
       >
         <Link
           href="/problems"
-          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#08080a] font-bold text-xs sm:text-sm shadow-lg shadow-amber-400/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <span>Explore Problems</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -103,9 +103,9 @@ export const HeroSection: React.FC = () => {
 
         <Link
           href="/mock-interview"
-          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/60 font-semibold text-xs transition-all backdrop-blur-xl hover:border-cyan-500/40"
+          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all hover:border-amber-400/40"
         >
-          <Bot className="w-5 h-5 text-cyan-400" />
+          <Bot className="w-5 h-5 text-amber-300" />
           <span>Try Mock Interview</span>
         </Link>
       </motion.div>
@@ -122,7 +122,7 @@ export const HeroSection: React.FC = () => {
             key={item.label}
             whileHover={{ y: -4, scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl p-6 text-left flex flex-col justify-between"
+            className="rounded-xl bg-[#0f0f12] border border-white/10 shadow-xl p-6 text-left flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="p-2 rounded-xl bg-slate-950/80 border border-slate-800">{item.icon}</span>
