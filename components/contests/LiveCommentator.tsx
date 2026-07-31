@@ -523,44 +523,39 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
 
   return (
     <div
-      className={`bg-slate-900/95 border border-slate-800 rounded-2xl p-4 shadow-xl relative overflow-hidden backdrop-blur-md transition-all ${className}`}
+      className={`bg-slate-900/70 border border-slate-800/90 rounded-xl p-3.5 relative overflow-hidden backdrop-blur-md transition-all ${className}`}
     >
-      {/* Dynamic Background Glow */}
-      <div
-        className={`absolute -right-12 -bottom-12 w-40 h-40 ${hypeProps.glow} rounded-full blur-3xl pointer-events-none`}
-      />
-
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-400/10 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-sm">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-amber-300">
             <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
             <span>Live Shoutcaster</span>
           </div>
-
-          {/* Hype Level Badge */}
-          <span
-            className={`flex items-center gap-1.5 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${hypeProps.bg}`}
-          >
-            {hypeProps.icon}
-            <span>{hypeProps.label}</span>
-          </span>
-          {privacyMode && (
-            <span className="flex items-center gap-1.5 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border bg-emerald-500/10 text-emerald-300 border-emerald-500/30">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>PRIVATE ROOM</span>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span
+              className={`flex items-center gap-1.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${hypeProps.bg}`}
+            >
+              {hypeProps.icon}
+              <span>{hypeProps.label}</span>
             </span>
-          )}
+            {privacyMode && (
+              <span className="flex items-center gap-1.5 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-emerald-500/10 text-emerald-300 border-emerald-500/30">
+                <ShieldAlert className="w-3 h-3" />
+                <span>PRIVATE</span>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Action Button Controls */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Recent History Toggle */}
           <button
             onClick={() => setShowHistory((prev) => !prev)}
             aria-label={showHistory ? 'Hide commentary history' : 'Show commentary history'}
             title="View Commentary History"
-            className={`p-1.5 rounded-xl text-xs font-bold transition border ${
+            className={`p-1.5 rounded-lg text-xs font-bold transition border ${
               showHistory
                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
                 : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
@@ -573,7 +568,7 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
           <button
             onClick={toggleTTS}
             title={isMuted ? 'Unmute Voice Commentary' : 'Mute Voice Commentary'}
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition border flex items-center gap-1.5 ${
+            className={`p-1.5 rounded-lg text-xs font-bold transition border flex items-center gap-1.5 ${
               !isMuted
                 ? 'bg-amber-400/10 border-amber-400 text-amber-300 shadow-md shadow-amber-950/20'
                 : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
@@ -582,12 +577,10 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
             {!isMuted ? (
               <>
                 <Volume2 className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                <span className="hidden sm:inline">Voice ON</span>
               </>
             ) : (
               <>
                 <VolumeX className="w-3.5 h-3.5 text-slate-400" />
-                <span className="hidden sm:inline">Mute TTS</span>
               </>
             )}
           </button>
@@ -598,7 +591,7 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
             disabled={loading}
             aria-label="Refresh live commentary"
             title="Trigger Fresh Callout"
-            className="p-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-white transition disabled:opacity-50"
+            className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 hover:text-white transition disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-amber-400' : ''}`} />
           </button>
@@ -616,17 +609,17 @@ export const LiveCommentator: React.FC<LiveCommentatorProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.98 }}
           transition={{ duration: 0.25 }}
-          className="text-xs sm:text-sm font-semibold text-slate-100 leading-relaxed bg-slate-950/80 border border-slate-800/90 rounded-xl p-3.5 shadow-inner flex items-start gap-3 relative"
+          className="text-xs font-semibold text-slate-100 leading-relaxed bg-slate-950/70 border border-slate-800 rounded-lg p-3 flex items-start gap-2.5 relative"
         >
-          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0 mt-0.5">
-            <Flame className="w-4 h-4 text-orange-400" />
+          <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-400 shrink-0 mt-0.5">
+            <Flame className="w-3.5 h-3.5 text-orange-400" />
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
               <span className="font-bold text-amber-400/90">SPEAKER: {currentMessage.speaker}</span>
               <span>{new Date(currentMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
             </div>
-            <p className="font-sans tracking-wide text-amber-50/90 font-medium">{currentMessage.text}</p>
+            <p className="font-sans text-amber-50/90 font-medium">{currentMessage.text}</p>
           </div>
         </motion.div>
       </AnimatePresence>

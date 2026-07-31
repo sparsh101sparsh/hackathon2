@@ -36,6 +36,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { LiveCommentator } from '@/components/contests/LiveCommentator';
 import { JudgeScorecardModal, JudgeReportProps } from '@/components/contests/JudgeScorecardModal';
+import { ProblemMarkdown } from '@/components/ui/ProblemMarkdown';
 
 interface ExecutionResult {
   verdict?: string;
@@ -448,33 +449,33 @@ export default function BattleRoomPage() {
   const isHost = hostUserId ? hostUserId === currentUserId : Boolean(user?.name && user.name === room.hostName);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="h-[calc(100svh-56px)] min-h-[720px] bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
       <JudgeScorecardModal isOpen={isJudgeModalOpen} onClose={() => setIsJudgeModalOpen(false)} report={judgeReport} />
-      {/* Top Arena Navigation Bar */}
-      <header className="h-16 bg-slate-900/90 border-b border-slate-800/80 px-4 sm:px-6 flex items-center justify-between backdrop-blur-md sticky top-0 z-40">
-        <div className="flex items-center gap-4">
+      {/* Compact room command bar */}
+      <header className="bg-slate-950/95 border-b border-slate-800/80 px-4 sm:px-5 py-3 backdrop-blur-md shrink-0">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={handleLeaveRoom}
             title="Leave Room"
-            className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition flex items-center gap-1 text-xs font-bold"
+              className="h-9 px-3 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition flex items-center gap-1.5 text-xs font-bold shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Exit</span>
           </button>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
-                <Swords className="w-3 h-3 inline mr-1" /> Speed Battle
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-300 border border-amber-500/20 shrink-0">
+                  <Swords className="w-3 h-3" /> Speed Battle
               </span>
-              <h1 className="text-base font-black text-white">{room.name}</h1>
+                <h1 className="truncate text-base sm:text-lg font-black text-white">{room.name}</h1>
+              </div>
+              <p className="text-[11px] text-slate-500 truncate">Host: {room.hostName}</p>
             </div>
-            <p className="text-[11px] text-slate-400">Host: {room.hostName}</p>
           </div>
-        </div>
 
-        {/* Room Code Badge & Copy */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl">
+          <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+            <div className="flex h-9 items-center gap-2 px-3 bg-slate-900 border border-slate-800 rounded-lg">
             <span className="text-[11px] font-bold text-slate-400">CODE:</span>
             <span className="font-mono font-extrabold text-amber-400 text-xs tracking-wider">{roomCode}</span>
             <button
@@ -488,7 +489,7 @@ export default function BattleRoomPage() {
             </button>
           </div>
 
-          <div className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs font-bold text-amber-400 flex items-center gap-1.5">
+            <div className="h-9 px-3 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-slate-300 flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5" />
             <span>{room.participants.length} / {room.maxPlayers} Friends</span>
           </div>
@@ -497,37 +498,17 @@ export default function BattleRoomPage() {
             <button
               onClick={handleStartBattle}
               disabled={room.mode === 'DUEL' && room.participants.length < 2}
-              className="px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-950/30 hover:scale-105 transition flex items-center gap-1.5 disabled:opacity-40 disabled:hover:scale-100"
+                className="h-9 px-4 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-950/30 transition flex items-center gap-1.5 disabled:opacity-40"
             >
               <Flame className="w-4 h-4" /> {room.mode === 'DUEL' && room.participants.length < 2 ? 'Waiting for Opponent' : 'Start Battle'}
             </button>
           )}
           {room.status !== 'WAITING' && (
-            <div className={`px-4 py-1.5 rounded-xl border font-mono text-sm font-black flex items-center gap-2 ${room.status === 'FINISHED' ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : remainingSeconds < 60 ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'}`}>
+              <div className={`h-9 px-4 rounded-lg border font-mono text-sm font-black flex items-center gap-2 ${room.status === 'FINISHED' ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : remainingSeconds < 60 ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'}`}>
               <Clock className="w-4 h-4" /> {room.status === 'FINISHED' ? 'MATCH OVER' : `${minutes}:${seconds}`}
             </div>
           )}
-
-          {/* Host Close Room & Participant Leave Buttons */}
-          <button
-            onClick={handleLeaveRoom}
-            title="Leave Battle"
-            className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 hover:text-rose-400 hover:border-rose-500/40 text-xs font-bold transition flex items-center gap-1.5"
-          >
-            <LogOut className="w-3.5 h-3.5 text-rose-400" />
-            <span>Leave Battle</span>
-          </button>
-
-          {isHost && (
-            <button
-              onClick={handleCloseRoom}
-              title="Close Battle Room"
-              className="px-3 py-1.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 text-xs font-bold transition flex items-center gap-1.5"
-            >
-              <Power className="w-3.5 h-3.5 text-rose-400" />
-              <span>Close Room</span>
-            </button>
-          )}
+          </div>
         </div>
       </header>
 
@@ -545,20 +526,20 @@ export default function BattleRoomPage() {
       )}
 
       {/* Main Grid: Left Problem & Editor, Right Live Leaderboard */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_330px] overflow-hidden min-h-0">
         {/* Workspace: 3 Columns on Large Screens */}
-        <div className="lg:col-span-3 flex flex-col border-r border-slate-800/80">
+        <div className="flex flex-col border-r border-slate-800/80 min-w-0 min-h-0">
           {/* Problem Selector Tabs */}
-          <div className="bg-slate-950 border-b border-slate-800/80 px-4 py-2.5 flex items-center gap-2 overflow-x-auto">
+          <div className="bg-slate-950 border-b border-slate-800/80 px-4 py-2 flex items-center gap-2 overflow-x-auto shrink-0">
             {problems.map((p, idx) => {
               const isSolved = solvedProblems[p.id];
               return (
                 <button
                   key={p.id}
                   onClick={() => setActiveProblemIdx(idx)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                     activeProblemIdx === idx
-                      ? 'bg-slate-800 text-amber-400 border border-amber-500/40 shadow-sm'
+                      ? 'bg-slate-800 text-amber-300 border border-amber-500/40 shadow-sm'
                       : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
                   }`}
                 >
@@ -571,11 +552,14 @@ export default function BattleRoomPage() {
 
           {/* Problem Statement & Monaco Editor */}
           {activeProblem ? (
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(330px,0.82fr)_minmax(520px,1.18fr)] overflow-hidden min-h-0">
               {/* Problem Description */}
-              <div className="p-5 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)] bg-slate-950/60">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-black text-white">{activeProblem.title}</h2>
+              <div className="p-5 space-y-5 overflow-y-auto bg-slate-950/60 min-h-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500 font-black">Problem brief</p>
+                    <h2 className="text-xl font-black text-white mt-1">{activeProblem.title}</h2>
+                  </div>
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
                     activeProblem.difficulty === 'EASY'
                       ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
@@ -587,15 +571,36 @@ export default function BattleRoomPage() {
                   </span>
                 </div>
 
-                <div className="prose prose-invert max-w-none text-xs text-slate-300 whitespace-pre-line leading-relaxed">
-                  {activeProblem.statement}
-                </div>
+                <ProblemMarkdown content={activeProblem.statement} size="compact" className="text-slate-300" />
+
+                {(activeProblem.inputFormat || activeProblem.outputFormat || activeProblem.constraints) && (
+                  <div className="grid gap-3 border-t border-slate-800/60 pt-4">
+                    {activeProblem.inputFormat && (
+                      <section>
+                        <h3 className="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Input</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-400">{activeProblem.inputFormat}</p>
+                      </section>
+                    )}
+                    {activeProblem.outputFormat && (
+                      <section>
+                        <h3 className="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Output</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-400">{activeProblem.outputFormat}</p>
+                      </section>
+                    )}
+                    {activeProblem.constraints && (
+                      <section>
+                        <h3 className="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Constraints</h3>
+                        <ProblemMarkdown content={activeProblem.constraints} size="compact" className="mt-1 text-slate-400" />
+                      </section>
+                    )}
+                  </div>
+                )}
 
                 {/* Sample Test Case */}
                 {activeProblem.testCases?.[0] && (
                   <div className="space-y-2 pt-2 border-t border-slate-800/60">
-                    <div className="text-xs font-bold text-amber-400">Sample Test Case</div>
-                    <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2 text-xs font-mono">
+                    <div className="text-xs font-bold text-amber-300">Sample Test Case</div>
+                    <div className="p-3 bg-slate-900/80 rounded-lg border border-slate-800 space-y-2 text-xs font-mono">
                       <div>
                         <span className="text-slate-500">Input: </span>
                         <span className="text-slate-200">{activeProblem.testCases[0].input}</span>
@@ -610,9 +615,9 @@ export default function BattleRoomPage() {
               </div>
 
               {/* Code Editor Panel */}
-              <div className="flex flex-col border-l border-slate-800/80 bg-slate-900/40">
+              <div className="flex flex-col border-l border-slate-800/80 bg-slate-900/40 min-h-0">
                 {/* Language Selector & Controls */}
-                <div className="p-2.5 bg-slate-950 border-b border-slate-800/80 flex items-center justify-between">
+                <div className="p-2.5 bg-slate-950 border-b border-slate-800/80 flex items-center justify-between gap-3 shrink-0">
                   <select
                     aria-label="Contest programming language"
                     value={language}
@@ -630,7 +635,7 @@ export default function BattleRoomPage() {
                     <button
                       onClick={handleRunCode}
                       disabled={executing}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-amber-400 border border-slate-700 transition flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs font-bold text-amber-300 border border-slate-700 transition flex items-center gap-1.5 disabled:opacity-50"
                     >
                       <Play className="w-3.5 h-3.5" /> Run Code
                     </button>
@@ -650,7 +655,7 @@ export default function BattleRoomPage() {
                 </div>
 
                 {/* Monaco Editor Component */}
-                <div className="flex-1 relative min-h-[300px]">
+                <div className="flex-1 relative min-h-[360px]">
                   <CodeEditor
                     language={language}
                     value={code}
@@ -688,7 +693,7 @@ export default function BattleRoomPage() {
         </div>
 
           {/* Live Leaderboard Sidebar (Max 10 Players) and commentator */}
-        <div className="p-4 bg-slate-950 space-y-4 overflow-y-auto">
+        <aside className="bg-slate-950/95 border-t xl:border-t-0 border-slate-800/80 p-4 space-y-4 overflow-y-auto min-h-0">
           {/* Live commentator component */}
           <LiveCommentator
             roomCode={roomCode}
@@ -707,6 +712,7 @@ export default function BattleRoomPage() {
             userName={currentUserName}
             lastEvent={lastEvent}
             eventType={lastEvent}
+            className="shadow-none"
           />
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2">
@@ -729,13 +735,13 @@ export default function BattleRoomPage() {
                   key={p.id}
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`p-3 rounded-2xl border transition flex items-center justify-between ${
+                  className={`p-3 rounded-xl border transition flex items-center justify-between ${
                     isFirst
-                      ? 'bg-amber-400/10 border-amber-500/60 shadow-lg shadow-amber-950/40'
+                      ? 'bg-amber-400/10 border-amber-500/50'
                       : isSecond
-                      ? 'bg-slate-900 border-slate-400/40'
+                      ? 'bg-slate-900/70 border-slate-500/40'
                       : isThird
-                      ? 'bg-slate-900 border-amber-700/40'
+                      ? 'bg-slate-900/70 border-amber-700/35'
                       : 'bg-slate-900/60 border-slate-800'
                   }`}
                 >
@@ -774,7 +780,7 @@ export default function BattleRoomPage() {
             <p className="text-[11px] text-slate-400">Invite up to 10 friends with code:</p>
             <button
               onClick={handleCopyCode}
-              className="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-mono font-bold text-amber-400 flex items-center justify-center gap-2 transition"
+              className="w-full py-2 bg-slate-900/70 hover:bg-slate-800 border border-slate-800 rounded-lg text-xs font-mono font-bold text-amber-300 flex items-center justify-center gap-2 transition"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>Copy Invite Code ({roomCode})</span>
@@ -783,7 +789,7 @@ export default function BattleRoomPage() {
             <div className="pt-2 flex flex-col gap-2">
               <button
                 onClick={handleLeaveRoom}
-                className="w-full py-2 bg-slate-900 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition"
+                className="w-full py-2 bg-slate-900/70 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition"
               >
                 <LogOut className="w-3.5 h-3.5 text-rose-400" />
                 <span>Leave Battle Room</span>
@@ -792,7 +798,7 @@ export default function BattleRoomPage() {
               {isHost && (
                 <button
                   onClick={handleCloseRoom}
-                  className="w-full py-2 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 rounded-xl text-xs font-bold text-rose-300 flex items-center justify-center gap-2 transition"
+                  className="w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/35 rounded-lg text-xs font-bold text-rose-300 flex items-center justify-center gap-2 transition"
                 >
                   <Power className="w-3.5 h-3.5 text-rose-400" />
                   <span>Close & End Room (Host)</span>
@@ -800,7 +806,7 @@ export default function BattleRoomPage() {
               )}
             </div>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );
