@@ -7,13 +7,29 @@ type Entry = {
   hasVisualizer: boolean;
 };
 
+type ProblemRef = {
+  id: string;
+  slug: string;
+};
+
+async function loadProblemRefs(ids: string[]): Promise<ProblemRef[]> {
+  try {
+    return await prisma.problem.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, slug: true },
+    });
+  } catch (error) {
+    console.warn('Visualizer catalog DB lookup failed; falling back to prisma/seedData/leetcode400.json.');
+    const seedProblems = JSON.parse(fs.readFileSync('prisma/seedData/leetcode400.json', 'utf8')) as ProblemRef[];
+    const wanted = new Set(ids);
+    return seedProblems.filter((problem) => wanted.has(problem.id)).map(({ id, slug }) => ({ id, slug }));
+  }
+}
+
 async function main() {
   const entries = Object.values(JSON.parse(fs.readFileSync('public/data/visualizers.json', 'utf8'))) as Entry[];
   const ids = entries.map((entry) => entry.problemId);
-  const problems = await prisma.problem.findMany({
-    where: { id: { in: ids } },
-    select: { id: true, slug: true },
-  });
+  const problems = await loadProblemRefs(ids);
   const byId = new Map(problems.map((problem) => [problem.id, problem.slug]));
   const failures = entries.flatMap((entry) => {
     const expectedSlug = entry.lessonPath.split('/').filter(Boolean).pop();

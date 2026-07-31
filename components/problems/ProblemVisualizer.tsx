@@ -92,53 +92,130 @@ function frame(
   return { visualType, codeLine, commentary, state: state.map(([label, value]) => ({ label, value })), ...extra };
 }
 
-function scenarioData(type: VisualType, slug: string, base: number[], step: number): Partial<LessonFrame> {
+function scenarioData(type: VisualType, slug: string, base: number[], step: number, totalSteps = 8): Partial<LessonFrame> {
   let hash = 0;
   for (const char of slug) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  const active = [
-    [0],
-    [1, 2],
-    [2, 3],
-    [Math.max(0, base.length - 1)],
-  ][step];
+  const maxIndex = Math.max(0, base.length - 1);
+  const progress = totalSteps <= 1 ? 1 : step / (totalSteps - 1);
+  const cursor = Math.min(maxIndex, Math.round(progress * maxIndex));
+  const pairCursor = Math.min(maxIndex, Math.floor(progress * maxIndex));
+  const active = Array.from(new Set([
+    Math.max(0, pairCursor - 1),
+    pairCursor,
+    Math.min(maxIndex, pairCursor + 1),
+  ])).filter((index) => index >= 0 && index <= maxIndex);
 
   if (type === 'array') {
     const pointers: Record<string, number> | undefined = slug.includes('binary-search')
-      ? { lo: step === 0 ? 0 : step === 1 ? 2 : 4, mid: step === 0 ? 2 : step === 1 ? 4 : 4, hi: step === 0 ? 5 : step === 1 ? 5 : 4 }
+      ? {
+          lo: step < 2 ? 0 : step < 4 ? 2 : step < 6 ? 3 : 4,
+          mid: step < 2 ? 2 : step < 4 ? 3 : 4,
+          hi: step < 2 ? 5 : step < 4 ? 5 : step < 6 ? 4 : 4,
+        }
       : slug.includes('palindrome') || slug.includes('container') || slug.includes('triangle') || slug.includes('two-sum')
-        ? { L: step < 2 ? 0 : 1, R: step < 2 ? base.length - 1 : base.length - 2 }
+        ? { L: Math.min(3, Math.floor(progress * 3)), R: Math.max(3, maxIndex - Math.floor(progress * 3)) }
+        : slug.includes('window') || slug.includes('permutation') || slug.includes('subarray')
+          ? { L: Math.max(0, cursor - 2), R: cursor }
         : undefined;
-    return { values: base, active, pointers };
+    const pointerActive = pointers ? Object.values(pointers) : active;
+    return { values: base, active: Array.from(new Set(pointerActive)).filter((index) => index >= 0 && index <= maxIndex), pointers };
   }
 
   if (type === 'matrix') {
     const matrix = Array.from({ length: 4 }, (_, rowIndex) => Array.from({ length: 4 }, (_, colIndex) => {
       const value = (hash + rowIndex * 7 + colIndex * 3) % 2;
-      return step === 0 ? value : step === 1 ? (rowIndex + colIndex < 3 ? 1 : value) : step === 2 ? (rowIndex + colIndex < 5 ? 1 : value) : 1;
+      const flat = rowIndex * 4 + colIndex;
+      const threshold = Math.floor(progress * 15);
+      return flat <= threshold ? 1 : value;
     }));
-    return { matrix, active: step === 0 ? [0] : step === 1 ? [0, 1, 4, 5] : step === 2 ? [5, 6, 9, 10] : [15] };
+    const center = Math.min(15, Math.round(progress * 15));
+    const rowIndex = Math.floor(center / 4);
+    const colIndex = center % 4;
+    const matrixActive = [
+      center,
+      rowIndex > 0 ? center - 4 : center,
+      colIndex > 0 ? center - 1 : center,
+      rowIndex > 0 && colIndex > 0 ? center - 5 : center,
+    ];
+    return { matrix, active: Array.from(new Set(matrixActive)).filter((index) => index >= 0 && index < 16) };
   }
 
   if (type === 'stack') {
-    const stacks: (string | number)[][] = [[], ['('], ['(', '['], []];
-    return { stack: stacks[step] };
+    const tokens = slug.includes('decode') ? ['3', '[', 'a', '2', '[', 'c', ']'] : ['-1', '(', '[', '{', '}', ']', ')'];
+    const depth = step === totalSteps - 1 ? 0 : Math.min(tokens.length, Math.max(1, Math.ceil(progress * tokens.length)));
+    return { stack: tokens.slice(0, depth) };
   }
 
   if (type === 'nodes') {
     const suffix = slug.split('-').map((part) => part[0]?.toUpperCase() || '').join('').slice(0, 2);
-    return { nodes: ['HEAD', suffix || 'A', 'B', 'C', 'TAIL'], active };
+    const nodes = ['HEAD', suffix || 'A', 'B', 'C', 'TAIL'];
+    const nodeCursor = Math.min(nodes.length - 1, Math.round(progress * (nodes.length - 1)));
+    return { nodes, active: Array.from(new Set([Math.max(0, nodeCursor - 1), nodeCursor])).filter((index) => index < nodes.length) };
   }
 
   if (type === 'graph') {
-    return { nodes: ['A', 'B', 'C', 'D', 'E'], edges: [[0, 1], [0, 2], [1, 3], [2, 4]], active: step === 0 ? [0] : step === 1 ? [0, 1] : step === 2 ? [0, 1, 2] : [0, 1, 2, 3, 4] };
+    const graphActiveCount = Math.min(5, Math.max(1, Math.ceil(progress * 5)));
+    return { nodes: ['A', 'B', 'C', 'D', 'E'], edges: [[0, 1], [0, 2], [1, 3], [2, 4]], active: Array.from({ length: graphActiveCount }, (_, index) => index) };
   }
 
   if (type === 'bars') {
-    return { bars: base.slice(0, 7).map((value, index) => Math.max(2, ((value + index * 3) % 10) + 1)), active };
+    const bars = base.slice(0, 7).map((value, index) => Math.max(2, ((value + index * 3) % 10) + 1));
+    return { bars, active };
   }
 
   const bits = ((hash >>> 0).toString(2).padStart(8, '0').slice(-8));
-  return { bits: step === 0 ? bits : step === 1 ? bits.slice(1) + '0' : step === 2 ? bits.slice(2) + '00' : '00000000' };
+  const shift = Math.min(7, step);
+  return { bits: shift === 0 ? bits : bits.slice(shift) + '0'.repeat(shift) };
+}
+
+function describePayload(type: VisualType, payload: Partial<LessonFrame>): string {
+  if (type === 'array' && payload.values) {
+    const pointers = Object.entries(payload.pointers || {})
+      .map(([name, index]) => `${name}=${index} (${payload.values?.[index]})`)
+      .join(', ');
+    const active = (payload.active || []).map((index) => `${index}:${payload.values?.[index]}`).join(', ');
+    return pointers || `active indices ${active}`;
+  }
+  if (type === 'matrix' && payload.matrix) {
+    const cols = Math.max(...payload.matrix.map((row) => row.length), 1);
+    const active = (payload.active || []).map((index) => `(${Math.floor(index / cols)},${index % cols})=${payload.matrix?.[Math.floor(index / cols)]?.[index % cols]}`).join(', ');
+    return `active cells ${active}`;
+  }
+  if (type === 'stack') {
+    const stack = payload.stack || [];
+    return stack.length ? `stack top ${stack[stack.length - 1]} with depth ${stack.length}` : 'the stack is empty';
+  }
+  if ((type === 'nodes' || type === 'graph') && payload.nodes) {
+    const active = (payload.active || []).map((index) => payload.nodes?.[index]).filter(Boolean).join(', ');
+    return `active nodes ${active || payload.nodes[0]}`;
+  }
+  if (type === 'bars' && payload.bars) {
+    const active = (payload.active || []).map((index) => `${index}:${payload.bars?.[index]}`).join(', ');
+    return `active bars ${active}`;
+  }
+  if (type === 'bits') return `bits ${payload.bits}`;
+  return 'the highlighted state';
+}
+
+function visualState(type: VisualType, payload: Partial<LessonFrame>, step: number): [string, string][] {
+  if (type === 'array' && payload.values) {
+    const active = (payload.active || []).map((index) => `${index}:${payload.values?.[index]}`).join(', ');
+    return [['active', active || 'none'], ['cursor', String(payload.active?.[0] ?? step)]];
+  }
+  if (type === 'matrix' && payload.matrix) {
+    const cols = Math.max(...payload.matrix.map((row) => row.length), 1);
+    const first = payload.active?.[0] ?? 0;
+    return [['cell', `(${Math.floor(first / cols)},${first % cols})`], ['active', String((payload.active || []).length)]];
+  }
+  if (type === 'stack') return [['depth', String(payload.stack?.length || 0)], ['top', String(payload.stack?.at(-1) || 'empty')]];
+  if ((type === 'nodes' || type === 'graph') && payload.nodes) {
+    return [['active', (payload.active || []).map((index) => payload.nodes?.[index]).filter(Boolean).join(', ') || 'none'], ['visited', `${payload.active?.length || 0}`]];
+  }
+  if (type === 'bars' && payload.bars) {
+    return [['active', (payload.active || []).map((index) => `${index}:${payload.bars?.[index]}`).join(', ') || 'none'], ['best', String(Math.max(...payload.bars))]];
+  }
+  if (type === 'bits') return [['bits', payload.bits || ''], ['shift', String(step)]];
+  return [['active', 'visible'], ['cursor', String(step)]];
 }
 
 function buildScenarioFrames(scenario: ProblemVisualizerScenario, slug: string, values: number[]): LessonFrame[] {
@@ -146,37 +223,26 @@ function buildScenarioFrames(scenario: ProblemVisualizerScenario, slug: string, 
   if (sourceCount === 0) return [];
 
   const frames: LessonFrame[] = [];
-  for (let sourceIndex = 0; sourceIndex < sourceCount; sourceIndex += 1) {
+  const total = Math.min(12, Math.max(8, sourceCount * 2));
+  for (let index = 0; index < total; index += 1) {
+    const sourceIndex = Math.min(sourceCount - 1, Math.floor((index / total) * sourceCount));
     const phase = scenario.phases[sourceIndex];
     const commentary = scenario.comments[sourceIndex];
-    const visualStep = Math.min(sourceIndex, 3);
-
+    const mode = index % 2 === 0 ? 'inspect' : 'apply';
+    const payload = scenarioData(scenario.visualType, slug, values, index, total);
+    const payloadSummary = describePayload(scenario.visualType, payload);
+    const frameCommentary = mode === 'inspect'
+      ? `${commentary} The frame highlights ${payloadSummary}.`
+      : `${phase} is applied to ${payloadSummary}, keeping the ${slug.replaceAll('-', ' ')} invariant visible.`;
     frames.push(frame(
       scenario.visualType,
-      Math.min(sourceIndex + 1, 5),
-      commentary,
-      [['phase', phase], ['step', 'pending'], ['focus', phase]],
-      scenarioData(scenario.visualType, slug, values, visualStep),
-    ));
-
-    const nextPhase = scenario.phases[sourceIndex + 1] || 'the result';
-    const transitionCommentary = sourceIndex + 1 < sourceCount
-      ? `${commentary} Check the visible state before advancing toward ${nextPhase}.`
-      : `${commentary} Confirm the visible state before returning the result.`;
-    frames.push(frame(
-      scenario.visualType,
-      Math.min(sourceIndex + 2, 5),
-      transitionCommentary,
-      [['phase', `${phase} -> ${nextPhase}`], ['step', 'pending'], ['focus', `transition: ${phase}`]],
-      scenarioData(scenario.visualType, slug, values, visualStep),
+      Math.min(sourceIndex + 1 + (mode === 'apply' ? 1 : 0), 5),
+      frameCommentary,
+      [['phase', `${mode}: ${phase}`], ['step', `${index + 1} / ${total}`], ['focus', phase], ...visualState(scenario.visualType, payload, index)],
+      payload,
     ));
   }
-
-  const total = frames.length;
-  return frames.map((item, index) => ({
-    ...item,
-    state: item.state.map((state) => state.label === 'step' ? { ...state, value: `${index + 1} / ${total}` } : state),
-  }));
+  return frames;
 }
 
 function buildPatternFrames(pattern: string, title: string, lessonValues = defaultValues): LessonFrame[] {

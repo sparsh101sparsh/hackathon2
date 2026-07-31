@@ -15,6 +15,61 @@ const schemaErrors: string[] = [];
 const qualityWarnings: string[] = [];
 
 console.log('================================================================');
+
+function validateIndexes(entry: VisualizerEntry, frame: LessonFrame, stepIdx: number) {
+  const active = frame.active || [];
+  if (active.some((index) => !Number.isInteger(index) || index < 0)) {
+    schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Active index must be a non-negative integer.`);
+  }
+
+  switch (frame.visualType) {
+    case 'array':
+      if (!Array.isArray(frame.values)) {
+        schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Array frame missing values.`);
+        return;
+      }
+      if (active.some((index) => index >= frame.values!.length)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Array active index out of bounds.`);
+      if (!Object.values(frame.pointers || {}).every((index) => Number.isInteger(index) && index >= 0 && index < frame.values!.length)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Array pointer out of bounds.`);
+      return;
+    case 'matrix': {
+      if (!Array.isArray(frame.matrix)) {
+        schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Matrix frame missing matrix.`);
+        return;
+      }
+      const cellCount = frame.matrix.reduce((sum, row) => sum + row.length, 0);
+      if (cellCount === 0 || active.some((index) => index >= cellCount)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Matrix active index out of bounds.`);
+      return;
+    }
+    case 'stack':
+      if (!Array.isArray(frame.stack)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Stack frame missing stack.`);
+      return;
+    case 'nodes':
+      if (!Array.isArray(frame.nodes)) {
+        schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Nodes frame missing nodes.`);
+        return;
+      }
+      if (active.some((index) => index >= frame.nodes!.length)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Node active index out of bounds.`);
+      return;
+    case 'graph':
+      if (!Array.isArray(frame.nodes) || !Array.isArray(frame.edges)) {
+        schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Graph frame missing nodes/edges.`);
+        return;
+      }
+      if (active.some((index) => index >= frame.nodes!.length)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Graph active index out of bounds.`);
+      if (frame.edges.some(([from, to]) => from < 0 || to < 0 || from >= frame.nodes!.length || to >= frame.nodes!.length)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Graph edge out of bounds.`);
+      return;
+    case 'bars':
+      if (!Array.isArray(frame.bars)) {
+        schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bars frame missing bars.`);
+        return;
+      }
+      if (active.some((index) => index >= frame.bars!.length)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bars active index out of bounds.`);
+      return;
+    case 'bits':
+      if (typeof frame.bits !== 'string' || frame.bits.length === 0) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bits frame missing bits.`);
+      return;
+  }
+}
 console.log(' INDEPENDENT VERIFICATION SCRIPT: FRAME RENDERING DATA GENERATION');
 console.log('================================================================');
 
@@ -61,6 +116,9 @@ for (const entry of jsonEntries) {
     if (frames.length < 8 || frames.length > 12) {
       schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Expected 8-12 frames, produced ${frames.length}.`);
     }
+    if (new Set(frames.map((item) => item.commentary)).size !== frames.length) {
+      schemaErrors.push(`Problem ${entry.problemId} (${profile.slug}): Frame commentary is not unique.`);
+    }
 
     frames.forEach((frame: LessonFrame, stepIdx: number) => {
       if (!frame.visualType) {
@@ -72,31 +130,15 @@ for (const entry of jsonEntries) {
       if (!frame.commentary || typeof frame.commentary !== 'string') {
         schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Missing or invalid commentary.`);
       }
+      if (/check the visible state|confirm the visible state/i.test(frame.commentary)) {
+        schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Shallow transition commentary detected.`);
+      }
+      if (!Array.isArray(frame.state) || frame.state.length < 5 || !frame.state.some((item) => item.label === 'phase') || !frame.state.some((item) => item.label === 'step')) {
+        schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Frame needs phase, step, and useful state chips.`);
+      }
 
       // Check frame payload for visualType
-      switch (frame.visualType) {
-        case 'array':
-          if (!Array.isArray(frame.values)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Array frame missing values.`);
-          break;
-        case 'matrix':
-          if (!Array.isArray(frame.matrix)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Matrix frame missing matrix.`);
-          break;
-        case 'stack':
-          if (!Array.isArray(frame.stack)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Stack frame missing stack.`);
-          break;
-        case 'nodes':
-          if (!Array.isArray(frame.nodes)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Nodes frame missing nodes.`);
-          break;
-        case 'graph':
-          if (!Array.isArray(frame.nodes) || !Array.isArray(frame.edges)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Graph frame missing nodes/edges.`);
-          break;
-        case 'bars':
-          if (!Array.isArray(frame.bars)) schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bars frame missing bars.`);
-          break;
-        case 'bits':
-          if (typeof frame.bits !== 'string') schemaErrors.push(`Problem ${entry.problemId} step ${stepIdx}: Bits frame missing bits.`);
-          break;
-      }
+      validateIndexes(entry, frame, stepIdx);
     });
 
   } catch (err: any) {

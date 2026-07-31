@@ -482,8 +482,20 @@ export function synthesizeOutputFormat(
 /**
  * Clean up markdown statement text.
  */
-export function cleanStatementMarkdown(statement: string): string {
+export function cleanStatementMarkdown(statement: string, slug?: string): string {
   let cleaned = statement
+    // Remove invisible characters and normalize the HTML/text extraction artifacts
+    // present in the imported problem statements.
+    .replace(/[\u200B-\u200D\uFEFF\u2060]/g, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\*\*(示例|例子)\s*(\d+)\s*[:：]\*\*/g, '**Example $2:**')
+    .replace(/\*\*(输入|输入内容)\s*[:：]?\s*\*\*/g, '**Input:**')
+    .replace(/\*\*(输出|输出内容)\s*[:：]?\s*\*\*/g, '**Output:**')
+    .replace(/\*\*(解释|说明)\s*[:：]?\s*\*\*/g, '**Explanation:**')
+    .replace(/\*\*(Input|Output|Explanation)\s*:\s*\*\*/gi, (_match, label: string) => `**${label[0].toUpperCase()}${label.slice(1).toLowerCase()}:**`)
+    .replace(/\*(Example\s+\d+|Input|Output|Explanation)\s*:\*/gi, (_match, label: string) => `**${label[0].toUpperCase()}${label.slice(1).toLowerCase()}:**`)
+    .replace(/```(?:text|plaintext|markdown)?\s*/gi, '')
+    .replace(/\s*```/g, '')
     .replace(/```\s*\n\s*\*\*Input:\*\*/g, '**Input:**')
     .replace(/```\s*\n\s*\*\*Output:\*\*/g, '**Output:**')
     .replace(/```\s*\n\s*\*\*Explanation:\*\*/g, '**Explanation:**')
@@ -494,14 +506,84 @@ export function cleanStatementMarkdown(statement: string): string {
     .replace(/\n\t+[-*]\s*/g, '\n- ')
     .replace(/<p>/g, '')
     .replace(/<\/p>/g, '\n\n')
+    .replace(/<\/?(?:div|span|br|li|ul|ol|strong|em|a)(?:\s[^>]*)?>/gi, '')
     .replace(/<code>/g, '`')
     .replace(/<\/code>/g, '`')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
+    .replace(/`-`\s*(\d+)/g, '-$1')
+    .replace(/\*{3,}/g, '**')
+    // The source contains a mix of valid bold and invalid single-star emphasis.
+    // Keep bold markers and remove only single-star wrappers.
+    .replace(/\*\*([^*\n]+)\*\*/g, '**$1**')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    // Re-apply semantic labels after stripping malformed single-star emphasis.
+    .replace(/(^|\n)(Example\s+\d+|Input|Output|Explanation)\s*:(?=\s|$)/gim, (_match, prefix: string, label: string) => `${prefix}**${label[0].toUpperCase()}${label.slice(1).toLowerCase()}:**`)
+    .replace(/(?<!\*)\*(?!\*)/g, '')
+    .replace(/\t+/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+\n/g, '\n\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+
+  const normalizedBySlug: Record<string, string> = {
+    // These two records were imported from a localized mirror and had no reliable
+    // English statement to clean in place.
+    'longest-substring-without-repeating-characters': [
+      'Given a string `s`, find the length of the longest substring without repeating characters.',
+      '',
+      '**Example 1:**',
+      '**Input:** s = "abcabcbb"',
+      '**Output:** 3',
+      '**Explanation:** The answer is "abc", with a length of 3.',
+      '',
+      '**Example 2:**',
+      '**Input:** s = "bbbbb"',
+      '**Output:** 1',
+      '',
+      '**Example 3:**',
+      '**Input:** s = "pwwkew"',
+      '**Output:** 3',
+      '**Explanation:** The answer is "wke", with a length of 3.',
+    ].join('\n'),
+    'search-in-rotated-sorted-array': [
+      'You are given an integer array `nums` sorted in ascending order with distinct values.',
+      '',
+      'Before it is passed to your function, `nums` is rotated at an unknown pivot index `k` so that the resulting array is `[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]`.',
+      '',
+      'Given the rotated array and an integer `target`, return the index of `target` if it is present. Otherwise, return `-1`.',
+      '',
+      'You must write an algorithm with `O(log n)` runtime complexity.',
+      '',
+      '**Example 1:**',
+      '**Input:** nums = [4,5,6,7,0,1,2], target = 0',
+      '**Output:** 4',
+      '',
+      '**Example 2:**',
+      '**Input:** nums = [4,5,6,7,0,1,2], target = 3',
+      '**Output:** -1',
+      '',
+      '**Example 3:**',
+      '**Input:** nums = [1], target = 0',
+      '**Output:** -1',
+    ].join('\n'),
+    'sum-of-two-integers': [
+      'Given two integers `a` and `b`, return their sum without using the `+` or `-` operators.',
+      '',
+      '**Example 1:**',
+      '**Input:** a = 1, b = 2',
+      '**Output:** 3',
+      '',
+      '**Example 2:**',
+      '**Input:** a = 2, b = 3',
+      '**Output:** 5',
+    ].join('\n'),
+  };
+
+  const overrideKey = slug && normalizedBySlug[slug] ? slug : undefined;
+  if (overrideKey) cleaned = normalizedBySlug[overrideKey];
 
   return cleaned;
 }
@@ -562,7 +644,7 @@ async function refineAllProblems() {
       templatesMap[t.language] = t.code;
     }
 
-    const cleanedStatement = cleanStatementMarkdown(p.statement);
+    const cleanedStatement = cleanStatementMarkdown(p.statement, p.slug);
     const cleanedConstraints = cleanConstraintsMarkdown(p.constraints, p.statement);
     const newInputFormat = synthesizeInputFormat(p.title, p.statement, topicTagsArr, sampleTC?.input, templatesMap);
     const newOutputFormat = synthesizeOutputFormat(p.title, p.statement, topicTagsArr, sampleTC?.expectedOutput);
@@ -600,19 +682,22 @@ async function refineAllProblems() {
     }
   }
 
-  console.log(`Prepared ${updates.length} problem updates. Executing database updates in parallel batches...`);
+  console.log(`Prepared ${updates.length} problem updates. Executing database updates in transaction batches...`);
 
-  const BATCH_SIZE = 25;
+  // Send bounded batches through one transaction so remote Postgres latency does
+  // not turn 600 small updates into a multi-minute migration.
+  const BATCH_SIZE = 100;
   let updatedCount = 0;
   for (let i = 0; i < updates.length; i += BATCH_SIZE) {
     const chunk = updates.slice(i, i + BATCH_SIZE);
-    await Promise.all(
-      chunk.map((item) =>
-        prisma.problem.update({
+    await prisma.$transaction(
+      async (tx) => {
+        await Promise.all(chunk.map((item) => tx.problem.update({
           where: { id: item.id },
           data: item.data,
-        })
-      )
+        })));
+      },
+      { timeout: 120_000 },
     );
     updatedCount += chunk.length;
     console.log(`   Updated ${updatedCount}/${updates.length} problem DB records...`);
