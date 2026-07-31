@@ -58,7 +58,7 @@ export default function DashboardPage() {
           <p className="text-xs text-slate-400 mb-4">{error || 'Something went wrong.'}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-cyan-200 hover:bg-cyan-100 rounded-lg text-xs font-bold text-[#08080a] transition-colors"
+            className="px-4 py-2 bg-amber-200 hover:bg-amber-100 rounded-lg text-xs font-bold text-[#08080a] transition-colors"
           >
             Retry
           </button>
@@ -83,7 +83,7 @@ export default function DashboardPage() {
             width={48}
             height={48}
             unoptimized
-            className="w-12 h-12 rounded-full border-2 border-cyan-300/35 bg-[#0f0f12]"
+            className="w-12 h-12 rounded-full border-2 border-amber-300/35 bg-[#0f0f12]"
           />
           <div>
             <div className="flex items-center gap-2">
@@ -103,7 +103,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/contests"
-            className="px-5 py-2.5 rounded-lg bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-lg bg-amber-200 hover:bg-amber-100 text-[#08080a] font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5"
           >
             <Trophy className="w-4 h-4" />
             <span>Enter Contests</span>

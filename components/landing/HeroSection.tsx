@@ -19,8 +19,8 @@ export const HeroSection: React.FC = () => {
       label: 'DSA Problems',
       value: '600+',
       sub: 'Arrays to Dynamic Programming',
-      icon: <Code2 className="w-5 h-5 text-cyan-200" />,
-      color: 'border-cyan-300/25',
+      icon: <Code2 className="w-5 h-5 text-amber-200" />,
+      color: 'border-amber-300/25',
     },
     {
       label: 'Tech Companies',
@@ -54,7 +54,7 @@ export const HeroSection: React.FC = () => {
         transition={{ duration: 0.5 }}
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111115] border border-white/10 text-slate-300 text-xs font-semibold mb-8"
       >
-        <Braces className="w-4 h-4 text-cyan-200" />
+        <Braces className="w-4 h-4 text-amber-200" />
         <span>Focused Competitive Coding & Interview Platform</span>
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
       </motion.div>
@@ -67,7 +67,7 @@ export const HeroSection: React.FC = () => {
         className="text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-tight text-white max-w-5xl leading-[1.1]"
       >
         Master Coding & Crack Tech Interviews with{' '}
-        <span className="text-cyan-100 underline decoration-cyan-300/25 underline-offset-8">
+        <span className="text-amber-100 underline decoration-amber-300/25 underline-offset-8">
           CodeForge
         </span>
       </motion.h1>
@@ -91,7 +91,7 @@ export const HeroSection: React.FC = () => {
       >
         <Link
           href="/problems"
-          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-lg bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-lg bg-amber-200 hover:bg-amber-100 text-[#08080a] font-bold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <span>Explore Problems</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -99,7 +99,7 @@ export const HeroSection: React.FC = () => {
 
         <Link
           href="/mock-interview"
-          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all hover:border-cyan-300/30"
+          className="inline-flex items-center gap-2.5 px-4 py-2 rounded-lg bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all hover:border-amber-300/30"
         >
           <Bot className="w-5 h-5 text-sky-300" />
           <span>Try Mock Interview</span>

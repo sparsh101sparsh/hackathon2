@@ -20,10 +20,10 @@ export const CoreFeaturesGrid: React.FC = () => {
     {
       title: 'Judge0 Execution Engine',
       desc: 'Secure containerized sandbox executing C++, Python, JavaScript, Java, and Go in milliseconds with detailed verdict output.',
-      icon: <Terminal className="w-6 h-6 text-cyan-200" />,
+      icon: <Terminal className="w-6 h-6 text-amber-200" />,
       badge: 'Sandboxed Runner',
       link: '/problems',
-      color: 'hover:border-cyan-300/35',
+      color: 'hover:border-amber-300/35',
     },
     {
       title: 'Automated Code Audit',
@@ -71,7 +71,7 @@ export const CoreFeaturesGrid: React.FC = () => {
     <section className="py-16 px-6 max-w-7xl mx-auto space-y-12">
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#111115] border border-white/10 text-slate-300 text-xs font-semibold">
-          <Zap className="w-3.5 h-3.5 text-cyan-200" />
+          <Zap className="w-3.5 h-3.5 text-amber-200" />
           <span>Complete Competitive Engineering Suite</span>
         </div>
         <h2 className="text-3xl sm:text-5xl font-semibold text-white tracking-tight">
@@ -105,7 +105,7 @@ export const CoreFeaturesGrid: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white tracking-tight group-hover:text-cyan-100 transition-colors">
+                <h3 className="text-lg font-semibold text-white tracking-tight group-hover:text-amber-100 transition-colors">
                   {item.title}
                 </h3>
                 <p className="mt-2 text-xs sm:text-sm text-slate-400 leading-relaxed">
@@ -117,7 +117,7 @@ export const CoreFeaturesGrid: React.FC = () => {
             <div className="pt-6">
               <Link
                 href={item.link}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-200 hover:text-cyan-100 transition group-hover:translate-x-1"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-200 hover:text-amber-100 transition group-hover:translate-x-1"
               >
                 <span>Learn More</span>
                 <ArrowRight className="w-3.5 h-3.5" />

@@ -54,7 +54,7 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { label: 'Problems', href: '/problems', icon: <Code className="w-4 h-4" /> },
-    { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-cyan-200" /> },
+    { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-amber-200" /> },
     { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-violet-300" /> },
     { label: 'AI Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-sky-300" /> },
     { label: 'Company Prep', href: '/company', icon: <Building2 className="w-4 h-4" /> },
@@ -68,11 +68,11 @@ export const Navbar: React.FC = () => {
       <div className="flex items-center gap-4 lg:gap-6">
         {/* Glowing Logo Emblem */}
         <Link href="/" className="flex items-center gap-2 text-white font-extrabold text-base tracking-tight group">
-          <div className="p-1.5 rounded-md bg-cyan-200 text-[#08080a] group-hover:bg-cyan-100 transition duration-200">
+          <div className="p-1.5 rounded-md bg-amber-200 text-[#08080a] group-hover:bg-amber-100 transition duration-200">
             <Code2 className="w-4 h-4" aria-hidden="true" />
           </div>
           <span className="text-base font-black tracking-tight">
-            CodeForge<span className="text-cyan-200">_</span>
+            CodeForge<span className="text-amber-200">_</span>
           </span>
         </Link>
 
@@ -86,7 +86,7 @@ export const Navbar: React.FC = () => {
                 href={link.href}
                 className={`px-2.5 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-[#17171b] text-cyan-100 border border-cyan-300/25'
+                    ? 'bg-[#17171b] text-amber-100 border border-amber-300/25'
                     : 'text-slate-400 hover:text-white hover:bg-[#111115]'
                 }`}
               >
@@ -106,12 +106,12 @@ export const Navbar: React.FC = () => {
           rel="noopener noreferrer"
           className="px-3 py-2 rounded-md bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
         >
-          <Github className="w-4 h-4 text-cyan-200" />
+          <Github className="w-4 h-4 text-amber-200" />
           <span>GitHub</span>
         </a>
 
         {user ? (
-            <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/10 rounded-lg p-1.5 pr-3.5 shadow-inner hover:border-cyan-300/30 transition">
+            <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/10 rounded-lg p-1.5 pr-3.5 shadow-inner hover:border-amber-300/30 transition">
             <Link
               href="/dashboard"
               className="flex items-center gap-2.5 group cursor-pointer"
@@ -123,10 +123,10 @@ export const Navbar: React.FC = () => {
                 width={32}
                 height={32}
                 unoptimized
-                className="w-8 h-8 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-cyan-300 transition"
+                className="w-8 h-8 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-amber-300 transition"
               />
               <div className="text-left leading-none">
-                <div className="text-sm font-bold text-slate-100 group-hover:text-cyan-100 transition">{user.name}</div>
+                <div className="text-sm font-bold text-slate-100 group-hover:text-amber-100 transition">{user.name}</div>
                 <div className="text-[11px] text-slate-400">{user.email}</div>
               </div>
             </Link>
@@ -145,12 +145,12 @@ export const Navbar: React.FC = () => {
               href="/login"
               className="px-3 py-2 rounded-md bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
             >
-              <LogIn className="w-3.5 h-3.5 text-cyan-200" />
+              <LogIn className="w-3.5 h-3.5 text-amber-200" />
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="px-4 py-2 rounded-md bg-cyan-200 hover:bg-cyan-100 text-[#08080a] font-bold text-xs transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-md bg-amber-200 hover:bg-amber-100 text-[#08080a] font-bold text-xs transition-all flex items-center gap-1.5"
             >
               <UserPlus className="w-3.5 h-3.5 text-slate-950" />
               <span>Sign Up</span>
@@ -196,7 +196,7 @@ export const Navbar: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${
                       isActive
-                        ? 'bg-[#17171b] text-cyan-100 border border-cyan-300/25'
+                        ? 'bg-[#17171b] text-amber-100 border border-amber-300/25'
                         : 'text-slate-300 hover:bg-slate-900'
                     }`}
                   >
@@ -221,10 +221,10 @@ export const Navbar: React.FC = () => {
                       width={32}
                       height={32}
                       unoptimized
-                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-cyan-300 transition"
+                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-amber-300 transition"
                     />
                     <div>
-                      <div className="text-xs font-bold text-white group-hover:text-cyan-100 transition">{user.name}</div>
+                      <div className="text-xs font-bold text-white group-hover:text-amber-100 transition">{user.name}</div>
                       <div className="text-[11px] text-slate-400">{user.email}</div>
                     </div>
                   </Link>
@@ -247,13 +247,13 @@ export const Navbar: React.FC = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
                   >
-                    <LogIn className="w-4 h-4 text-cyan-200" />
+                    <LogIn className="w-4 h-4 text-amber-200" />
                     <span>Sign In</span>
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="py-2.5 rounded-lg text-xs font-bold bg-cyan-200 hover:bg-cyan-100 text-[#08080a] flex items-center justify-center gap-2 transition font-bold"
+                    className="py-2.5 rounded-lg text-xs font-bold bg-amber-200 hover:bg-amber-100 text-[#08080a] flex items-center justify-center gap-2 transition font-bold"
                   >
                     <UserPlus className="w-4 h-4 text-slate-950" />
                     <span>Sign Up</span>
@@ -268,7 +268,7 @@ export const Navbar: React.FC = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="w-full py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
               >
-                <Github className="w-4 h-4 text-cyan-200" />
+                <Github className="w-4 h-4 text-amber-200" />
                 <span>GitHub Repo</span>
               </a>
             </div>

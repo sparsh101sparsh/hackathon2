@@ -52,7 +52,7 @@ function PersonalityCard({ personality, isSelected, onSelect }: PersonalityCardP
       className={`
         relative w-full text-left rounded-xl border p-4 transition-all duration-300 cursor-pointer
         ${isSelected
-          ? 'bg-[#17171b] border-cyan-300/35'
+          ? 'bg-[#17171b] border-amber-300/35'
           : 'bg-slate-900/60 border-slate-800/60 hover:border-slate-600/60 hover:bg-slate-800/40'
         }
       `}
@@ -112,7 +112,7 @@ export function TeachingStyleSelector() {
     <div className="w-full">
       {/* Section Header */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-lg bg-cyan-300/10 border border-cyan-300/20 flex items-center justify-center flex-shrink-0">
+        <div className="w-7 h-7 rounded-lg bg-amber-300/10 border border-amber-300/20 flex items-center justify-center flex-shrink-0">
           <Bot className="w-4 h-4 text-sky-300" />
         </div>
         <div>
@@ -120,7 +120,7 @@ export function TeachingStyleSelector() {
         <p className="text-[11px] text-slate-500">Shapes how your tutor, hints, and reviews speak to you</p>
         </div>
         <div className="ml-auto">
-            <span className="text-[10px] bg-cyan-300/10 text-cyan-100 border border-cyan-300/20 rounded-full px-2 py-0.5 inline-flex items-center gap-1">
+            <span className="text-[10px] bg-amber-300/10 text-amber-100 border border-amber-300/20 rounded-full px-2 py-0.5 inline-flex items-center gap-1">
             <PersonalityAvatar personality={personality} size="sm" /> {personality.name}
           </span>
         </div>
@@ -136,7 +136,7 @@ export function TeachingStyleSelector() {
         whileTap={{ scale: 0.99 }}
         className={`
           w-full flex items-center gap-3 rounded-xl border p-3.5 transition-all duration-300
-          bg-[#17171b] border-cyan-300/25
+          bg-[#17171b] border-amber-300/25
         `}
       >
         <PersonalityAvatar personality={personality} />
@@ -169,8 +169,8 @@ export function TeachingStyleSelector() {
           >
             <div className="mt-3 space-y-1.5">
               {/* Info banner */}
-              <div className="flex items-center gap-2 bg-cyan-300/5 border border-cyan-300/15 rounded-lg px-3 py-2 mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-200 flex-shrink-0" />
+              <div className="flex items-center gap-2 bg-amber-300/5 border border-amber-300/15 rounded-lg px-3 py-2 mb-3">
+                <Sparkles className="w-3.5 h-3.5 text-amber-200 flex-shrink-0" />
                 <p className="text-[11px] text-slate-400">
                   Your tutor, hints, code reviews, mock interviews, and recommendations will all speak in this personality&apos;s unique voice.
                 </p>

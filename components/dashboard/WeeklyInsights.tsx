@@ -58,7 +58,7 @@ export function WeeklyInsights() {
     <div className="rounded-lg bg-[#101114] border border-white/10 p-6 relative overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-cyan-300/10 text-cyan-100 border border-cyan-300/20">
+          <div className="p-2 rounded-lg bg-amber-300/10 text-amber-100 border border-amber-300/20">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
@@ -85,7 +85,7 @@ export function WeeklyInsights() {
 
       {loading && (
         <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
-          <RefreshCw className="w-6 h-6 animate-spin text-cyan-200" />
+          <RefreshCw className="w-6 h-6 animate-spin text-amber-200" />
           <p className="text-xs">Analyzing submission patterns and rating trajectory...</p>
         </div>
       )}
@@ -99,7 +99,7 @@ export function WeeklyInsights() {
       {report && !loading && (
         <div className="space-y-4 text-xs">
           {/* Executive Summary */}
-          <div className="border-l border-cyan-300/30 pl-3 text-slate-300 leading-relaxed font-medium">
+          <div className="border-l border-amber-300/30 pl-3 text-slate-300 leading-relaxed font-medium">
             &quot;{report.summary}&quot;
           </div>
 
