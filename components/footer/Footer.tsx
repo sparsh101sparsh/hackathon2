@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
   const pathname = usePathname();
 
   // Hide footer inside full screen workspace editor routes
-  if (pathname.startsWith('/problems/') && pathname !== '/problems') {
+  if ((pathname.startsWith('/problems/') && pathname !== '/problems') || pathname === '/visualizer') {
     return null;
   }
 

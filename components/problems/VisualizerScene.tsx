@@ -20,6 +20,7 @@ type SceneProps = {
   frame: VisualizerSceneFrame;
   step: number;
   markerIds?: MarkerIds;
+  compact?: boolean;
 };
 
 type MarkerIds = {
@@ -66,9 +67,15 @@ const amber = SCENE_THEME.visited.stroke;
 const ease = [0.22, 1, 0.36, 1] as const;
 const cellTransition = { duration: 0.42, ease };
 
-function SceneFrame({ children, markerIds }: { children: React.ReactNode; markerIds?: MarkerIds }) {
+function SceneFrame({ children, markerIds, compact = false }: { children: React.ReactNode; markerIds?: MarkerIds; compact?: boolean }) {
   return (
-    <svg viewBox="0 0 680 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Animated algorithm state" className="w-full h-auto min-h-[360px] max-h-[520px] overflow-visible">
+    <svg
+      viewBox="0 0 680 360"
+      preserveAspectRatio="xMidYMid meet"
+      role="img"
+      aria-label="Animated algorithm state"
+      className={compact ? 'h-full max-h-full w-full overflow-visible' : 'w-full h-auto min-h-[360px] max-h-[520px] overflow-visible'}
+    >
       {markerIds && (
         <defs>
           <marker id={markerIds.arrow} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
@@ -89,7 +96,7 @@ function Label({ x, y, children, fill = muted, size = 12, anchor = 'middle' as c
   return <text x={x} y={y} textAnchor={anchor} fill={fill} fontSize={size} fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace">{children}</text>;
 }
 
-function ArrayScene({ frame }: SceneProps) {
+function ArrayScene({ frame, compact }: SceneProps) {
   const values = frame.values || [];
   const cellWidth = Math.min(84, 560 / Math.max(values.length, 1));
   const boxSize = cellWidth - 12;
@@ -99,7 +106,7 @@ function ArrayScene({ frame }: SceneProps) {
   const pointerEntries = Object.entries(frame.pointers || {});
 
   return (
-    <SceneFrame>
+    <SceneFrame compact={compact}>
       <g>
         {values.map((value, index) => {
           const x = startX + index * cellWidth + 6;
@@ -129,7 +136,7 @@ function ArrayScene({ frame }: SceneProps) {
   );
 }
 
-function MatrixScene({ frame }: SceneProps) {
+function MatrixScene({ frame, compact }: SceneProps) {
   const matrix = frame.matrix || [[]];
   const rows = matrix.length;
   const cols = Math.max(...matrix.map((row) => row.length), 1);
@@ -138,7 +145,7 @@ function MatrixScene({ frame }: SceneProps) {
   const top = 170 - (rows * size) / 2;
   const active = new Set(frame.active || []);
   return (
-    <SceneFrame>
+    <SceneFrame compact={compact}>
       <g>
         {matrix.flatMap((row, rowIndex) => row.map((value, colIndex) => {
           const index = rowIndex * cols + colIndex;
@@ -160,10 +167,10 @@ function MatrixScene({ frame }: SceneProps) {
   );
 }
 
-function StackScene({ frame }: SceneProps) {
+function StackScene({ frame, compact }: SceneProps) {
   const stack = frame.stack || [];
   return (
-    <SceneFrame>
+    <SceneFrame compact={compact}>
       <g>
         <motion.line x1="230" y1="248" x2="450" y2="248" stroke={SCENE_THEME.default.stroke} strokeWidth="4" />
         {stack.map((value, index) => {
@@ -184,7 +191,7 @@ function StackScene({ frame }: SceneProps) {
   );
 }
 
-function NodeScene({ frame, markerIds }: SceneProps) {
+function NodeScene({ frame, markerIds, compact }: SceneProps) {
   const nodes = frame.nodes || [];
   const active = new Set(frame.active || []);
   const gap = Math.min(104, 560 / Math.max(nodes.length, 1));
@@ -192,7 +199,7 @@ function NodeScene({ frame, markerIds }: SceneProps) {
   const arrowId = markerIds?.arrow || 'scene-arrow';
   const activeArrowId = markerIds?.activeArrow || 'scene-arrow-active';
   return (
-    <SceneFrame markerIds={markerIds}>
+    <SceneFrame markerIds={markerIds} compact={compact}>
       <g>
         {nodes.slice(0, -1).map((_, index) => <motion.line key={`edge-${index}`} x1={startX + index * gap + 31} y1="150" x2={startX + (index + 1) * gap - 31} y2="150" stroke={active.has(index) ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke} strokeWidth="4" markerEnd={active.has(index) ? `url(#${activeArrowId})` : `url(#${arrowId})`} animate={{ stroke: active.has(index) ? SCENE_THEME.active.stroke : SCENE_THEME.default.stroke }} transition={cellTransition} />)}
         {nodes.map((node, index) => {
@@ -225,14 +232,14 @@ function graphPositions(count: number) {
   });
 }
 
-function GraphScene({ frame, markerIds }: SceneProps) {
+function GraphScene({ frame, markerIds, compact }: SceneProps) {
   const nodes = frame.nodes || [];
   const active = new Set(frame.active || []);
   const positions = graphPositions(nodes.length);
   const arrowId = markerIds?.arrow || 'scene-arrow';
   const activeArrowId = markerIds?.activeArrow || 'scene-arrow-active';
   return (
-    <SceneFrame markerIds={markerIds}>
+    <SceneFrame markerIds={markerIds} compact={compact}>
       <g>
         {(frame.edges || []).map(([from, to], index) => {
           const [x1, y1] = positions[from] || positions[0];
@@ -256,7 +263,7 @@ function GraphScene({ frame, markerIds }: SceneProps) {
   );
 }
 
-function BarsScene({ frame }: SceneProps) {
+function BarsScene({ frame, compact }: SceneProps) {
   const bars = frame.bars || [];
   const active = new Set(frame.active || []);
   const width = Math.min(54, 520 / Math.max(bars.length, 1));
@@ -269,7 +276,7 @@ function BarsScene({ frame }: SceneProps) {
   const negativePlotHeight = hasNegative ? 76 : 0;
   const indexY = hasNegative ? baseline + negativePlotHeight + 28 : baseline + 22;
   return (
-    <SceneFrame>
+    <SceneFrame compact={compact}>
       <g>
         <line x1="70" y1={baseline} x2="610" y2={baseline} stroke={SCENE_THEME.default.stroke} strokeWidth="4" />
         <Label x={610} y={baseline - 12} anchor="end" fill={SCENE_THEME.text.muted} size={10}>VALUE SCALE</Label>
@@ -298,7 +305,7 @@ function BarsScene({ frame }: SceneProps) {
   );
 }
 
-function BitsScene({ frame }: SceneProps) {
+function BitsScene({ frame, compact }: SceneProps) {
   const bits = frame.bits || '';
   const cellWidth = Math.min(64, 560 / Math.max(bits.length, 1));
   const boxSize = cellWidth - 8;
@@ -309,7 +316,7 @@ function BitsScene({ frame }: SceneProps) {
   const indexFontSize = bits.length > 16 ? 7 : 11;
 
   return (
-    <SceneFrame>
+    <SceneFrame compact={compact}>
       <g>
         {bits.split('').map((bit, index) => {
           const x = startX + index * cellWidth + 4;
@@ -328,19 +335,19 @@ function BitsScene({ frame }: SceneProps) {
   );
 }
 
-export function VisualizerScene({ frame, step }: SceneProps) {
+export function VisualizerScene({ frame, step, compact }: SceneProps) {
   const key = `${frame.visualType}-${step}`;
   const reactId = React.useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const markerIds = { arrow: `scene-arrow-${reactId}`, activeArrow: `scene-arrow-active-${reactId}` };
   return (
-    <motion.div key={key} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.24 }} className="w-full">
-      {frame.visualType === 'array' && <ArrayScene frame={frame} step={step} />}
-      {frame.visualType === 'matrix' && <MatrixScene frame={frame} step={step} />}
-      {frame.visualType === 'stack' && <StackScene frame={frame} step={step} />}
-      {frame.visualType === 'nodes' && <NodeScene frame={frame} step={step} markerIds={markerIds} />}
-      {frame.visualType === 'graph' && <GraphScene frame={frame} step={step} markerIds={markerIds} />}
-      {frame.visualType === 'bars' && <BarsScene frame={frame} step={step} />}
-      {frame.visualType === 'bits' && <BitsScene frame={frame} step={step} />}
+    <motion.div key={key} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.24 }} className={compact ? 'h-full w-full' : 'w-full'}>
+      {frame.visualType === 'array' && <ArrayScene frame={frame} step={step} compact={compact} />}
+      {frame.visualType === 'matrix' && <MatrixScene frame={frame} step={step} compact={compact} />}
+      {frame.visualType === 'stack' && <StackScene frame={frame} step={step} compact={compact} />}
+      {frame.visualType === 'nodes' && <NodeScene frame={frame} step={step} markerIds={markerIds} compact={compact} />}
+      {frame.visualType === 'graph' && <GraphScene frame={frame} step={step} markerIds={markerIds} compact={compact} />}
+      {frame.visualType === 'bars' && <BarsScene frame={frame} step={step} compact={compact} />}
+      {frame.visualType === 'bits' && <BitsScene frame={frame} step={step} compact={compact} />}
     </motion.div>
   );
 }

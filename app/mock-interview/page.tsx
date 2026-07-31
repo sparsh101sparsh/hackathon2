@@ -21,6 +21,7 @@ import CodeEditor from '@/components/editor/CodeEditor';
 import { EvaluationReport } from '@/app/api/ai/mock-interview/route';
 import { useToast } from '@/components/ui/Toast';
 import { useDialogAccessibility } from '@/lib/useDialogAccessibility';
+import { ProblemMarkdown } from '@/components/ui/ProblemMarkdown';
 
 const COMPANIES = ['Google', 'Meta', 'Amazon', 'Apple', 'Netflix', 'Microsoft', 'Uber'];
 const TOPICS = [
@@ -357,13 +358,17 @@ export default function MockInterviewPage() {
                     )}
 
                     <div
-                      className={`p-3.5 rounded-2xl max-w-[85%] leading-relaxed whitespace-pre-line ${
+                      className={`p-3.5 rounded-2xl max-w-[85%] leading-relaxed ${
                         m.role === 'user'
-                          ? 'bg-amber-400 text-[#08080a] font-medium rounded-tr-none'
+                          ? 'bg-amber-400 text-[#08080a] font-medium rounded-tr-none whitespace-pre-line'
                           : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none'
                       }`}
                     >
-                      {m.content}
+                      {m.role === 'assistant' ? (
+                        <ProblemMarkdown content={m.content} size="compact" className="space-y-2 text-xs" />
+                      ) : (
+                        m.content
+                      )}
                     </div>
 
                     {m.role === 'user' && (

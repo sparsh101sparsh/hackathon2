@@ -10,9 +10,11 @@ const tutor = fs.readFileSync('components/problems/VisualizerTutor.tsx', 'utf8')
 const visualizerRoute = fs.readFileSync('app/api/ai/visualizer/route.ts', 'utf8');
 
 const requiredVisualizerMarkers = [
-  'className="px-5 sm:px-8 flex-1 space-y-5"',
+  'compact?: boolean',
+  'h-full min-h-0',
   'min-h-[380px] sm:min-h-[460px]',
-  'grid lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)]',
+  'compact={compact}',
+  'lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)]',
 ];
 
 for (const marker of requiredVisualizerMarkers) {
@@ -27,6 +29,14 @@ if (visualizer.includes('xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.75fr)]')) 
 
 if (!scene.includes('min-h-[360px]')) {
   throw new Error('Visualizer scene must retain a stable minimum render height.');
+}
+
+if (!scene.includes("compact ? 'h-full max-h-full w-full overflow-visible'") || !scene.includes("className={compact ? 'h-full w-full' : 'w-full'}")) {
+  throw new Error('Visualizer scene must support compact viewport scaling.');
+}
+
+if (!library.includes('h-[calc(100svh-56px)] overflow-hidden') || !library.includes('compact />')) {
+  throw new Error('Visualizer library must render the compact visualizer in a viewport-locked shell.');
 }
 
 if (scene.includes('animate={{ y, height') || scene.includes('animate={{ y: y')) {

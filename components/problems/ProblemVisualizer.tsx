@@ -46,6 +46,7 @@ interface ProblemVisualizerProps {
   topicTags?: string | string[];
   verified?: boolean;
   embedded?: boolean;
+  compact?: boolean;
 }
 
 const patternNames: Record<string, string> = {
@@ -543,7 +544,7 @@ function stateValue(frameItem: LessonFrame | undefined, label: string) {
   return frameItem?.state.find((item) => item.label === label)?.value;
 }
 
-export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId, problemTitle, topicTags, verified = false, embedded = false }) => {
+export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId, problemTitle, topicTags, verified = false, embedded = false, compact = false }) => {
   const [config, setConfig] = useState<VisualizerConfig | null>(null);
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -570,7 +571,11 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
   const currentPhase = stateValue(current, 'phase') || `step ${boundedStep + 1}`;
   const frameKey = `${problemId}:${lessonPath}:${boundedStep}:${currentPhase}:${current.codeLine}`;
   const progress = (boundedStep / Math.max(frames.length - 1, 1)) * 100;
-  const shellGridClass = embedded ? 'grid min-h-[720px]' : 'grid lg:grid-cols-[minmax(0,1fr)_320px] min-h-[720px]';
+  const shellGridClass = compact
+    ? 'grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_320px]'
+    : embedded
+      ? 'grid min-h-[720px]'
+      : 'grid lg:grid-cols-[minmax(0,1fr)_320px] min-h-[720px]';
 
   useEffect(() => {
     if (!playing) return;
@@ -649,14 +654,14 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
   };
 
   return (
-    <div tabIndex={0} className="min-h-[640px] bg-[#08080a] text-slate-200 border border-white/10 hover:border-amber-400/30 transition-all rounded-xl overflow-hidden font-mono shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50">
+    <div tabIndex={0} className={`${compact ? 'h-full min-h-0' : 'min-h-[640px]'} bg-[#08080a] text-slate-200 border border-white/10 hover:border-amber-400/30 transition-all rounded-xl overflow-hidden font-mono shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50`}>
       <div className={shellGridClass}>
-        <section className="flex flex-col min-w-0 bg-slate-950/90">
-          <header className="px-5 sm:px-8 pt-5 pb-3 flex items-start justify-between gap-4 border-b border-slate-800/60 bg-slate-900/40">
+        <section className={`${compact ? 'h-full min-h-0' : ''} flex flex-col min-w-0 bg-slate-950/90`}>
+          <header className={`${compact ? 'px-4 py-3' : 'px-5 sm:px-8 pt-5 pb-3'} flex items-start justify-between gap-4 border-b border-slate-800/60 bg-slate-900/40`}>
             <div>
               <div className="text-[10px] uppercase tracking-[0.24em] text-slate-400 font-bold">{mode}</div>
-              <h2 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">{problemTitle}</h2>
-              <div className="inline-flex items-center gap-2 mt-3 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-300">{patternNames[pattern] || 'Algorithm'} <span className="text-amber-400 font-semibold">{isVerified ? 'verified' : 'live'}</span></div>
+              <h2 className={`font-sans font-bold tracking-tight text-white mt-1 ${compact ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'}`}>{problemTitle}</h2>
+              <div className={`${compact ? 'mt-2 px-2.5 py-1 text-[11px]' : 'mt-3 px-3 py-1.5 text-xs'} inline-flex items-center gap-2 border border-white/10 rounded-lg text-slate-300`}>{patternNames[pattern] || 'Algorithm'} <span className="text-amber-400 font-semibold">{isVerified ? 'verified' : 'live'}</span></div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button type="button" onClick={() => setMode('concept')} className={mode === 'concept' ? 'px-3 py-1.5 rounded-lg bg-amber-400 text-[#08080a] font-bold text-xs shadow-md shadow-amber-400/20 transition-all' : 'px-3 py-1.5 rounded-lg bg-[#111115] hover:bg-[#18181d] text-slate-200 border border-white/10 font-semibold text-xs transition-all'}>Concept</button>
@@ -664,10 +669,10 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </header>
 
-          <div className="px-5 sm:px-8 flex items-center justify-between text-[11px] text-slate-400 my-3"><span>{patternNames[pattern] || 'Algorithm'} walk</span><span>step {boundedStep + 1} / {frames.length}</span></div>
+          <div className={`${compact ? 'px-4 my-2' : 'px-5 sm:px-8 my-3'} flex items-center justify-between text-[11px] text-slate-400`}><span>{patternNames[pattern] || 'Algorithm'} walk</span><span>step {boundedStep + 1} / {frames.length}</span></div>
 
-          <div className="px-5 sm:px-8 pb-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className={`${compact ? 'px-4 pb-3' : 'px-5 sm:px-8 pb-4'}`}>
+            <div className={`${compact ? 'grid-cols-4 lg:grid-cols-8 gap-1.5' : 'grid-cols-2 md:grid-cols-4 gap-2'} grid`}>
               {frames.map((item, index) => {
                 const phase = stateValue(item, 'phase') || `Step ${index + 1}`;
                 const selected = index === boundedStep;
@@ -677,7 +682,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
                     type="button"
                     aria-current={selected ? 'step' : undefined}
                     onClick={() => { setPlaying(false); setStep(index); }}
-                    className={`min-h-[58px] rounded-xl border px-3 py-2 text-left transition-all ${
+                    className={`${compact ? 'min-h-[42px] rounded-lg px-2 py-1.5' : 'min-h-[58px] rounded-xl px-3 py-2'} border text-left transition-all ${
                       selected
                         ? 'border-amber-400/60 bg-amber-400/10 shadow-sm shadow-amber-400/10'
                         : 'border-slate-800/80 bg-slate-900/50 hover:border-slate-700 hover:bg-slate-900'
@@ -691,14 +696,14 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </div>
 
-          <div className="px-5 sm:px-8 flex-1 space-y-5">
-            <div className="min-h-[380px] sm:min-h-[460px] flex items-center justify-center border border-white/10 p-3 sm:p-6 overflow-hidden bg-[#0c0c0f] rounded-xl">
+          <div className={`${compact ? 'px-4 flex-1 min-h-0 space-y-3' : 'px-5 sm:px-8 flex-1 space-y-5'}`}>
+            <div className={`${compact ? 'h-full min-h-[220px] p-2' : 'min-h-[380px] sm:min-h-[460px] p-3 sm:p-6'} flex items-center justify-center border border-white/10 overflow-hidden bg-[#0c0c0f] rounded-xl`}>
               <AnimatePresence mode="popLayout">
-                <VisualizerScene frame={current} step={boundedStep} />
+                <VisualizerScene frame={current} step={boundedStep} compact={compact} />
               </AnimatePresence>
             </div>
 
-            <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)] gap-5 items-start">
+            <div className={`${compact ? 'hidden' : 'grid'} lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,.85fr)] gap-5 items-start`}>
               <div className="border border-slate-800/80 rounded-xl overflow-hidden bg-slate-950/90 shadow-inner">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-[#111115]"><span className="font-sans font-bold text-xs uppercase tracking-wider text-slate-200">{mode === 'concept' ? 'Concept Pseudocode' : 'Practice Pseudocode'}</span><button type="button" onClick={copyCode} title="Copy pseudocode" className="px-2.5 py-1 border border-white/10 rounded-lg bg-[#18181d] text-xs text-slate-200 flex items-center gap-1.5 hover:border-amber-400/50 hover:text-amber-300 transition-all"><Copy className="w-3.5 h-3.5" /> {copied ? 'copied' : 'copy'}</button></div>
                 <div className="p-3.5 space-y-1.5 text-xs leading-relaxed bg-[#08080a]">{code.map((line, index) => <div key={`${line}-${index}`} className={`flex gap-3 px-2.5 py-1 rounded-md transition-all ${current.codeLine === index + 1 ? 'bg-amber-400/10 border-l-2 border-amber-400 text-amber-200 font-medium' : 'text-slate-400'}`}><span className="w-5 text-right text-slate-500 shrink-0 select-none">{index + 1}</span><code className="font-mono">{line}</code></div>)}</div>
@@ -717,8 +722,8 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </div>
 
-          <div className="px-5 sm:px-8 mt-6">
-            <div className="border border-slate-800/80 rounded-xl p-4 bg-slate-900/70 min-h-[88px] flex flex-col justify-between gap-2.5 transition-all">
+          <div className={`${compact ? 'px-4 mt-3' : 'px-5 sm:px-8 mt-6'}`}>
+            <div className={`${compact ? 'p-3 min-h-[70px]' : 'p-4 min-h-[88px]'} border border-slate-800/80 rounded-xl bg-slate-900/70 flex flex-col justify-between gap-2.5 transition-all`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -735,7 +740,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -3 }}
                   transition={{ duration: 0.18, ease: 'easeOut' }}
-                  className="font-sans text-sm leading-relaxed text-slate-200"
+                  className={`${compact ? 'line-clamp-2 text-xs' : 'text-sm'} font-sans leading-relaxed text-slate-200`}
                 >
                   {current.commentary}
                 </motion.p>
@@ -743,13 +748,13 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
             </div>
           </div>
 
-          <div className={`${embedded ? '' : 'lg:hidden'} px-5 sm:px-8 mt-5`}>
+          <div className={`${compact ? 'hidden' : embedded ? '' : 'lg:hidden'} px-5 sm:px-8 mt-5`}>
             <div className="h-[520px] overflow-hidden rounded-xl border border-slate-800/80">
               <VisualizerTutor currentFrame={current} problemTitle={problemTitle} step={boundedStep} totalSteps={frames.length} frameKey={frameKey} />
             </div>
           </div>
 
-          <footer className="px-5 sm:px-8 py-4 mt-4 flex flex-wrap items-center gap-3 border-t border-slate-800/80 bg-slate-900/60 font-sans">
+          <footer className={`${compact ? 'px-4 py-3 mt-3' : 'px-5 sm:px-8 py-4 mt-4'} flex flex-wrap items-center gap-3 border-t border-slate-800/80 bg-slate-900/60 font-sans`}>
             <button type="button" aria-label="Reset visualization" title="Reset" onClick={() => { setStep(0); setPlaying(false); }} className="p-2.5 border border-white/10 rounded-lg bg-[#111115] text-slate-200 hover:border-amber-400/50 hover:text-amber-300 hover:shadow-sm hover:shadow-amber-400/20 transition-all"><RotateCcw className="w-4 h-4" /></button>
             <button type="button" aria-label="Previous visualization step" title="Previous step" disabled={boundedStep === 0} onClick={() => { setPlaying(false); setStep((value) => Math.max(0, value - 1)); }} className="p-2.5 border border-white/10 rounded-lg bg-[#111115] text-slate-200 disabled:opacity-40 hover:enabled:border-amber-400/50 hover:enabled:text-amber-300 hover:enabled:shadow-sm hover:enabled:shadow-amber-400/20 transition-all"><ChevronLeft className="w-4 h-4" /></button>
             <button type="button" onClick={() => setPlaying((value) => !value)} className={`px-5 py-2.5 rounded-lg font-sans font-bold text-xs flex items-center gap-2 transition-all ${playing ? 'bg-amber-300 text-[#08080a] shadow-lg shadow-amber-400/30 ring-2 ring-amber-400/50' : 'bg-amber-400 text-[#08080a] shadow-lg shadow-amber-400/20 hover:bg-amber-300'}`}>{playing ? <Pause className="w-4 h-4 fill-[#08080a]" /> : <Play className="w-4 h-4 fill-[#08080a]" />} {playing ? 'Pause' : 'Play'}</button>
@@ -761,7 +766,7 @@ export const ProblemVisualizer: React.FC<ProblemVisualizerProps> = ({ problemId,
         </section>
 
         {/* Tutor sidebar */}
-        <aside className={`${embedded ? 'hidden' : 'hidden lg:block'} border-l border-slate-800/80`}>
+        <aside className={`${embedded ? 'hidden' : 'hidden lg:block'} min-h-0 border-l border-slate-800/80`}>
           <VisualizerTutor currentFrame={current} problemTitle={problemTitle} step={boundedStep} totalSteps={frames.length} frameKey={frameKey} />
         </aside>
       </div>

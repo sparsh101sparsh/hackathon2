@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { DifficultyBadge } from '@/components/ui/DifficultyBadge';
+import { ProblemMarkdown } from '@/components/ui/ProblemMarkdown';
 import type { RevisionCardDTO, RevisionDeckResponse, RevisionDeckStats } from '@/lib/types';
 import { nextRevisionInterval } from '@/lib/revisionSchedule';
 
@@ -256,9 +257,11 @@ export default function RevisionPage() {
                       <p className="text-xs text-amber-100/80 mt-1">This card was brought forward because the platform found a weak spot in your latest submission.</p>
                     </div>
                   )}
-                  <p className="text-xs text-slate-400 mt-2 line-clamp-4 leading-relaxed">
-                    {currentCard.problem?.statement}
-                  </p>
+                  <ProblemMarkdown
+                    content={currentCard.problem?.statement || ''}
+                    size="compact"
+                    className="mt-2 line-clamp-4 text-xs"
+                  />
                 </div>
 
                 <div className="p-4 rounded-lg bg-[#08080a] border border-white/10 text-center space-y-1">
