@@ -7,45 +7,67 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import {
-  Code2,
-  Trophy,
-  Building2,
+  BarChart3,
   Bot,
-  BarChart2,
+  Brain,
+  Building2,
+  ChevronDown,
+  Code2,
+  Github,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Sparkles,
+  Trophy,
+  UserPlus,
   Menu,
   X,
-  Code,
-  Github,
-  LogIn,
-  UserPlus,
-  LogOut,
-  Brain,
-  Sparkles,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const githubUrl = 'https://github.com/sparsh101sparsh/hackathon2';
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsProfileMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!isMobileMenuOpen) return;
+    if (!isMobileMenuOpen && !isProfileMenuOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsMobileMenuOpen(false);
+        setIsProfileMenuOpen(false);
         menuButtonRef.current?.focus();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, isProfileMenuOpen]);
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [isProfileMenuOpen]);
 
   // Hide main navbar inside problem detail view if it uses full screen workspace layout
   if (pathname.startsWith('/problems/') && pathname !== '/problems') {
@@ -53,41 +75,45 @@ export const Navbar: React.FC = () => {
   }
 
   const navLinks = [
-    { label: 'Problems', href: '/problems', icon: <Code className="w-4 h-4" /> },
-    { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="w-4 h-4 text-amber-200" /> },
-    { label: 'Revision Deck', href: '/revision', icon: <Brain className="w-4 h-4 text-violet-300" /> },
-    { label: 'AI Mock Interview', href: '/mock-interview', icon: <Bot className="w-4 h-4 text-sky-300" /> },
-    { label: 'Company Prep', href: '/company', icon: <Building2 className="w-4 h-4" /> },
-    { label: 'Contests', href: '/contests', icon: <Trophy className="w-4 h-4" /> },
-    { label: 'Leaderboard', href: '/leaderboard', icon: <BarChart2 className="w-4 h-4" /> },
+    { label: 'Problems', href: '/problems', icon: <Code2 className="h-4 w-4" aria-hidden="true" /> },
+    { label: 'Visualizer', href: '/visualizer', icon: <Sparkles className="h-4 w-4" aria-hidden="true" /> },
+    { label: 'Revision Deck', href: '/revision', icon: <Brain className="h-4 w-4" aria-hidden="true" /> },
+    { label: 'AI Mock Interview', href: '/mock-interview', icon: <Bot className="h-4 w-4" aria-hidden="true" /> },
+    { label: 'Company Prep', href: '/company', icon: <Building2 className="h-4 w-4" aria-hidden="true" /> },
+    { label: 'Contests', href: '/contests', icon: <Trophy className="h-4 w-4" aria-hidden="true" /> },
+  ];
+
+  const profileLinks = [
+    { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" /> },
+    { label: 'Leaderboard', href: '/leaderboard', icon: <BarChart3 className="h-4 w-4" aria-hidden="true" /> },
   ];
 
   return (
-    <nav className="bg-[#08080a]/98 border-b border-white/10 sticky top-0 z-50 px-4 sm:px-7 h-14 flex items-center justify-between font-sans">
+    <nav className="liquid-navbar sticky top-0 z-50 flex h-14 items-center justify-between px-4 font-sans sm:px-6">
       {/* Left Brand Emblem & Nav Links */}
-      <div className="flex items-center gap-4 lg:gap-6">
+      <div className="flex min-w-0 items-center gap-4">
         {/* Glowing Logo Emblem */}
-        <Link href="/" className="flex items-center gap-2 text-white font-extrabold text-base tracking-tight group">
-          <div className="p-1.5 rounded-md bg-amber-200 text-[#08080a] group-hover:bg-amber-100 transition duration-200">
+        <Link href="/" className="liquid-brand group flex items-center gap-2 text-white" aria-label="CodeForge home">
+          <div className="liquid-brand-mark">
             <Code2 className="w-4 h-4" aria-hidden="true" />
           </div>
-          <span className="text-base font-black tracking-tight">
-            CodeForge<span className="text-amber-200">_</span>
+          <span className="text-[15px] font-medium leading-none">
+            CodeForge<span className="liquid-brand-caret">_</span>
           </span>
         </Link>
 
         {/* Desktop Nav Links */}
-        <div className="hidden xl:flex items-center gap-1">
+        <div className="hidden xl:flex items-center gap-1.5">
           {navLinks.map((link) => {
             const isActive = pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-2.5 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
+                className={`liquid-nav-link flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition ${
                   isActive
-                    ? 'bg-[#17171b] text-amber-100 border border-amber-300/25'
-                    : 'text-slate-400 hover:text-white hover:bg-[#111115]'
+                    ? 'liquid-nav-link-active text-cyan-50'
+                    : 'text-slate-300/80 hover:text-white'
                 }`}
               >
                 {link.icon}
@@ -100,22 +126,14 @@ export const Navbar: React.FC = () => {
 
       {/* Right Controls: Auth Buttons / User Profile */}
       <div className="hidden md:flex items-center gap-3">
-        <a
-          href="https://github.com/sparsh101sparsh/hackathon2"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-3 py-2 rounded-md bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
-        >
-          <Github className="w-4 h-4 text-amber-200" />
-          <span>GitHub</span>
-        </a>
-
         {user ? (
-            <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/10 rounded-lg p-1.5 pr-3.5 shadow-inner hover:border-amber-300/30 transition">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2.5 group cursor-pointer"
-              title="View User Dashboard"
+          <div ref={profileMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsProfileMenuOpen((open) => !open)}
+              aria-expanded={isProfileMenuOpen}
+              aria-haspopup="menu"
+              className="liquid-profile flex items-center gap-2 p-1.5 pr-2 transition"
             >
               <Image
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
@@ -123,36 +141,76 @@ export const Navbar: React.FC = () => {
                 width={32}
                 height={32}
                 unoptimized
-                className="w-8 h-8 rounded-lg border border-white/10 bg-[#08080a] shrink-0 group-hover:border-amber-300 transition"
+                className="h-8 w-8 shrink-0 rounded-md border border-white/10 bg-[#08080a] transition"
               />
-              <div className="text-left leading-none">
-                <div className="text-sm font-bold text-slate-100 group-hover:text-amber-100 transition">{user.name}</div>
-                <div className="text-[11px] text-slate-400">{user.email}</div>
-              </div>
-            </Link>
-            <button
-              onClick={() => logout()}
-              title="Sign Out"
-              aria-label="Sign out"
-              className="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition"
-            >
-              <LogOut className="w-4 h-4" />
+              <span className="max-w-32 truncate text-sm font-medium text-slate-50">{user.name}</span>
+              <ChevronDown className={`h-4 w-4 text-slate-400 transition ${isProfileMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
+
+            <AnimatePresence>
+              {isProfileMenuOpen && (
+                <motion.div
+                  role="menu"
+                  aria-label="Profile menu"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.12 }}
+                  className="profile-menu absolute right-0 top-12 w-56 overflow-hidden rounded-lg border border-white/10 bg-[#101114] p-1.5 shadow-2xl"
+                >
+                  {profileLinks.map((link) => {
+                    const isActive = pathname.startsWith(link.href);
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        role="menuitem"
+                        className={`profile-menu-link flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition ${
+                          isActive ? 'bg-cyan-400/10 text-cyan-100' : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                        }`}
+                      >
+                        {link.icon}
+                        <span>{link.label}</span>
+                      </Link>
+                    );
+                  })}
+                  <a
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    role="menuitem"
+                    className="profile-menu-link flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
+                  >
+                    <Github className="h-4 w-4" aria-hidden="true" />
+                    <span>GitHub</span>
+                  </a>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => logout()}
+                    className="profile-menu-link flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-rose-200 transition hover:bg-rose-400/10 hover:text-rose-100"
+                  >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    <span>Sign out</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="px-3 py-2 rounded-md bg-[#111115] hover:bg-[#17171b] text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5"
+              className="liquid-action-button flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-100"
             >
-              <LogIn className="w-3.5 h-3.5 text-amber-200" />
+              <LogIn className="h-4 w-4" aria-hidden="true" />
               <span>Sign In</span>
             </Link>
             <Link
               href="/register"
-              className="px-4 py-2 rounded-md bg-amber-200 hover:bg-amber-100 text-[#08080a] font-bold text-xs transition-all flex items-center gap-1.5"
+              className="liquid-primary-button flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[#071012]"
             >
-              <UserPlus className="w-3.5 h-3.5 text-slate-950" />
+              <UserPlus className="h-4 w-4" aria-hidden="true" />
               <span>Sign Up</span>
             </Link>
           </div>
@@ -168,7 +226,7 @@ export const Navbar: React.FC = () => {
           aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-navigation-menu"
-          className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
+          className="liquid-icon-button h-9 w-9"
         >
           {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -184,7 +242,7 @@ export const Navbar: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="absolute top-14 left-0 w-full bg-[#0a0a0d] border-b border-white/10 px-6 py-6 space-y-4 xl:hidden z-50 shadow-2xl"
+            className="liquid-mobile-menu absolute left-0 top-14 z-50 w-full space-y-4 px-4 py-4 shadow-2xl xl:hidden"
           >
             <div className="space-y-1">
               {navLinks.map((link) => {
@@ -194,10 +252,10 @@ export const Navbar: React.FC = () => {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${
+                    className={`liquid-mobile-link flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
                       isActive
-                        ? 'bg-[#17171b] text-amber-100 border border-amber-300/25'
-                        : 'text-slate-300 hover:bg-slate-900'
+                        ? 'liquid-mobile-link-active text-cyan-50'
+                        : 'text-slate-300 hover:text-white'
                     }`}
                   >
                     {link.icon}
@@ -209,35 +267,56 @@ export const Navbar: React.FC = () => {
 
             <div className="pt-4 border-t border-slate-800 space-y-3">
               {user ? (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 group"
-                  >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3 px-3 py-2">
                     <Image
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                       alt={user.name}
                       width={32}
                       height={32}
                       unoptimized
-                      className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-950 group-hover:border-amber-300 transition"
+                      className="h-8 w-8 shrink-0 rounded-md border border-white/10 bg-slate-950"
                     />
-                    <div>
-                      <div className="text-xs font-bold text-white group-hover:text-amber-100 transition">{user.name}</div>
-                      <div className="text-[11px] text-slate-400">{user.email}</div>
-                    </div>
-                  </Link>
+                    <span className="truncate text-sm font-medium text-white">{user.name}</span>
+                  </div>
+                  {profileLinks.map((link) => {
+                    const isActive = pathname.startsWith(link.href);
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`liquid-mobile-link flex items-center gap-3 px-4 py-3 text-sm font-medium transition ${
+                          isActive
+                            ? 'liquid-mobile-link-active text-cyan-50'
+                            : 'text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        {link.icon}
+                        <span>{link.label}</span>
+                      </Link>
+                    );
+                  })}
+                  <a
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="liquid-mobile-link flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-300 transition hover:text-white"
+                  >
+                    <Github className="h-4 w-4" aria-hidden="true" />
+                    <span>GitHub</span>
+                  </a>
                   <button
                     onClick={() => {
                       logout();
                       setIsMobileMenuOpen(false);
                     }}
                     type="button"
-                    aria-label="Sign out"
-                    className="p-2 rounded-lg text-rose-400 hover:bg-slate-800 transition"
-                  >
-                    <LogOut className="w-4 h-4" />
+                    className="liquid-mobile-link flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-rose-200 transition hover:text-rose-100"
+                    >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    <span>Sign out</span>
                   </button>
                 </div>
               ) : (
@@ -245,32 +324,21 @@ export const Navbar: React.FC = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
+                    className="liquid-action-button flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-slate-100"
                   >
-                    <LogIn className="w-4 h-4 text-amber-200" />
+                    <LogIn className="h-4 w-4" aria-hidden="true" />
                     <span>Sign In</span>
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="py-2.5 rounded-lg text-xs font-bold bg-amber-200 hover:bg-amber-100 text-[#08080a] flex items-center justify-center gap-2 transition font-bold"
+                    className="liquid-primary-button flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-[#071012]"
                   >
-                    <UserPlus className="w-4 h-4 text-slate-950" />
+                    <UserPlus className="h-4 w-4" aria-hidden="true" />
                     <span>Sign Up</span>
                   </Link>
                 </div>
               )}
-
-              <a
-                href="https://github.com/sparsh101sparsh/hackathon2"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-2.5 rounded-lg text-xs font-bold bg-[#111115] border border-white/10 text-slate-200 hover:text-white flex items-center justify-center gap-2 transition"
-              >
-                <Github className="w-4 h-4 text-amber-200" />
-                <span>GitHub Repo</span>
-              </a>
             </div>
           </motion.div>
         )}
